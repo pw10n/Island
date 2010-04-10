@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "types.h"
+#include "netutil.h"
 
 using namespace std;
 
@@ -41,6 +42,7 @@ class gamestate_t: public netobj{
 
       //network functions:
       int serialize(char* buf, int sz);
+      int sync(char* buf, int sz);
 
    proteted:
 };

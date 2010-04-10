@@ -20,6 +20,7 @@ class netobj{
 
    public:
       virtual int serialize(char* buf, int sz) = 0;
+      virtual int sync(char* buf, int sz) =0;
 };
 
 
