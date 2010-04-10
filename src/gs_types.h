@@ -36,7 +36,6 @@ class playerstate_t{
       int _score;
 };
 
-
 class objectstate_t{
    public:
 
