@@ -3,18 +3,27 @@
 #include <math.h>
 #include <float.h>
 #include <iostream>
+#include <stdint.h>
+
 
 using namespace std;
 
+union varies{
+   uint32_t i32;
+   uint16_t i16;
+   uint8_t  i08;
+};
+   
+
 class coord2i_t{
-   int _x;
-   int _y;
+   int32_t _x;
+   int32_t _y;
 
    public:
-   int x() const { return _x; }
-   int& x() { return _x; }
-   int y() const { return _y; }
-   int& y() { return _y; }
+   int32_t x() const { return _x; }
+   int32_t& x() { return _x; }
+   int32_t y() const { return _y; }
+   int32_t& y() { return _y; }
 };
 
 class coord2d_t{
