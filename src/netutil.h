@@ -11,17 +11,23 @@ struct gsDelta_data{
    varies oValue;
    varies nValue;
 };
-struct gsAddPlayer_t{
-   uint32_t tick;
-   playerstate_t *ps;
-}
 
 class netobj{
 
    public:
-      virtual int serialize(char* buf, int sz) = 0;
+      virtual int serialize_delta(char* buf, int sz) = 0;
+	  virtual int serialize_sync(char* buf, int sz) = 0;
       virtual int sync(char* buf, int sz) =0;
 };
 
+class client_t{
+	uint16_t _clientid;
+	string _name;
 
 
+};
+
+class gameServer{
+	vector<client_t> _clients;
+
+};

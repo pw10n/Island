@@ -39,16 +39,18 @@ class gamestate_t: public netobj{
 
       void updateState(uint8_t state);
 
+	  vector<gsDelta_data> _deltas;
 
       //network functions:
-      int serialize(char* buf, int sz);
+      int serialize_delta(char* buf, int sz);
+	  int serialize_sync(char* buf, int sz);
       int sync(char* buf, int sz);
 
    proteted:
 };
 
 
-class playerstate_t{
+class playerstate_t: public netobj{
    public:
 
       uint16_t _id;
@@ -60,15 +62,29 @@ class playerstate_t{
       coord2i_t _vel;
       uint8_t _state;
       uint16_t _score;
+
+	  vector<gsDelta_data> _deltas;
+
+	  //network functions:
+      int serialize_delta(char* buf, int sz);
+	  int serialize_sync(char* buf, int sz);
+      int sync(char* buf, int sz);
 };
 
-class objectstate_t{
+class objectstate_t: public netobj{
    public:
 
       uint16_t _id;
       uint8_t _hp;
       uint8_t _type;
       coord2i_t _pos;
+
+	  vector<gsDelta_data> _deltas;
+
+	  //network functions:
+      int serialize_delta(char* buf, int sz);
+	  int serialize_sync(char* buf, int sz);
+      int sync(char* buf, int sz);
 };
 
 class wepfirestate_t{
@@ -78,6 +94,13 @@ class wepfirestate_t{
       coord2i_t _vel;
       uint32_t _ttl;
       uint8_t _type;
+
+	  vector<gsDelta_data> _deltas;
+
+	  //network functions:
+      int serialize_delta(char* buf, int sz);
+	  int serialize_sync(char* buf, int sz);
+      int sync(char* buf, int sz);
 };
 
 
