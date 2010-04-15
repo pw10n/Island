@@ -58,8 +58,8 @@ class playerstate_t: public netobj{
       uint8_t _mp;
       uint8_t _ability[5];
       uint8_t _weapon;
-      coord2i_t _pos;
-      coord2i_t _vel;
+      coord2d_t _pos;
+      coord2d_t _vel;
       uint8_t _state;
       uint16_t _score;
 
@@ -77,7 +77,7 @@ class objectstate_t: public netobj{
       uint16_t _id;
       uint8_t _hp;
       uint8_t _type;
-      coord2i_t _pos;
+      coord2d_t _pos;
 
 	  vector<gsDelta_data> _deltas;
 
@@ -90,8 +90,8 @@ class objectstate_t: public netobj{
 class wepfirestate_t{
    public:
 
-      coord2i_t _pos;
-      coord2i_t _vel;
+      coord2d_t _pos;
+      coord2d_t _vel;
       uint32_t _ttl;
       uint8_t _type;
 
