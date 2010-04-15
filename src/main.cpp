@@ -8,8 +8,8 @@
 #include <assert.h>
 #include <map>
 #include <string.h>
-#include "types.h"
-#include "gs_types.h"
+//#include "types.h"
+//#include "gs_types.h"
 
 #define M_PI 3.1415926
 

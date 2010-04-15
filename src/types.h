@@ -3,7 +3,7 @@
 #include <math.h>
 #include <float.h>
 #include <iostream>
-#include <stdint.h>
+#include "stdint.h"
 
 
 using namespace std;

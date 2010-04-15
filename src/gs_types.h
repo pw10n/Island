@@ -3,7 +3,7 @@
 #pragma once
 
 #include <vector>
-#include <stdint.h>
+#include "stdint.h"
 
 #include "types.h"
 #include "netutil.h"
