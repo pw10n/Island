@@ -1,0 +1,26 @@
+﻿Build started 4/15/2010 1:56:02 AM.
+     1>Project "D:\Island\other\networking\server\server.vcxproj" on node 1 (build target(s)).
+       Skipping target "IsProjectFileNewer" because all output files are up-to-date with respect to the input files.
+     1>_PrepareForBuild:
+         Touching "Debug\lastbuild.timestamp".
+       PrepareForBuild:
+         Creating directory "D:\Island\other\networking\Debug\".
+       ClCompile:
+         server.cpp
+       ManifestResourceCompile:
+         Microsoft (R) Windows (R) Resource Compiler Version 6.1.7000.0
+         
+         Copyright (C) Microsoft Corporation.  All rights reserved.
+         
+         
+       Manifest:
+         Skipping task because its outputs are up-to-date.
+       LinkEmbedManifest:
+         server.vcxproj -> D:\Island\other\networking\Debug\server.exe
+       _AfterBuild:
+         Touching "Debug\LastSuccessfulBuild.timestamp".
+     1>Done Building Project "D:\Island\other\networking\server\server.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.14
