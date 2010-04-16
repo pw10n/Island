@@ -4,7 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <GL/glut.h>
+#include "glut.h"
 #include <assert.h>
 #include <map>
 #include <string.h>
@@ -69,10 +69,28 @@ float eyex, eyey, eyez;
 float LAx, LAy, LAz;
 float theta;
 float angle;
+float myX, myY, myZ;
+bool flag = false;
 
 
 
 
+float p2w_x(int x) {
+  float x1;
+  x1  = (x*(2/(float)GW)) + (((1/(float)GW) - 1));
+  x1 = x1 * ((float)GW/(float)GH);
+
+return x1;
+
+}
+
+float p2w_y(int y) {
+  
+  float y1;
+  y1  = (y*(2/(float)GH)) + (((1/(float)GH) - 1));
+
+return y1;
+}
 
 
 
@@ -142,6 +160,7 @@ void drawGrid() {
 void drawPlayer() {
   materials(Grey);
   glPushMatrix();
+  
     glTranslatef(0.0, 0.25, 0.0);
     glTranslatef(0.0, 0.0, -0.5);
     gluCylinder(gluNewQuadric(), .05, .2, 1, 12, 36);
@@ -158,10 +177,13 @@ void display() {
     
   glPushMatrix();
   //set up the camera
-    gluLookAt(eyex, eyey, eyez, LAx, LAy, LAz, 0, 0, -1);
+    gluLookAt(eyex + (myX/10.0), eyey, eyez - (myZ/10.0), LAx + (myX/10.0), LAy, LAz - (myZ/10.0), 0, 0, -1);
     glPushMatrix();
 
       glPushMatrix();
+	  if (flag){
+	  }
+		glTranslatef((myX/10.0), 0, (-myZ/10.0));
         glRotatef(angle, 0, 1, 0);
         drawPlayer();
       glPopMatrix();
@@ -181,18 +203,23 @@ void display() {
 
 
 void mouse(int button, int state, int x, int y) {
-  if (button == GLUT_LEFT_BUTTON) {
+  if (button == GLUT_RIGHT_BUTTON) {
     if (state == GLUT_DOWN) { 
-
+		flag = true;
     }
+	else {
+		flag = false;
+	}
   }
-
 }
 
 void processMousePassiveMotion(int x, int y) {
-	float theta;
-	x -= 400;
-	y -= 400;
+
+
+	//float theta = 0;
+	x -= GW/2;
+	y -= GH/2;
+	
 	//        0  dir
 	//        | /
 	//        |/ 
@@ -216,12 +243,64 @@ void processMousePassiveMotion(int x, int y) {
 		
 	angle=theta*(180.0f / M_PI);
 	
+	
   glutPostRedisplay();
 
 }
 
+void processMouseActiveMotion(int x, int y) {
+	
+	//float theta = 0;
+	x -= GW/2;
+	y -= GH/2;
+	
+	//        0  dir
+	//        | /
+	//        |/ 
+	// 270----------90
+	//        |
+	//        |
+	//       180
+	
+	if (y==0 && x<0) // handle div by zero case.
+		theta = M_PI/2.0f;
+	else if (y==0 && x>0) // handle div by zero case.
+		theta = 3.0f*M_PI/2.0f;
+	else if (y<0 && x<0)
+		theta = atan((float)x/(float)y);
+	else if (y>0 && x<=0)
+		theta = atan((float)x/(float)y)+M_PI;
+	else if (y<0 && x>=0)
+		theta = atan((float)x/(float)y)+2*M_PI;
+	else if (y>0 && x>0)
+		theta = atan((float)x/(float)y)+M_PI;
+		
+	angle=theta*(180.0f / M_PI);
+	//myX += -sin(theta);
+	//myZ += cos(theta);
+	
+  glutPostRedisplay();
 
+}
 
+void keyboard(unsigned char key, int x, int y ){
+  switch( key ) {
+    case 'q': case 'Q' :
+      exit( EXIT_SUCCESS );
+      break;
+  }
+}
+
+void tick(int state) {
+
+	if (flag){
+		myX += -sin(theta);
+		myZ += cos(theta);
+	}
+
+	glutPostRedisplay();
+	glutTimerFunc(30, &tick, 0);
+}
 
 int main( int argc, char** argv ) {
   
@@ -229,19 +308,28 @@ int main( int argc, char** argv ) {
   //set up my window
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  glutInitWindowSize(950, 950); 
-  GW = 950;
-  GH = 950;
-  glutInitWindowPosition(0, 0);
-  glutCreateWindow("Mesh display");
+  //glutInitWindowSize(800, 600); 
+  GW = 800;
+  GH = 600;
+  //glutInitWindowPosition(0, 0);
+  //glutCreateWindow("Mesh display");
+  glutGameModeString("800x600:32");
+  if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
+	glutEnterGameMode();
+  }
+  else{
+	  exit(1);
+  }
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
-  
+  myX = 0;
+  myY = 0;
+  myZ = 0;
   angle = 0;
   theta = 0;
   eyex = 0;
-  eyey = 4.33;
-  eyez = 5;
+  eyey = 4.33;//4.33;
+  eyez = 5;//5;
   LAx = 0;
   LAy = 0;
   LAz = 0;
@@ -252,7 +340,10 @@ int main( int argc, char** argv ) {
   glutDisplayFunc( display );
   glutReshapeFunc( reshape );
   glutMouseFunc(mouse);
+  glutKeyboardFunc( keyboard );
   glutPassiveMotionFunc(processMousePassiveMotion);
+  glutMotionFunc(processMouseActiveMotion);
+  glutTimerFunc(30,&tick,0);
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();
