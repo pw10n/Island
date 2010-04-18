@@ -3,6 +3,7 @@
 #include <math.h>
 #include <float.h>
 #include <iostream>
+#include <exception>
 #include "stdint.h"
 
 
@@ -148,4 +149,16 @@ private:
 /////////////////////////////////////////////////////////////////
 
 
+class gException : public exception{
+	string _msg;
+	gException(string msg) throw() : exception(){
+		_msg = msg;
+	}
+
+	virtual const char* what() const throw()
+	{
+		return _msg.c_str();
+	}
+		
+}
 

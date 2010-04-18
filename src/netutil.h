@@ -5,12 +5,20 @@
 
 using namespace std;
 
+
+
 struct gsDelta_data{
    uint32_t tick;
    uint8_t field;
    varies oValue;
    varies nValue;
 };
+
+class gsDelta_t{
+
+};
+
+
 
 class netobj{
 

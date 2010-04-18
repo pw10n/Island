@@ -1,17 +1,23 @@
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-#include <vector>
+
+
+
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
-#include "glut.h"
 #include <assert.h>
+#include <cstring>
 #include <map>
-#include <string.h>
+#include <vector>
+
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+
+#include <GL/glut.h>
+
 //#include "types.h"
 //#include "gs_types.h"
-
-#define M_PI 3.1415926
 
 using namespace std;
 

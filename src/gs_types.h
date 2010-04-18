@@ -15,17 +15,24 @@ class playerstate_t;
 class objectstate_t;
 class wepfirestate_t;
 
+#define GSSTATE_INACTIVE 0
+#define GSSTATE_ACTIVE 1
+#define GSSTATE_INVALID 99
+
+#define GS_MAX_MAP_NAME_LEN 30
+
+
 class gamestate_t: public netobj{
    public:
       uint32_t _tick;
       uint8_t _state;
-      char _map[30];
+      char _map[GS_MAX_MAP_NAME_LEN];
 
       vector<playerstate_t> _players;
       vector<objectstate_t> _objects;
       vector<wepfirestate_t> _wepfire;
 
-      gamestate_t(uint32_t time=0, char* map);
+      gamestate_t(uint32_t time, char* map);
 
       void tick(uint32_t time);
 
@@ -52,7 +59,6 @@ class gamestate_t: public netobj{
 
 class playerstate_t: public netobj{
    public:
-
       uint16_t _id;
       uint8_t _hp;
       uint8_t _mp;
@@ -62,6 +68,9 @@ class playerstate_t: public netobj{
       coord2d_t _vel;
       uint8_t _state;
       uint16_t _score;
+
+	  playerstate_t();
+	  playerstate_t(const playerstate_t &player);
 
 	  vector<gsDelta_data> _deltas;
 
