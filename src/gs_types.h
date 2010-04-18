@@ -36,13 +36,13 @@ class gamestate_t: public netobj{
 
       void tick(uint32_t time);
 
-      void addPlayer(playerstate_t player);
+      void addPlayer(const playerstate_t &player);
       void removePlayer(uint16_t id);
 
-      void addObject(objectstate_t object);
+      void addObject(const objectstate_t &object);
       void removeObject(uint16_t id);
 
-      void addWepfire(wepfirestate_t wepfire);
+      void addWepfire(const wepfirestate_t &wepfire);
 
       void updateState(uint8_t state);
 
@@ -52,27 +52,31 @@ class gamestate_t: public netobj{
       int serialize_delta(char* buf, int sz);
 	  int serialize_sync(char* buf, int sz);
       int sync(char* buf, int sz);
-
-   proteted:
 };
 
+#define PSSTATE_INIT 0
+#define PSSTATE_ALIVE 1
+#define PSSTATE_DEAD 2
+#define PSSTATE_WAITSYNC 3
+
+#define PLAYERSTATE_MAXABILITY 5
 
 class playerstate_t: public netobj{
    public:
       uint16_t _id;
       uint8_t _hp;
       uint8_t _mp;
-      uint8_t _ability[5];
+      uint8_t _ability[PLAYERSTATE_MAXABILITY];
       uint8_t _weapon;
       coord2d_t _pos;
       coord2d_t _vel;
       uint8_t _state;
       uint16_t _score;
 
+	  vector<gsDelta_t> _deltas;
+
 	  playerstate_t();
 	  playerstate_t(const playerstate_t &player);
-
-	  vector<gsDelta_t> _deltas;
 
 	  //network functions:
       int serialize_delta(char* buf, int sz);

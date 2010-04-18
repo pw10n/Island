@@ -175,10 +175,6 @@
 				RelativePath="..\..\..\src\main.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\..\..\src\types.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -186,15 +182,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\..\src\netutil.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\stdint.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\types.h"
 				>
 			</File>
 		</Filter>

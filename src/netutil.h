@@ -1,7 +1,8 @@
 #pragma once
 
+#include <vector>
+
 #include "types.h"
-#include "gs_types.h"
 
 using namespace std;
 
@@ -15,6 +16,14 @@ struct gsDelta_data{
 };
 
 class gsDelta_t{
+	uint32_t _tick;
+
+public:
+
+	gsDelta_t():_tick(0){};
+	gsDelta_t(const gsDelta_t &o):_tick(o._tick){};
+
+	gsDelta_t operator=(const gsDelta_t &);
 
 };
 

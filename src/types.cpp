@@ -8,6 +8,18 @@
 
 using namespace std;
 
+coord2i_t coord2i_t::operator=( const coord2i_t& c1) {
+   this->_x = c1.x();
+   this->_y = c1.y();
+   return(*this );
+}
+
+coord2d_t coord2d_t::operator=( const coord2d_t& c1) {
+   this->_x = c1.x();
+   this->_y = c1.y();
+   return(*this );
+}
+
 /* vec3d_t constructors */
 /* default */
 vec3d_t::vec3d_t( void) {
