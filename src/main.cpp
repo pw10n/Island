@@ -10,7 +10,6 @@
 #include <map>
 #include <vector>
 
-
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -20,8 +19,6 @@
 //#include "gs_types.h"
 
 using namespace std;
-
-
 
 
 typedef struct materialStruct {
@@ -117,8 +114,6 @@ void pos_light() {
   glMatrixMode(GL_MODELVIEW);
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 }
-
-
 
 
 void reshape(int w, int h) {

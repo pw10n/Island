@@ -160,5 +160,5 @@ class gException : public exception{
 		return _msg.c_str();
 	}
 		
-}
+};
 

@@ -10,7 +10,6 @@ gamestate_t::gamestate_t(uint32_t time, char *map)
 		throw gException("ERROR: Map name length exceeds max len.");
 	}
 	strcpy(_map, map);
-
 }
 
 void gamestate_t::tick(uint32_t time){

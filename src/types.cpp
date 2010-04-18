@@ -1,6 +1,10 @@
-#include "types.h"
 #include <iostream>
-#include <math.h>
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+
+#include "types.h"
+
 
 using namespace std;
 
