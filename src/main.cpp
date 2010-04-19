@@ -1,6 +1,7 @@
 
 
 
+
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -14,6 +15,9 @@
 #include <cmath>
 
 #include <GL/glut.h>
+
+#define __STDC_LIMIT_MACROS
+#include "stdint.h"
 
 //#include "types.h"
 //#include "gs_types.h"
@@ -354,4 +358,3 @@ int main( int argc, char** argv ) {
   
   glutMainLoop();
 }
-

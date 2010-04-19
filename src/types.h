@@ -21,10 +21,15 @@ class coord2i_t{
    int32_t _y;
 
    public:
-   int32_t x() const { return _x; }
-   int32_t& x() { return _x; }
-   int32_t y() const { return _y; }
-   int32_t& y() { return _y; }
+	   coord2i_t(): _x(0), _y(0) {};
+	   coord2i_t(int32_t x, int32_t y): _x(x), _y(y) {};
+
+	   coord2i_t operator=( const coord2i_t& );
+
+	   int32_t x() const { return _x; }
+	   int32_t& x() { return _x; }
+	   int32_t y() const { return _y; }
+	   int32_t& y() { return _y; }
 };
 
 class coord2d_t{
@@ -32,10 +37,15 @@ class coord2d_t{
    double _y;
 
    public:
-   double x() const { return _x; }
-   double& x() { return _x; }
-   double y() const { return _y; }
-   double& y() { return _y; }
+	   coord2d_t(): _x(0.0), _y(0.0) {};
+	   coord2d_t(double x, double y): _x(x), _y(y) {};
+
+	   coord2d_t operator=( const coord2d_t& );
+
+	   double x() const { return _x; }
+	   double& x() { return _x; }
+	   double y() const { return _y; }
+	   double& y() { return _y; }
 };
 
 
@@ -151,6 +161,8 @@ private:
 
 class gException : public exception{
 	string _msg;
+
+public:
 	gException(string msg) throw() : exception(){
 		_msg = msg;
 	}
