@@ -25,8 +25,8 @@ protected:
 public:
 	connection();
 	
-	virtual int send(char*, int) = 0;
-	virtual int recv(char*, int) =0;
+	virtual int sendBuf(char*, int) = 0;
+	virtual int recvBuf(char*, int) =0;
 
 };
 
@@ -44,23 +44,36 @@ public:
 
 	void connectTo(char* addr, char* port);
 
-	int send(char*, int);
-	int recv(char*, int);
+	int sendBuf(char*, int);
+	int recvBuf(char*, int);
 };
+
+#define SERVER_DISCONNECT 0
+#define SERVER_ACTIVE 1
 
 class server: public connection{
 	WSADATA _wsaData;
 	SOCKET _lSocket; // listen socket
-	vector<SOCKET> _clientSocket;
+
+	struct cInfo{
+		SOCKET cSocket;
+		int state;
+	};
+	vector<cInfo> _clients;
+
+	int _state;
 
 public:
 	server();
 	~server();
 
 	void setup(char* listen_port);
-	void listen();
+	void listenClients();
 
-	int send(char*, int);
-	int recv(char*, int);
+	int sendBuf(char*, int);
+	int recvBuf(char*, int);
+
+protected:
+	void disconnectAll();
 
 };
