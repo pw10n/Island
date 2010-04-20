@@ -6,8 +6,6 @@
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
 
-
-
 // gamestate_t
 
 gamestate_t::gamestate_t(uint32_t time, char *map)
@@ -94,4 +92,6 @@ void playerstate_t::tick(uint32_t time){
 void playerstate_t::change_velocity(coord2d_t nV){
 	_vel = nV;
 }
+
+
 
