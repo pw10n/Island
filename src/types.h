@@ -41,6 +41,7 @@ class coord2d_t{
 	   coord2d_t(double x, double y): _x(x), _y(y) {};
 
 	   coord2d_t operator=( const coord2d_t& );
+	   coord2d_t operator*( const coord2d_t& ); // multiply
 
 	   double x() const { return _x; }
 	   double& x() { return _x; }

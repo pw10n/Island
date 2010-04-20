@@ -63,6 +63,7 @@ class gamestate_t: public netobj{
 
 class playerstate_t: public netobj{
    public:
+	  uint32_t _tick;
       uint16_t _id;
       uint8_t _hp;
       uint8_t _mp;
@@ -75,8 +76,13 @@ class playerstate_t: public netobj{
 
 	  vector<gsDelta_t> _deltas;
 
-	  playerstate_t();
+	  playerstate_t(uint32_t time);
 	  playerstate_t(const playerstate_t &player);
+
+	  void tick(uint32_t time);
+
+	  void change_velocity(coord2d_t nV);
+
 
 	  //network functions:
       int serialize_delta(char* buf, int sz);

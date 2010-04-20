@@ -202,3 +202,19 @@ void server::listenClients(){
 
 }
 
+int server::sendBuf(char * buf, int len){
+	// send to all clients, delete from client
+	// list if client has disconnected
+	for(vector<cInfo>::iterator it = _clients.begin();
+		it != _clients.end(); 
+		it = ((*it).state==CLIENT_DISCONNECT)?
+		_clients.erase(it):it+1){
+		if (CLIENT_ACTIVE == (*it))
+			send((*it)._cSocket, buf, len, 0);
+	}
+}
+
+int server::recvBuf(char * buf, int len){
+
+}
+

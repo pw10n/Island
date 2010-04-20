@@ -20,6 +20,13 @@ coord2d_t coord2d_t::operator=( const coord2d_t& c1) {
    return(*this );
 }
 
+coord2d_t coord2d_t::operator*( const coord2d_t& c1) {
+   this->_x *= c1.x();
+   this->_y *= c1.y();
+   return(*this );
+}
+
+
 /* vec3d_t constructors */
 /* default */
 vec3d_t::vec3d_t( void) {

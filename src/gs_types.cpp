@@ -53,7 +53,7 @@ void gamestate_t::updateState(uint8_t state){
 // playerstate_t
 
 
-playerstate_t::playerstate_t() : _hp(0), _mp(0), 
+playerstate_t::playerstate_t(uint32_t time): _tick(time), _hp(0), _mp(0), 
 					_weapon(0), _state(PSSTATE_INIT),
 					_score(0){
 	_id = (uint16_t) ( 
@@ -65,6 +65,7 @@ playerstate_t::playerstate_t() : _hp(0), _mp(0),
 }
 
 playerstate_t::playerstate_t(const playerstate_t &player){
+	_tick = player._tick;
 	_id = player._id;
 	_hp = player._hp;
 	_mp = player._mp;
@@ -84,4 +85,13 @@ playerstate_t::playerstate_t(const playerstate_t &player){
 		_deltas.push_back((*it));
 }
 
+void playerstate_t::tick(uint32_t time){
+	for(; _tick<time; ++_tick){
+		_pos = _pos * _vel;
+	}
+}
+
+void playerstate_t::change_velocity(coord2d_t nV){
+	_vel = nV;
+}
 
