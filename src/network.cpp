@@ -101,7 +101,9 @@ int client::recvBuf(cahr * buf, int len){
 }
 
 
-server::server(): _state(SERVER_DISCONNECT), _lSocket(INVALID_SOCKET) {}
+server::server(): _state(SERVER_DISCONNECT), 
+				  _lSocket(INVALID_SOCKET),
+				  _thread(0) {}
 
 server::~server(){
 	disconnectAll();
@@ -181,9 +183,12 @@ void server::setup(char* listen_port){
 		throw gException("listen failed.");
 	}
 
+	Thread* _thread = new Thread(
+		new ThreadStart(&procThread()));
+
 }
 
-void server::listenClients(){
+void server::acceptClient(){
 
 	cInfo client_info;
 
@@ -218,3 +223,21 @@ int server::recvBuf(char * buf, int len){
 
 }
 
+int server::tick(){
+	struct timeval timeout;
+	fd_set socks;
+	int readsocks;
+	FD_ZERO(&socks);
+	FD_SET(_lSocket, &socks);
+
+	for(vector<cInfo>::iterator it = _clients.begin();
+		it < _clients.end();
+		++it){
+			FD_SET((*it).cSocket, &socks);
+	}
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	readsocks = select(0,socks,null,null,&timeout);
+
+
+}

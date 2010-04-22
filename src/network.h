@@ -68,12 +68,14 @@ public:
 	~server();
 
 	void setup(char* listen_port);
-	void listenClients();
 
 	int sendBuf(char*, int);
 	int recvBuf(char*, int);
 
 protected:
+	void tick();
+	void acceptClient();
+
 	void disconnectAll();
 
 };
