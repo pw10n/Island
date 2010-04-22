@@ -60,6 +60,7 @@ class server: public connection{
 		int state;
 	};
 	vector<cInfo> _clients;
+	gamestate_t* _gsObj;
 
 	int _state;
 

@@ -239,25 +239,46 @@ int server::tick(){
 	timeout.tv_usec = 0;
 	readsocks = select(0,socks,null,null,&timeout);
 
+	if (FD_ISSET(_lSocket, &socks)){
+		//listen socket
+		acceptClient();
+	}
 	for(vector<cInfo>::iterator it = _clients.begin();
 		it < _clients.end();
 		++it){
-		if (FD_ISSET(_lSocket, &socks)){
-			//listen socket
-			acceptClient();
-		}
-		else if (FD_ISSET((*it).cSocket, &socks)){
+		if (FD_ISSET((*it).cSocket, &socks)){
 			//got data
-			int retval;
-			char buf[150];
-			int len = 150;
+			int result;
+			char buf[MAX_PKTSZ];
+			
+			//read
 			if(SOCKET_ERROR ==
-				(retval = recv((*it).cSocket, buf, len, 0))){
+				(result = recv((*it).cSocket, buf, MAX_PKTSZ, 0))){
 				closesocket(_cSocket);
 				WSACleanup();
-				_state = CLIENT_DISCONNECT;
-				_cSocket = INVALID_SOCKET;
+				(*it).state = CLIENT_DISCONNECT;
+				(*it).cSocket = INVALID_SOCKET;
 				throw gException("recv failed.");
+			}
+			
+			//check then process
+			if( ((pkt_header*)(buf))->start != '#' ){
+				send_ack(NET_NACK,SEQ_INVALID_PKT);
+			}
+			else if( !verify_checksum(buf) ){
+				send_ack(NET_NACK,((pkt_header*)(buf)->seq));
+			}
+			else{
+				process(buf); //process packet
+
+				switch(((pkt_header*)(buf))->type){
+
+					case PKT_SYNC_PLAYERSTATE:
+						break;
+
+					default:
+
+				}
 			}
 		}
 	}
