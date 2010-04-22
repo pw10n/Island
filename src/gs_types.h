@@ -63,16 +63,16 @@ class gamestate_t: public netobj{
 
 class playerstate_t: public netobj{
    public:
-	  uint32_t _tick;
-      uint16_t _id;
-      uint8_t _hp;
-      uint8_t _mp;
-      uint8_t _ability[PLAYERSTATE_MAXABILITY];
-      uint8_t _weapon;
-      coord2d_t _pos;
-      coord2d_t _vel;
-      uint8_t _state;
-      uint16_t _score;
+	  uint32_t _tick; //4
+      uint16_t _id; //2
+      uint8_t _hp; //1
+      uint8_t _mp; //1
+      uint8_t _ability[PLAYERSTATE_MAXABILITY]; //1*5
+      uint8_t _weapon; //1
+      coord2d_t _pos; //8
+      coord2d_t _vel; //8
+      uint8_t _state; //1
+      uint16_t _score; //2
 
 	  vector<gsDelta_t> _deltas;
 

@@ -239,5 +239,26 @@ int server::tick(){
 	timeout.tv_usec = 0;
 	readsocks = select(0,socks,null,null,&timeout);
 
-
+	for(vector<cInfo>::iterator it = _clients.begin();
+		it < _clients.end();
+		++it){
+		if (FD_ISSET(_lSocket, &socks)){
+			//listen socket
+			acceptClient();
+		}
+		else if (FD_ISSET((*it).cSocket, &socks)){
+			//got data
+			int retval;
+			char buf[150];
+			int len = 150;
+			if(SOCKET_ERROR ==
+				(retval = recv((*it).cSocket, buf, len, 0))){
+				closesocket(_cSocket);
+				WSACleanup();
+				_state = CLIENT_DISCONNECT;
+				_cSocket = INVALID_SOCKET;
+				throw gException("recv failed.");
+			}
+		}
+	}
 }

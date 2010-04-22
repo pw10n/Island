@@ -26,7 +26,7 @@ public:
 	connection();
 	
 	virtual int sendBuf(char*, int) = 0;
-	virtual int recvBuf(char*, int) =0;
+	//virtual int recvBuf(char*, int) =0;
 
 };
 
@@ -70,7 +70,7 @@ public:
 	void setup(char* listen_port);
 
 	int sendBuf(char*, int);
-	int recvBuf(char*, int);
+	int recvBuf(SOCKET, char*, int);
 
 protected:
 	void tick();
@@ -79,3 +79,5 @@ protected:
 	void disconnectAll();
 
 };
+
+
