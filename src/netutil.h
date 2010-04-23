@@ -6,15 +6,15 @@
 
 using namespace std;
 
-class gsDelta_t{
+class gDelta_t{
 	uint32_t _tick;
 
 public:
 
-	gsDelta_t():_tick(0){};
-	gsDelta_t(const gsDelta_t &o):_tick(o._tick){};
+	gDelta_t():_tick(0){};
+	gDelta_t(const gDelta_t &o):_tick(o._tick){};
 
-	gsDelta_t operator=(const gsDelta_t &);
+	gDelta_t operator=(const gDelta_t &);
 
 };
 
@@ -38,7 +38,7 @@ class gameServer{
 };
 
 //packets
-#define MAX_PKTSZ 256
+#define MAX_PKTSZ 1024
 
 //pkt types
 #define PKT_ACK 1

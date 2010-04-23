@@ -47,6 +47,8 @@ class coord2d_t{
 	   double& x() { return _x; }
 	   double y() const { return _y; }
 	   double& y() { return _y; }
+
+	   //void set(double x, double y){_x=x; _y=y;}
 };
 
 

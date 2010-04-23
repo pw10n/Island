@@ -46,7 +46,7 @@ class gamestate_t: public netobj{
 
       void updateState(uint8_t state);
 
-	  vector<gsDelta_t> _deltas;
+	  vector<gDelta_data> _deltas;
 
       //network functions:
       int serialize_delta(char* buf, int sz);
@@ -74,7 +74,7 @@ class playerstate_t: public netobj{
       uint8_t _state; //1
       uint16_t _score; //2
 
-	  vector<gsDelta_t> _deltas;
+	  vector<gDelta_data> _deltas;
 
 	  playerstate_t(uint32_t time);
 	  playerstate_t(const playerstate_t &player);
@@ -82,7 +82,7 @@ class playerstate_t: public netobj{
 	  void tick(uint32_t time);
 
 	  void change_velocity(coord2d_t nV);
-
+	  void change_velocity(double nVx, double nVy);
 
 	  //network functions:
       int serialize_delta(char* buf, int sz);
@@ -98,7 +98,7 @@ class objectstate_t: public netobj{
       uint8_t _type;
       coord2d_t _pos;
 
-	  vector<gsDelta_data> _deltas;
+	  vector<gDelta_data> _deltas;
 
 	  //network functions:
       int serialize_delta(char* buf, int sz);
@@ -114,7 +114,7 @@ class wepfirestate_t{
       uint32_t _ttl;
       uint8_t _type;
 
-	  vector<gsDelta_t> _deltas;
+	  vector<gDelta_data> _deltas;
 
 	  //network functions:
       int serialize_delta(char* buf, int sz);

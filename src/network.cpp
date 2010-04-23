@@ -223,7 +223,49 @@ int server::recvBuf(char * buf, int len){
 
 }
 
-int server::tick(){
+int server::tickSnd(){
+	char buf[MAX_PKTSZ];
+	char* ptr = buf;
+	uint32_t size=0;
+
+	int count = 0;
+
+	((pkt_header*)(buf))->start = '#';
+	((pkt_header*)(buf))->type = PKT_DELTA_GAMESTATE;
+	((pkt_header*)(buf))->clientid = 0;
+	((pkt_header*)(buf))->serverid = 0; //TODO
+	((pkt_header*)(buf))->checksum = 0;
+	((pkt_header*)(buf))->seq = 0; //TODO
+
+	size+=sizeof(pkt_header);
+	ptr+=size;
+
+	((gDeltaHdr_data*)(ptr))->list_len = 0;
+
+	size+=sizeof(gDeltaHdr_data);
+	ptr+=sizeof(gDeltaHdr_data);
+
+	for(vector<gDelta_data>::iterator it = _gObj->_deltas.begin();
+		it != _gObj->_deltas.end();
+		++it){
+			//TBD -- maybe i should copy each field
+			memcpy(ptr,&(*it),sizeof(gsSync_data));
+			size+=sizeof(gsSync_data);
+			ptr+=sizeof(gsSync_data);
+			++count;
+
+			//if exceeds 30, then we must send and start over
+	}
+
+	ptr = buf+sizeof(pkt_header);
+	((gDeltaHdr_data*)(ptr))->list_len = count;
+
+	((pkt_header*)(buf))->checksum = calcAddSum(buf,size);
+
+	//send
+}
+
+int server::tickRcv(){
 	struct timeval timeout;
 	fd_set socks;
 	int readsocks;
@@ -231,7 +273,7 @@ int server::tick(){
 	FD_SET(_lSocket, &socks);
 
 	for(vector<cInfo>::iterator it = _clients.begin();
-		it < _clients.end();
+		it != _clients.end();
 		++it){
 			FD_SET((*it).cSocket, &socks);
 	}
@@ -270,11 +312,25 @@ int server::tick(){
 			}
 			else{
 				process(buf); //process packet
-
+				playerChangeMove_data* mvPtr;
+				bool found = false;
 				switch(((pkt_header*)(buf))->type){
 
-					case PKT_SYNC_PLAYERSTATE:
+					case PKT_PLAYER_MOVE:
+						mvPtr = buf+sizeof(pkt_header);
+						found = false
+						for(vector<playerstate_t>::iterator it = _gsObj->_players.begin();
+							it != _gsObj->_players.end();
+							++it){
+								if ((*it)._id == mvPtr->_id){
+									found=true;
+									(*it)._change_velocity(mvPtr->_vel_x, mvPtr->_vel_y);
+								}
+						}
 						break;
+
+					case PKT_PLAYER_ATTACK:
+						break; //TODO
 
 					default:
 

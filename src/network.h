@@ -74,7 +74,8 @@ public:
 	int recvBuf(SOCKET, char*, int);
 
 protected:
-	void tick();
+	void tickSnd();
+	void tickRcv();
 	void acceptClient();
 
 	void disconnectAll();
