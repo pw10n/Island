@@ -6,6 +6,8 @@
 
 using namespace std;
 
+
+
 class gDelta_t{
 	uint32_t _tick;
 
@@ -59,13 +61,17 @@ class gameServer{
 #define PKT_PLAYER_MOVE 50
 #define PKT_PLAYER_ATTACK 51
 
+#define PKT_TXT 90
+
 #define SEQ_INVALID_PKT 0
+
 struct pkt_header{
 	uint8_t start; //1 #
 	uint8_t type; //1
 	uint16_t clientid; //2
 	uint16_t serverid; //2
-	uint16_t checksum; //2
+	uint8_t checksum; //1
+	uint8_t length; // 1 -- only used in lists
 	uint32_t seq; //4
 };
 
@@ -81,6 +87,7 @@ struct gHello_data{
 
 //header for delta list
 struct gDeltaHdr_data{
+	//deprecated
 	uint32_t list_len;
 };
 
@@ -148,3 +155,11 @@ struct playerAttack_data{
 	double _vel_y; //4
 	uint16_t _ttl;
 };
+
+uint16_t calcAddSum(const char* buf, int size){
+	uint16_t sum = 0;
+
+	while(size-- > 0)
+		sum += *(buf++);
+	return (~sum);
+}

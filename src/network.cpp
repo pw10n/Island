@@ -235,34 +235,33 @@ int server::tickSnd(){
 	((pkt_header*)(buf))->clientid = 0;
 	((pkt_header*)(buf))->serverid = 0; //TODO
 	((pkt_header*)(buf))->checksum = 0;
+	((pkt_header*)(buf))->length = 0;
 	((pkt_header*)(buf))->seq = 0; //TODO
 
 	size+=sizeof(pkt_header);
 	ptr+=size;
 
-	((gDeltaHdr_data*)(ptr))->list_len = 0;
-
-	size+=sizeof(gDeltaHdr_data);
-	ptr+=sizeof(gDeltaHdr_data);
-
 	for(vector<gDelta_data>::iterator it = _gObj->_deltas.begin();
 		it != _gObj->_deltas.end();
-		++it){
+		it = _gObj->_deltas.erase(it)){
 			//TBD -- maybe i should copy each field
-			memcpy(ptr,&(*it),sizeof(gsSync_data));
-			size+=sizeof(gsSync_data);
-			ptr+=sizeof(gsSync_data);
+			memcpy(ptr,&(*it),sizeof(gSync_data));
+			size+=sizeof(gSync_data);
+			ptr+=sizeof(gSync_data);
 			++count;
 
-			//if exceeds 30, then we must send and start over
+			if(size > MAX_PKTSZ - sizeof(gSync_data) - 1)
+				break;
 	}
 
-	ptr = buf+sizeof(pkt_header);
-	((gDeltaHdr_data*)(ptr))->list_len = count;
+	((pkt_header*)(buf))->length = count;
 
 	((pkt_header*)(buf))->checksum = calcAddSum(buf,size);
+	
+	send(buf, size);//TODO: send
 
-	//send
+	if(_gObj->_deltas.size() != 0)
+		tickSnd(); // send next packet if more to send.
 }
 
 int server::tickRcv(){
