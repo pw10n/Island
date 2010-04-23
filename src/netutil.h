@@ -38,7 +38,7 @@ class gameServer{
 };
 
 //packets
-#define MAX_PKTSZ 60
+#define MAX_PKTSZ 256
 
 //pkt types
 #define PKT_ACK 1
@@ -58,8 +58,6 @@ class gameServer{
 
 #define PKT_PLAYER_MOVE 50
 #define PKT_PLAYER_ATTACK 51
-
-
 
 #define SEQ_INVALID_PKT 0
 struct pkt_header{
@@ -81,7 +79,12 @@ struct gHello_data{
 	uint32_t challengeVersion; //ensures that client and server have same version
 };
 
-struct gDelta_data{
+//header for delta list
+struct gDeltaHdr_data{
+	uint32_t list_len;
+};
+
+struct gDelta_data{ //13
    uint32_t tick; //4
    uint8_t field; //1
    varies oValue; //4
