@@ -13,6 +13,7 @@
 #include "particle.h"
 #include "collision.h"
 #include "netutil.h"
+#include "network.h"
 
 #include "types.h"
 
@@ -29,6 +30,8 @@
 //#include "gs_types.h"
 
 using namespace std;
+
+client gClient;
 
 #define WORLD_TIME_RESOLUTION 30
 
@@ -505,18 +508,18 @@ int main( int argc, char** argv ) {
   //set up my window
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  //glutInitWindowSize(800, 600); 
+  glutInitWindowSize(800, 600); 
   GW = 800;
   GH = 600;
-  //glutInitWindowPosition(0, 0);
-  //glutCreateWindow("Mesh display");
-  glutGameModeString("800x600:32");
+  glutInitWindowPosition(0, 0);
+  glutCreateWindow("Game");
+  /*glutGameModeString("800x600:32");
   if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 	glutEnterGameMode();
   }
   else{
 	  exit(1);
-  }
+  }*/
   //glClearColor(0.0, 0.0, 0.0, 1.0);
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
@@ -536,7 +539,7 @@ int main( int argc, char** argv ) {
   fbtim = -1;
   explo = false;
 
-
+	gClient.connectTo("127.0.0.1","13370");
   
   //register glut callback functions
   glutDisplayFunc( display );

@@ -188,6 +188,8 @@ void server::acceptClient(){
 
 	cInfo client_info;
 
+	cerr << "INFO: New client attempting connection." << endl;
+
 	client_info.cSocket = INVALID_SOCKET;
 	client_info.state = CLIENT_DISCONNECT;
 
@@ -198,6 +200,7 @@ void server::acceptClient(){
 		//     have to shutdown the server?
 	}
 
+	cerr << "INFO: New client connected." << endl;
 	client_info.state = CLIENT_ACTIVE;
 	_clients.push_back(client_info);
 
