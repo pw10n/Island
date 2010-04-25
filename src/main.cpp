@@ -507,6 +507,8 @@ int main( int argc, char** argv ) {
   LAx = 0;
   LAy = 0;
   LAz = 0;
+
+  player = new playerstate_t(worldtime);
   fbtim = -1;
   explo = false;
 
