@@ -215,7 +215,7 @@ void detonate(fireball_s * fbs){
 
 void rapid(){
 	if(rfpar.size()<100)
-		rfpar.push_back(new rapidfire(player->pos.x(),-player->pos.y(),theta,angle));
+		rfpar.push_back(new rapidfire(player->_pos.x(),-player->_pos.y(),theta,angle));
 }
 
 void reshape(int w, int h) {
@@ -331,9 +331,11 @@ void mouse(int button, int state, int x, int y) {
   if (button == GLUT_RIGHT_BUTTON) {
     if (state == GLUT_DOWN) { 
 		flag = true;
+		vel.y() = 0.005;
     }
 	else {
 		flag = false;
+		vel.y() = 0.000;
 	}
   }
 	if(button == GLUT_LEFT_BUTTON) {
@@ -374,8 +376,7 @@ void processMousePassiveMotion(int x, int y) {
 		
 	angle=theta*(180.0f / M_PI);
 	vel.x() = theta;
-	vel.y() = 0.000;
-	player->change_velocity(vel);
+	
 	
   glutPostRedisplay();
 
@@ -418,8 +419,8 @@ void processMouseActiveMotion(int x, int y) {
 	//myZ += cos(theta);
 
 	vel.x() = theta;
-	vel.y() = 0.005;
-	player->change_velocity(vel);
+
+
 	
 
   glutPostRedisplay();
@@ -438,6 +439,7 @@ void keyboard(unsigned char key, int x, int y ){
 }
 
 void tick(int state) {
+	player->change_velocity(vel);
 	player->tick(worldtime);
 	if (flag){
 
