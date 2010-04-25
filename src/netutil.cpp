@@ -86,7 +86,9 @@ playerstate_t::playerstate_t(const playerstate_t &player){
 
 void playerstate_t::tick(uint32_t time){
 	for(; _tick<time; ++_tick){
-		_pos = _pos * _vel;
+		_pos.x() += (-sin(_vel.x()) * _vel.y());
+		_pos.y() += (cos(_vel.x()) * _vel.y());
+
 	}
 }
 

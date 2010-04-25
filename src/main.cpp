@@ -6,18 +6,17 @@
 #include <cstring>
 #include <map>
 #include <vector>
+#include "collision.h"
+#include "netutil.h"
+#include "types.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include <GL/glut.h>
+#include "glut.h"
 
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
-
-#include "collision.h"
-#include "netutil.h"
-#include "types.h"
 
 #define WORLD_TIME_RESOLUTION 30
 
@@ -188,13 +187,13 @@ void display() {
     
   glPushMatrix();
   //set up the camera
-    gluLookAt(eyex + (myX/10.0), eyey, eyez - (myZ/10.0), LAx + (myX/10.0), LAy, LAz - (myZ/10.0), 0, 0, -1);
+    gluLookAt(eyex + player->_pos.x(), eyey, eyez - player->_pos.y(), LAx + player->_pos.x(), LAy, LAz - player->_pos.y(), 0, 0, -1);
     glPushMatrix();
 
       glPushMatrix();
 		//glTranslatef((myX/10.0), 0, (-myZ/10.0));
-		printf("x: %d\n", player->_pos.x());
-		glTranslatef(player->_pos.x(), 0, player->_pos.y());
+		//printf("x: %d\n", player->_pos.x());
+		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
 		glRotatef(angle, 0, 1, 0);
         drawPlayer();
       glPopMatrix();
@@ -253,7 +252,9 @@ void processMousePassiveMotion(int x, int y) {
 		theta = atan((float)x/(float)y)+M_PI;
 		
 	angle=theta*(180.0f / M_PI);
-	
+	vel.x() = theta;
+	vel.y() = .005;
+	player->change_velocity(vel);
 	
   glutPostRedisplay();
 
@@ -286,9 +287,17 @@ void processMouseActiveMotion(int x, int y) {
 	else if (y>0 && x>0)
 		theta = atan((float)x/(float)y)+M_PI;
 		
+
+
+
+
+
 	angle=theta*(180.0f / M_PI);
 	//myX += -sin(theta);
 	//myZ += cos(theta);
+	vel.x() = theta;
+	vel.y() = .005;
+	player->change_velocity(vel);
 	
   glutPostRedisplay();
 
@@ -308,17 +317,19 @@ void tick(int state) {
 
 
 	if (flag){
-		myX += -sin(theta);
-		myZ += cos(theta);
-		vel.x() = 2;
-		vel.y() = 2;
+		//myX += -sin(theta);
+		///myZ += cos(theta);
 		
-		player->change_velocity(vel);
+
+
+
+		player->tick(worldtime);
+
 	}
 
 	glutPostRedisplay();
 	worldtime+=WORLD_TIME_RESOLUTION;
-	player->tick(worldtime);
+	//player->tick(worldtime);
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
 
