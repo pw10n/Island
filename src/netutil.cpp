@@ -1,19 +1,12 @@
 #include "netutil.h"
 
-#if 0
-gDelta_t gDelta_t::operator=(const gDelta_t& o){
-	_tick = o._tick;
-	return (*this);
-}
-#endif
-
 #include "types.h"
-
 #include <cstring>
 
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
 
+using namespace std;
 // gamestate_t
 
 gamestate_t::gamestate_t(uint32_t time, char *map)
@@ -100,6 +93,52 @@ void playerstate_t::tick(uint32_t time){
 void playerstate_t::change_velocity(coord2d_t nV){
 	_vel = nV;
 }
+void playerstate_t::change_velocity(double nVx, double nVy){
+	_vel.x() = nVx;
+	_vel.y() = nVy;
+}
 
+int make_ack(char * buf, int bufsz, 
+			 uint8_t value, uint32_t seq){
+	if (bufsz < sizeof(pkt_header) + sizeof(gAck_data))
+		return 0;
+	
+	((pkt_header*)buf)->start = '#';
+	((pkt_header*)buf)->type = PKT_ACK;
+	((pkt_header*)buf)->clientid = 0; //TODO
+	((pkt_header*)buf)->serverid = 0; //TODO
+	((pkt_header*)buf)->checksum = 0;
+	((pkt_header*)buf)->length = 0;
+	((pkt_header*)buf)->seq = 0; //TODO
 
+	((gAck_data*)(buf+sizeof(pkt_header)))->ack_value = value;
 
+	return sizeof(pkt_header)+sizeof(pkt_header);
+
+}
+
+bool verify_checksum(const char* buf, int size){
+	bool retval = false;
+
+	char* temp;
+
+	if (size >= sizeof(pkt_header)){
+		temp = (char*) malloc(sizeof(size));
+		memcpy(temp, buf, size);
+		((pkt_header*)temp)->checksum = 0;
+
+		retval = (((pkt_header*)buf)->checksum == 
+			calcAddSum(temp, size));
+
+		free(temp);
+	}
+	return retval;
+}
+
+uint8_t calcAddSum(const char* buf, int size){
+	uint8_t sum = 0;
+
+	while(size-- > 0)
+		sum += *(buf++);
+	return (~sum);
+}

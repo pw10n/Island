@@ -23,10 +23,8 @@ using namespace std;
 
 class connection{
 protected:
-
-
 public:
-	connection();
+	connection(){};
 	
 	virtual int sendBuf(char*, int) = 0;
 

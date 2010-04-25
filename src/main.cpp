@@ -6,9 +6,6 @@
 #include <cstring>
 #include <map>
 #include <vector>
-#include "collision.h"
-#include "gs_types.h"
-#include "types.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -17,6 +14,10 @@
 
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
+
+#include "collision.h"
+#include "netutil.h"
+#include "types.h"
 
 #define WORLD_TIME_RESOLUTION 30
 

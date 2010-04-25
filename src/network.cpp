@@ -11,6 +11,7 @@
 #include <iphlpapi.h>
 #include <cstdio>
 
+#include "netutil.h"
 #include "network.h"
 #include "types.h"
 
