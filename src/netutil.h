@@ -88,6 +88,7 @@ class playerstate_t: public netobj{
 
 	  playerstate_t(uint32_t time);
 	  playerstate_t(const playerstate_t &player);
+	  playerstate_t(psSync_data* data);
 
 	  void tick(uint32_t time);
 
@@ -95,7 +96,7 @@ class playerstate_t: public netobj{
 	  void change_velocity(double nVx, double nVy);
 
 	  //network functions:
-      int serialize_delta(char* buf, int sz) {return 0;};
+      int serialize_delta(char* buf, int sz);
 	  int serialize_sync(char* buf, int sz) {return 0;};
       int sync(char* buf, int sz) {return 0;};
 };

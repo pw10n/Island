@@ -109,6 +109,25 @@ void playerstate_t::change_velocity(double nVx, double nVy){
 	_vel.y() = nVy;
 }
 
+int playerstate_t::serialize_delta(char* buf, int sz) {
+	psSync_data* ptr = (psSync_data*) (buf);
+	ptr->_tick = _tick;
+	ptr->_id = _id;
+	ptr->_hp = _hp;
+	ptr->_mp = _mp;
+	for(int i=0; i<PLAYERSTATE_MAXABILITY; ++i)
+		ptr->_ability[i] = _ability[i];
+	ptr->weapon = _weapon;
+	ptr->_pos_x = _pos.x();
+	ptr->_pos_y = _pos.y();
+	ptr->_vel_x = _vel.x();
+	ptr->_vel_y = _vel.y();
+	ptr->_state = _state;
+	ptr-._score = _score;
+
+	return 0;
+};
+
 int make_ack(char * buf, int bufsz, 
 			 uint8_t value, uint32_t seq){
 	if (bufsz < sizeof(pkt_header) + sizeof(gAck_data))

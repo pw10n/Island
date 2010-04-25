@@ -318,6 +318,7 @@ void server::tickRcv(){
 			else{
 				//TODO process(buf); //process packet
 				playerChangeMove_data* mvPtr;
+				psSync_data* psSyncPtr;
 				bool found = false;
 				switch(((pkt_header*)(buf))->type){
 
@@ -337,6 +338,30 @@ void server::tickRcv(){
 
 					case PKT_PLAYER_ATTACK:
 						break; //TODO
+
+					case PKT_SYNC_PLAYERSTATE:
+						psSyncPtr = (psSync_data*)(buf+sizeof(pkt_header));
+						found = false;
+						// find player in player list
+						for(vector<playerstate_t>::iterator it = _gObj->_players.begin();
+						it != _gObj->_players.end();
+						++it){
+							if ((*it)._id == mvPtr->_id){
+								found=true;
+								(*it).sync(psSyncPtr, sizeof(psSync_data));
+								break;
+							}
+						}
+
+						// if not found, add to end
+						if (!found){
+							playerstate_t nPlayer(psSyncPtr);
+							_gObj->_players.push_back(nPlayer);
+						}
+
+						// TODO: forward this change to clients
+
+						break;
 
 					default:
 						break;

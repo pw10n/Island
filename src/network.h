@@ -37,12 +37,36 @@ class client: public connection{
 	WSADATA _wsaData;
 	SOCKET _cSocket;
 	int _state;
+	gamestate_t* _gObj;
 
 public:
 	client();
 	~client();
-
+	
 	void connectTo(char* addr, char* port);
+
+	void setGameObj(gamestate_t* gObj) {_gObj = gObj;};
+
+
+
+	void change_velocity(double nVx, double nVy);
+	void change_velocity(coord2d_t nV);
+
+	void addPlayer(const playerstate_t &player){
+		char buf[1024];
+		psSync_data* ptr;
+		((pkt_header*)(buf))->start = '#';
+		((pkt_header*)(buf))->type = PKT_SYNC_PLAYERSTATE;
+		((pkt_header*)(buf))->clientid = 0;
+		((pkt_header*)(buf))->serverid = 0; //TODO
+		((pkt_header*)(buf))->checksum = 0;
+		((pkt_header*)(buf))->length = 0;
+		((pkt_header*)(buf))->seq = 0; //TODO
+		player.serialize_delta(buf+sizeof(pkt_header),1024-sizeof(pkt_header));
+		sendBuf(buf,sizeof(pkt_header)+sizeof(psSync_data));
+	}
+
+
 
 	int sendBuf(char*, int);
 	int recvBuf(char*, int);

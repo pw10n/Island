@@ -1,7 +1,3 @@
-
-
-
-
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -62,6 +58,8 @@ materialStruct Grey = {
 };
 coord2d_t vel;
 playerstate_t* player;
+
+gamestate_t* gsObj;
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -536,11 +534,20 @@ int main( int argc, char** argv ) {
   LAz = 0;
 
   player = new playerstate_t(worldtime);
+  gsObj = new gamestate_t(worldtime, "default.map");
+
+  gsObj->addPlayer(*player);
+
   fbtim = -1;
   explo = false;
 
+  try{
 	gClient.connectTo("127.0.0.1","13370");
-  
+  }
+  catch (gException e){
+	cerr << e.what() << endl;
+	exit(1);
+  }
   //register glut callback functions
   glutDisplayFunc( display );
   glutReshapeFunc( reshape );
