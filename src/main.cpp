@@ -13,7 +13,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "glut.h"
+#include <GL/glut.h>
 
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"

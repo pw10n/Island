@@ -16,7 +16,7 @@
 #include <iostream>
 #include <vector>
 
-#include "gs_types.h"
+#include "netutil.h"
 
 
 using namespace std;
