@@ -215,7 +215,7 @@ void detonate(fireball_s * fbs){
 
 void rapid(){
 	if(rfpar.size()<100)
-		rfpar.push_back(new rapidfire(myX/10.0f,-myZ/10.0f,theta,angle));
+		rfpar.push_back(new rapidfire(player->pos.x(),-player->pos.y(),theta,angle));
 }
 
 void reshape(int w, int h) {
@@ -374,7 +374,7 @@ void processMousePassiveMotion(int x, int y) {
 		
 	angle=theta*(180.0f / M_PI);
 	vel.x() = theta;
-	vel.y() = .005;
+	vel.y() = 0.000;
 	player->change_velocity(vel);
 	
   glutPostRedisplay();
@@ -418,7 +418,7 @@ void processMouseActiveMotion(int x, int y) {
 	//myZ += cos(theta);
 
 	vel.x() = theta;
-	vel.y() = .005;
+	vel.y() = 0.005;
 	player->change_velocity(vel);
 	
 
@@ -438,7 +438,7 @@ void keyboard(unsigned char key, int x, int y ){
 }
 
 void tick(int state) {
-
+	player->tick(worldtime);
 	if (flag){
 
 		//myX += -sin(theta);
@@ -447,7 +447,7 @@ void tick(int state) {
 
 
 
-		player->tick(worldtime);
+		
 
 
 	}
