@@ -90,11 +90,18 @@ void playerstate_t::tick(uint32_t time){
 			_pos.x() += (-sin(_vel.x()) * _vel.y());
 			_pos.y() += (cos(_vel.x()) * _vel.y());
 		}
-
 	}
 }
 
 void playerstate_t::change_velocity(coord2d_t nV){
+	/*
+	playerChangeMove_delta netdata;
+	netdata.id = 0; // TODO
+	netdata._vel_x = nV.x();
+	netdata._vel_y = nV.y();
+	*/
+	//TODO: instantly tell server that you've moved.
+
 	_vel = nV;
 }
 void playerstate_t::change_velocity(double nVx, double nVy){

@@ -217,6 +217,10 @@ int server::sendBuf(char * buf, int len){
 }
 
 void server::tickSnd(){
+
+	if (_gObj->_deltas.size() == 0)
+		return;
+
 	char buf[MAX_PKTSZ];
 	char* ptr = buf;
 	uint32_t size=0;
@@ -325,6 +329,7 @@ void server::tickRcv(){
 									(*it).change_velocity(mvPtr->_vel_x, mvPtr->_vel_y);
 								}
 						}
+						cerr << "INFO: Got player move" << endl;
 						break;
 
 					case PKT_PLAYER_ATTACK:

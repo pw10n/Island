@@ -24,15 +24,16 @@ void tick(int i){
 }
 
 void display(){
-
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glutSwapBuffers();
 }
 
 int main( int argc, char* argv[]){
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(800, 600);
+	glutInitWindowSize(800, 200);
 	glutInitWindowPosition(0, 0);
-	glutCreateWindow("Server");
+	glutCreateWindow("Server Console");
 
 
 	cerr << "INFO: setting up server" << endl;
