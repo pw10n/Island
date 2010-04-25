@@ -69,12 +69,15 @@ public:
 	~server();
 
 	void setup(char* listen_port);
+	void setGameObj(gamestate_t* gObj) {_gObj = gObj;};
 
 	int sendBuf(char*, int);
 
-protected:
 	void tickSnd();
 	void tickRcv();
+
+protected:
+	
 	void acceptClient();
 
 	void disconnectAll();
