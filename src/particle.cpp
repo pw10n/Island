@@ -5,7 +5,9 @@
 #include "particle.h"
 #include <stdlib.h>
 #include <GL/glut.h>
-#include <math.h>
+#include <cmath>
+
+using namespace std;
 
 //#define PARTLIST 1
 #define DSIN(x) sin(x*.01745329)

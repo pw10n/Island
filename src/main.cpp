@@ -11,6 +11,9 @@
 #include <map>
 #include <vector>
 #include "particle.h"
+#include "collision.h"
+#include "netutil.h"
+#include "types.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -24,6 +27,10 @@
 //#include "gs_types.h"
 
 using namespace std;
+
+#define WORLD_TIME_RESOLUTION 30
+
+uint32_t worldtime=0;
 
 #define MIN(x,y) (x>y)?y:x
 #define MAX(x,y) (x>y)?x:y
@@ -48,6 +55,8 @@ materialStruct Grey = {
   {0.3, 0.3, 0.3, 1.0},
   {0.3}
 };
+coord2d_t vel;
+playerstate_t* player;
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -261,20 +270,20 @@ void drawPlayer() {
 
 void drawFireball() {
 	fbsrc->draw();
-	for(int i=0;i<fbpar.size();i++){
+	for(uint32_t i=0;i<fbpar.size();i++){
 		fbpar[i]->draw();
 	}
 }
 
 void drawExplosion() {
 	//exsrc->draw();
-	for(int i=0;i<expar.size();i++){
+	for(uint32_t i=0;i<expar.size();i++){
 		expar[i]->draw();
 	}
 }
 
 void drawRapid() {
-	for(int i=0;i<rfpar.size();i++){
+	for(uint32_t i=0;i<rfpar.size();i++){
 		rfpar[i]->draw();
 	}
 }
@@ -424,7 +433,7 @@ void tick(int state) {
 	if (fbtim>-1){
 		fbtim++;
 		fbsrc->move();
-		for(int i=0;i<fbpar.size();i++){
+		for(uint32_t i=0;i<fbpar.size();i++){
 			fbpar[i]->move();
 			if(fbpar[i]->life<0.0f){
 				fbpar[i] = new fireball_p(fbsrc);
@@ -461,7 +470,9 @@ void tick(int state) {
 		}
 	}
 	glutPostRedisplay();
-	glutTimerFunc(30, &tick, 0);
+	worldtime+=WORLD_TIME_RESOLUTION;
+	player->tick(worldtime);
+	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
 
 int main( int argc, char** argv ) {
@@ -508,7 +519,7 @@ int main( int argc, char** argv ) {
   glutKeyboardFunc( keyboard );
   glutPassiveMotionFunc(processMousePassiveMotion);
   glutMotionFunc(processMouseActiveMotion);
-  glutTimerFunc(30,&tick,0);
+  glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();
