@@ -244,3 +244,49 @@ bool rapidfire::collide(float obx, float obz, float obr)
 	float dist = hypot(obx-x,obz-z);
 	return (dist<(obr+.2f));
 }
+
+splinter::splinter(explosion_s * sour)
+{
+	src = sour;
+	float t = (float)(rand()%360);
+	float p = (float)(rand()%90);
+	float v = (float)(rand()%8+1)/10.0f;
+	x = src->x;
+	y = src->y;
+	z = src->z;
+	vx = v*DSIN(t)*DCOS(p);
+	vy = v*DSIN(p);
+	vz = v*DCOS(t)*DCOS(p);
+	life = (float)(rand()%4+1);
+	fade = .5f;
+	roh = (float)(rand()%360);
+	rov = (float)(rand()%360);
+	sph = (float)(rand()%30-15);
+	spv = (float)(rand()%15);
+	r = .5f; g = .25f; b = 0; a = 1.f;
+	active = true;
+}
+
+void splinter::move(void)
+{
+	life -= fade;
+	x += vx; y += vy; z += vz;
+	vy -= .1;
+	roh += sph;
+	rov += spv;
+	if(y<0) life = -0.1f;
+
+}
+
+void splinter::draw(void)
+{
+	glColor4f(r,g,b,a);
+	glPushMatrix();
+	glTranslatef(x,y,z);
+	glRotatef(roh,0,1,0);
+	glRotatef(rov,1,0,0);
+	float sca = 4.0f;
+	glScalef(1,1,sca);
+	glCallList(PARTLIST);
+	glPopMatrix();
+}
