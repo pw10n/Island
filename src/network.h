@@ -16,6 +16,8 @@
 #include <iostream>
 #include <vector>
 
+#include "gs_types.h"
+
 using namespace std;
 
 class connection{
@@ -26,7 +28,6 @@ public:
 	connection();
 	
 	virtual int sendBuf(char*, int) = 0;
-	//virtual int recvBuf(char*, int) =0;
 
 };
 
@@ -60,7 +61,7 @@ class server: public connection{
 		int state;
 	};
 	vector<cInfo> _clients;
-	gamestate_t* _gsObj;
+	gamestate_t* _gObj;
 
 	int _state;
 
@@ -71,7 +72,6 @@ public:
 	void setup(char* listen_port);
 
 	int sendBuf(char*, int);
-	int recvBuf(SOCKET, char*, int);
 
 protected:
 	void tickSnd();

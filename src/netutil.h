@@ -2,11 +2,11 @@
 
 #include <vector>
 
+#include "network.h"
 #include "types.h"
+#include "gs_types.h"
 
 using namespace std;
-
-
 
 class gDelta_t{
 	uint32_t _tick;
@@ -71,7 +71,7 @@ struct pkt_header{
 	uint16_t clientid; //2
 	uint16_t serverid; //2
 	uint8_t checksum; //1
-	uint8_t length; // 1 -- only used in lists
+	uint8_t length; // 1 -- only used in lists (otherwise = 0)
 	uint32_t seq; //4
 };
 
@@ -80,6 +80,23 @@ struct pkt_header{
 struct gAck_data{
 	uint8_t ack_value;
 };
+int make_ack(char * buf, int bufsz, uint8_t value, uint32_t seq){
+	if (bufsz < sizeof(pkt_header) + sizeof(gAck_data))
+		return 0;
+	
+	((pkt_header*)buf)->start = '#';
+	((pkt_header*)buf)->type = PKT_ACK;
+	((pkt_header*)buf)->clientid = 0; //TODO
+	((pkt_header*)buf)->serverid = 0; //TODO
+	((pkt_header*)buf)->checksum = 0;
+	((pkt_header*)buf)->length = 0;
+	((pkt_header*)buf)->seq = 0; //TODO
+
+	((gAck_data*)(buf+sizeof(pkt_header)))->ack_value = value;
+
+	return sizeof(pkt_header)+sizeof(pkt_header);
+
+}
 
 struct gHello_data{
 	uint32_t challengeVersion; //ensures that client and server have same version
@@ -156,10 +173,29 @@ struct playerAttack_data{
 	uint16_t _ttl;
 };
 
-uint16_t calcAddSum(const char* buf, int size){
-	uint16_t sum = 0;
+uint8_t calcAddSum(const char* buf, int size){
+	uint8_t sum = 0;
 
 	while(size-- > 0)
 		sum += *(buf++);
 	return (~sum);
+}
+
+bool verify_checksum(const char* buf, int size){
+	bool retval = false;
+
+	char* temp;
+	uint8_t sum, calc_sum;
+
+	if (size >= sizeof(pkt_header)){
+		temp = (char*) malloc(sizeof(size));
+		memcpy(temp, buf, size);
+		((pkt_header*)temp)->checksum = 0;
+
+		retval = (((pkt_header*)buf)->checksum == 
+			calcAddSum(temp, size));
+
+		free(temp);
+	}
+	return retval;
 }

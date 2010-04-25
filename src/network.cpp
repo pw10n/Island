@@ -87,7 +87,7 @@ int client::sendBuf(char * buf, int len){
 	return retval;
 }
 
-int client::recvBuf(cahr * buf, int len){
+int client::recvBuf(char * buf, int len){
 	int retval;
 	if(SOCKET_ERROR ==
 		(retval = recv(_cSocket, buf, len, 0))){
@@ -102,8 +102,7 @@ int client::recvBuf(cahr * buf, int len){
 
 
 server::server(): _state(SERVER_DISCONNECT), 
-				  _lSocket(INVALID_SOCKET),
-				  _thread(0) {}
+				  _lSocket(INVALID_SOCKET) {}
 
 server::~server(){
 	disconnectAll();
@@ -128,7 +127,7 @@ void server::disconnectAll(){
 			}
 	}
 
-	_cleints.erase(_clients.begin(), _clients.end());
+	_clients.erase(_clients.begin(), _clients.end());
 }
 
 void server::setup(char* listen_port){
@@ -182,10 +181,6 @@ void server::setup(char* listen_port){
 		WSACleanup();
 		throw gException("listen failed.");
 	}
-
-	Thread* _thread = new Thread(
-		new ThreadStart(&procThread()));
-
 }
 
 void server::acceptClient(){
@@ -214,16 +209,12 @@ int server::sendBuf(char * buf, int len){
 		it != _clients.end(); 
 		it = ((*it).state==CLIENT_DISCONNECT)?
 		_clients.erase(it):it+1){
-		if (CLIENT_ACTIVE == (*it))
-			send((*it)._cSocket, buf, len, 0);
+		if (CLIENT_ACTIVE == (*it).state)
+			send((*it).cSocket, buf, len, 0);
 	}
 }
 
-int server::recvBuf(char * buf, int len){
-
-}
-
-int server::tickSnd(){
+void server::tickSnd(){
 	char buf[MAX_PKTSZ];
 	char* ptr = buf;
 	uint32_t size=0;
@@ -245,12 +236,12 @@ int server::tickSnd(){
 		it != _gObj->_deltas.end();
 		it = _gObj->_deltas.erase(it)){
 			//TBD -- maybe i should copy each field
-			memcpy(ptr,&(*it),sizeof(gSync_data));
-			size+=sizeof(gSync_data);
-			ptr+=sizeof(gSync_data);
+			memcpy(ptr,&(*it),sizeof(gDelta_data));
+			size+=sizeof(gDelta_data);
+			ptr+=sizeof(gDelta_data);
 			++count;
 
-			if(size > MAX_PKTSZ - sizeof(gSync_data) - 1)
+			if(size > MAX_PKTSZ - sizeof(gDelta_data) - 1)
 				break;
 	}
 
@@ -258,13 +249,13 @@ int server::tickSnd(){
 
 	((pkt_header*)(buf))->checksum = calcAddSum(buf,size);
 	
-	send(buf, size);//TODO: send
+	sendBuf(buf, size);//TODO: send
 
 	if(_gObj->_deltas.size() != 0)
 		tickSnd(); // send next packet if more to send.
 }
 
-int server::tickRcv(){
+void server::tickRcv(){
 	struct timeval timeout;
 	fd_set socks;
 	int readsocks;
@@ -278,7 +269,7 @@ int server::tickRcv(){
 	}
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
-	readsocks = select(0,socks,null,null,&timeout);
+	readsocks = select(0,&socks,NULL,NULL,&timeout);
 
 	if (FD_ISSET(_lSocket, &socks)){
 		//listen socket
@@ -289,13 +280,13 @@ int server::tickRcv(){
 		++it){
 		if (FD_ISSET((*it).cSocket, &socks)){
 			//got data
-			int result;
+			int result=0;
 			char buf[MAX_PKTSZ];
 			
 			//read
 			if(SOCKET_ERROR ==
 				(result = recv((*it).cSocket, buf, MAX_PKTSZ, 0))){
-				closesocket(_cSocket);
+				closesocket((*it).cSocket);
 				WSACleanup();
 				(*it).state = CLIENT_DISCONNECT;
 				(*it).cSocket = INVALID_SOCKET;
@@ -304,10 +295,16 @@ int server::tickRcv(){
 			
 			//check then process
 			if( ((pkt_header*)(buf))->start != '#' ){
-				send_ack(NET_NACK,SEQ_INVALID_PKT);
+				char ackbuf[1024];
+				int acksz = 0;
+				acksz = make_ack(ackbuf, 1024, NET_NACK,SEQ_INVALID_PKT);
+				send((*it).cSocket, ackbuf, acksz, 0);
 			}
-			else if( !verify_checksum(buf) ){
-				send_ack(NET_NACK,((pkt_header*)(buf)->seq));
+			else if( !verify_checksum(buf, result) ){
+				char ackbuf[1024];
+				int acksz = 0;
+				acksz = make_ack(ackbuf, 1024, NET_NACK,((pkt_header*)(buf))->seq);
+				send((*it).cSocket, ackbuf, acksz, 0);
 			}
 			else{
 				process(buf); //process packet
