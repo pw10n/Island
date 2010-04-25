@@ -19,7 +19,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "glut.h"
+#include <GL/glut.h>
 
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
@@ -200,7 +200,7 @@ void pos_light() {
 void spawnFireball(){
 	float fbx = -sin(theta);
 	float fbz = -cos(theta);
-	fbsrc = new fireball_s(myX/10.0f,-myZ/10.0f,fbx/5.0f,fbz/5.0f);
+	fbsrc = new fireball_s(player->_pos.x(),-player->_pos.y(),fbx/5.0f,fbz/5.0f);
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
