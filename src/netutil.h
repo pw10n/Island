@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "stdint.h"
+
 #include "network.h"
 #include "types.h"
 #include "gs_types.h"
@@ -18,14 +20,6 @@ public:
 
 	gDelta_t operator=(const gDelta_t &);
 
-};
-
-class netobj{
-
-   public:
-      virtual int serialize_delta(char* buf, int sz) = 0;
-	  virtual int serialize_sync(char* buf, int sz) = 0;
-      virtual int sync(char* buf, int sz) =0;
 };
 
 class client_t{
@@ -115,6 +109,11 @@ struct gDelta_data{ //13
    varies nValue; //4
 };
 
+//HACK
+#ifndef GS_MAX_MAP_NAME_LEN
+#define GS_MAX_MAP_NAME_LEN 50
+#endif
+
 struct gsSync_data{
       uint32_t _tick;
       uint8_t _state;
@@ -123,6 +122,10 @@ struct gsSync_data{
 	  // player,object,wepfire state
 	  // variables independently
 };
+
+#ifndef PLAYERSTATE_MAXABILITY
+#define PLAYERSTATE_MAXABILITY 5
+#endif
 
 struct psSync_data{ //33
 	uint32_t _tick; //4
@@ -185,7 +188,6 @@ bool verify_checksum(const char* buf, int size){
 	bool retval = false;
 
 	char* temp;
-	uint8_t sum, calc_sum;
 
 	if (size >= sizeof(pkt_header)){
 		temp = (char*) malloc(sizeof(size));

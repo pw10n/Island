@@ -77,7 +77,7 @@ playerstate_t::playerstate_t(const playerstate_t &player){
 	_state = player._state;
 	_score = player._score;
 
-	for( vector<gsDelta_t>::const_iterator it = player._deltas.begin();
+	for( vector<gDelta_data>::const_iterator it = player._deltas.begin();
 		it != player._deltas.end();
 		++it )
 		_deltas.push_back((*it));

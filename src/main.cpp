@@ -1,7 +1,3 @@
-
-
-
-
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -10,14 +6,21 @@
 #include <cstring>
 #include <map>
 #include <vector>
+#include "collision.h"
+#include "gs_types.h"
+#include "types.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include <GL/glut.h>
+#include "glut.h"
 
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
+
+#define WORLD_TIME_RESOLUTION 30
+
+uint32_t worldtime=0;
 
 //#include "types.h"
 //#include "gs_types.h"
@@ -78,6 +81,8 @@ float theta;
 float angle;
 float myX, myY, myZ;
 bool flag = false;
+coord2d_t vel;
+playerstate_t* player;
 
 
 
@@ -186,10 +191,10 @@ void display() {
     glPushMatrix();
 
       glPushMatrix();
-	  if (flag){
-	  }
-		glTranslatef((myX/10.0), 0, (-myZ/10.0));
-        glRotatef(angle, 0, 1, 0);
+		//glTranslatef((myX/10.0), 0, (-myZ/10.0));
+		printf("x: %d\n", player->_pos.x());
+		glTranslatef(player->_pos.x(), 0, player->_pos.y());
+		glRotatef(angle, 0, 1, 0);
         drawPlayer();
       glPopMatrix();
 
@@ -298,13 +303,22 @@ void keyboard(unsigned char key, int x, int y ){
 
 void tick(int state) {
 
+	
+
+
 	if (flag){
 		myX += -sin(theta);
 		myZ += cos(theta);
+		vel.x() = 2;
+		vel.y() = 2;
+		
+		player->change_velocity(vel);
 	}
 
 	glutPostRedisplay();
-	glutTimerFunc(30, &tick, 0);
+	worldtime+=WORLD_TIME_RESOLUTION;
+	player->tick(worldtime);
+	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
 
 int main( int argc, char** argv ) {
@@ -313,18 +327,18 @@ int main( int argc, char** argv ) {
   //set up my window
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  //glutInitWindowSize(800, 600); 
+  glutInitWindowSize(800, 600); 
   GW = 800;
   GH = 600;
-  //glutInitWindowPosition(0, 0);
-  //glutCreateWindow("Mesh display");
-  glutGameModeString("800x600:32");
+  glutInitWindowPosition(0, 0);
+  glutCreateWindow("Mesh display");
+  /*glutGameModeString("800x600:32");
   if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 	glutEnterGameMode();
   }
   else{
 	  exit(1);
-  }
+  }*/
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
   myX = 0;
@@ -338,6 +352,7 @@ int main( int argc, char** argv ) {
   LAx = 0;
   LAy = 0;
   LAz = 0;
+  player = new playerstate_t(worldtime);
 
 
   
@@ -348,7 +363,7 @@ int main( int argc, char** argv ) {
   glutKeyboardFunc( keyboard );
   glutPassiveMotionFunc(processMousePassiveMotion);
   glutMotionFunc(processMouseActiveMotion);
-  glutTimerFunc(30,&tick,0);
+  glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();

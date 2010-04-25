@@ -212,6 +212,7 @@ int server::sendBuf(char * buf, int len){
 		if (CLIENT_ACTIVE == (*it).state)
 			send((*it).cSocket, buf, len, 0);
 	}
+	return 1; //TBD
 }
 
 void server::tickSnd(){
@@ -307,20 +308,20 @@ void server::tickRcv(){
 				send((*it).cSocket, ackbuf, acksz, 0);
 			}
 			else{
-				process(buf); //process packet
+				//TODO process(buf); //process packet
 				playerChangeMove_data* mvPtr;
 				bool found = false;
 				switch(((pkt_header*)(buf))->type){
 
 					case PKT_PLAYER_MOVE:
-						mvPtr = buf+sizeof(pkt_header);
-						found = false
-						for(vector<playerstate_t>::iterator it = _gsObj->_players.begin();
-							it != _gsObj->_players.end();
+						mvPtr = (playerChangeMove_data*)(buf+sizeof(pkt_header));
+						found = false;
+						for(vector<playerstate_t>::iterator it = _gObj->_players.begin();
+							it != _gObj->_players.end();
 							++it){
 								if ((*it)._id == mvPtr->_id){
 									found=true;
-									(*it)._change_velocity(mvPtr->_vel_x, mvPtr->_vel_y);
+									(*it).change_velocity(mvPtr->_vel_x, mvPtr->_vel_y);
 								}
 						}
 						break;
@@ -329,6 +330,7 @@ void server::tickRcv(){
 						break; //TODO
 
 					default:
+						break;
 
 				}
 			}

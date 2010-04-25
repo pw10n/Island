@@ -7,6 +7,7 @@
 
 #include "types.h"
 #include "netutil.h"
+#include "network.h"
 
 using namespace std;
 
@@ -19,7 +20,18 @@ class wepfirestate_t;
 #define GSSTATE_ACTIVE 1
 #define GSSTATE_INVALID 99
 
-#define GS_MAX_MAP_NAME_LEN 30
+#ifndef GS_MAX_MAP_NAME_LEN
+#define GS_MAX_MAP_NAME_LEN 50
+#endif
+
+
+class netobj{
+
+   public:
+      virtual int serialize_delta(char* buf, int sz) = 0;
+	  virtual int serialize_sync(char* buf, int sz) = 0;
+      virtual int sync(char* buf, int sz) =0;
+};
 
 
 class gamestate_t: public netobj{

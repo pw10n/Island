@@ -18,6 +18,7 @@
 
 #include "gs_types.h"
 
+
 using namespace std;
 
 class connection{
