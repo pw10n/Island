@@ -10,14 +10,10 @@
 #include <cstring>
 #include <map>
 #include <vector>
-<<<<<<< HEAD:src/main.cpp
-#include "collision.h"
-#include "netutil.h"
-=======
 #include "particle.h"
 #include "collision.h"
 #include "netutil.h"
->>>>>>> a6b648c27886191610c289bce5c313459e90e9e2:src/main.cpp
+
 #include "types.h"
 
 #define _USE_MATH_DEFINES
@@ -28,13 +24,7 @@
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
 
-<<<<<<< HEAD:src/main.cpp
-#define WORLD_TIME_RESOLUTION 30
 
-uint32_t worldtime=0;
-
-=======
->>>>>>> a6b648c27886191610c289bce5c313459e90e9e2:src/main.cpp
 //#include "types.h"
 //#include "gs_types.h"
 
@@ -313,17 +303,9 @@ void display() {
     glPushMatrix();
 
       glPushMatrix();
-<<<<<<< HEAD:src/main.cpp
-		//glTranslatef((myX/10.0), 0, (-myZ/10.0));
-		//printf("x: %d\n", player->_pos.x());
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
-		glRotatef(angle, 0, 1, 0);
-=======
-	  if (flag){
-	  }
-		glTranslatef((myX/10.0), 0, (-myZ/10.0));
         glRotatef(angle, 0, 1, 0);
->>>>>>> a6b648c27886191610c289bce5c313459e90e9e2:src/main.cpp
+
         drawPlayer();
       glPopMatrix();
 
@@ -434,14 +416,12 @@ void processMouseActiveMotion(int x, int y) {
 	angle=theta*(180.0f / M_PI);
 	//myX += -sin(theta);
 	//myZ += cos(theta);
-<<<<<<< HEAD:src/main.cpp
+
 	vel.x() = theta;
 	vel.y() = .005;
 	player->change_velocity(vel);
 	
-=======
-	//if(rfire) { rapid(); }
->>>>>>> a6b648c27886191610c289bce5c313459e90e9e2:src/main.cpp
+
   glutPostRedisplay();
 
 }
@@ -460,7 +440,7 @@ void keyboard(unsigned char key, int x, int y ){
 void tick(int state) {
 
 	if (flag){
-<<<<<<< HEAD:src/main.cpp
+
 		//myX += -sin(theta);
 		///myZ += cos(theta);
 		
@@ -469,10 +449,7 @@ void tick(int state) {
 
 		player->tick(worldtime);
 
-=======
-		myX += -sin(theta);
-		myZ += cos(theta);
->>>>>>> a6b648c27886191610c289bce5c313459e90e9e2:src/main.cpp
+
 	}
 	if (fbtim>-1){
 		fbtim++;
@@ -514,13 +491,9 @@ void tick(int state) {
 		}
 	}
 	glutPostRedisplay();
-<<<<<<< HEAD:src/main.cpp
+
 	worldtime+=WORLD_TIME_RESOLUTION;
-	//player->tick(worldtime);
-=======
-	worldtime+=WORLD_TIME_RESOLUTION;
-	player->tick(worldtime);
->>>>>>> a6b648c27886191610c289bce5c313459e90e9e2:src/main.cpp
+
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
 
