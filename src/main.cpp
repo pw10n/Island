@@ -1,3 +1,7 @@
+
+
+
+
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -6,6 +10,7 @@
 #include <cstring>
 #include <map>
 #include <vector>
+#include "particle.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -15,19 +20,13 @@
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
 
-#include "collision.h"
-#include "netutil.h"
-#include "types.h"
-
-#define WORLD_TIME_RESOLUTION 30
-
-uint32_t worldtime=0;
-
 //#include "types.h"
 //#include "gs_types.h"
 
 using namespace std;
 
+#define MIN(x,y) (x>y)?y:x
+#define MAX(x,y) (x>y)?x:y
 
 typedef struct materialStruct {
   GLfloat ambient[4];
@@ -37,16 +36,16 @@ typedef struct materialStruct {
 } materialStruct;
 
 materialStruct Black = {
-  {0.0, 0.0, 0.0, 0.0},
-  {0.0, 0.0, 0.0, 0.0},
-  {0.0, 0.0, 0.0, 0.0},
+  {0.0, 0.0, 0.0, 1.0},
+  {0.0, 0.0, 0.0, 1.0},
+  {0.0, 0.0, 0.0, 1.0},
   {0.0}
 };
 
 materialStruct Grey = {
-  {0.3, 0.3, 0.3, 0.3},
-  {0.3, 0.3, 0.3, 0.3},
-  {0.3, 0.3, 0.3, 0.3},
+  {0.3, 0.3, 0.3, 1.0},
+  {0.3, 0.3, 0.3, 1.0},
+  {0.3, 0.3, 0.3, 1.0},
   {0.3}
 };
 
@@ -82,10 +81,16 @@ float theta;
 float angle;
 float myX, myY, myZ;
 bool flag = false;
-coord2d_t vel;
-playerstate_t* player;
+bool rfire = false;
+GLubyte * alpha;
 
-
+fireball_s * fbsrc;
+vector<fireball_p *> fbpar;
+int fbtim;
+explosion_s * exsrc;
+vector<explosion_p *> expar;
+bool explo;
+vector<rapidfire *> rfpar;
 
 
 float p2w_x(int x) {
@@ -105,7 +110,63 @@ float p2w_y(int y) {
 return y1;
 }
 
+void genTex(){
+	alpha = new GLubyte[16 * 16];
+	int i,j;
+	for(i=0;i<8;i++){
+		for(j=0;j<8;j++) alpha[i+16*j] = 17*(MAX((i+j-5),0)); //17
+		for(j=8;j<16;j++) alpha[i+16*j] = alpha[i+16*(15-j)]; //mirror
+	}
+	for(i=8;i<16;i++){
+		for(j=0;j<16;j++) alpha[i+16*j] = alpha[(15-i)+16*j]; //mirror again
+	}
+}
 
+void init_tex() {
+	//glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);									// Enable Blending
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+	genTex();
+	glEnable(GL_TEXTURE_2D);
+	//glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 16, 16, 0, GL_ALPHA, GL_UNSIGNED_BYTE, alpha);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glDisable(GL_TEXTURE_2D);
+
+}
+
+void init_particle(){
+	glNewList(PARTLIST,GL_COMPILE);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glBegin(GL_TRIANGLE_STRIP);
+	glTexCoord2d(1,1); glVertex3f(0.1f,0.1f,0);
+	glTexCoord2d(0,1); glVertex3f(-0.1f,0.1f,0);
+	glTexCoord2d(1,0); glVertex3f(0.1f,-0.1f,0);
+	glTexCoord2d(0,0); glVertex3f(-0.1f,-0.1f,0);
+	glEnd();
+	glBegin(GL_TRIANGLE_STRIP);
+	glTexCoord2d(1,1); glVertex3f(0.1f,0,0.1f);
+	glTexCoord2d(0,1); glVertex3f(-0.1f,0,0.1f);
+	glTexCoord2d(1,0); glVertex3f(0.1f,0,-0.1f);
+	glTexCoord2d(0,0); glVertex3f(-0.1f,0,-0.1f);
+	glEnd();
+	glBegin(GL_TRIANGLE_STRIP);
+	glTexCoord2d(1,1); glVertex3f(0,0.1f,0.1f);
+	glTexCoord2d(0,1); glVertex3f(0,-0.1f,0.1f);
+	glTexCoord2d(1,0); glVertex3f(0,0.1f,-0.1f);
+	glTexCoord2d(0,0); glVertex3f(0,-0.1f,-0.1f);
+	glEnd();
+	glEnable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+	glEndList();
+}
 
 //initialization calls for opengl for static light
 //note that we still need to enable lighting in order for it to work
@@ -125,6 +186,26 @@ void pos_light() {
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 }
 
+void spawnFireball(){
+	float fbx = -sin(theta);
+	float fbz = -cos(theta);
+	fbsrc = new fireball_s(myX/10.0f,-myZ/10.0f,fbx/5.0f,fbz/5.0f);
+	for(int i=0;i<200;i++){
+		fbpar.push_back(new fireball_p(fbsrc));
+	}
+}
+
+void detonate(fireball_s * fbs){
+	exsrc = new explosion_s(fbs->x,fbs->z);
+	for(int i=0;i<400;i++){
+		expar.push_back(new explosion_p(exsrc));
+	}
+}
+
+void rapid(){
+	if(rfpar.size()<100)
+		rfpar.push_back(new rapidfire(myX/10.0f,-myZ/10.0f,theta,angle));
+}
 
 void reshape(int w, int h) {
   GW = w;
@@ -178,6 +259,25 @@ void drawPlayer() {
   glPopMatrix();
 }
 
+void drawFireball() {
+	fbsrc->draw();
+	for(int i=0;i<fbpar.size();i++){
+		fbpar[i]->draw();
+	}
+}
+
+void drawExplosion() {
+	//exsrc->draw();
+	for(int i=0;i<expar.size();i++){
+		expar[i]->draw();
+	}
+}
+
+void drawRapid() {
+	for(int i=0;i<rfpar.size();i++){
+		rfpar[i]->draw();
+	}
+}
 
 void display() {
 
@@ -192,18 +292,22 @@ void display() {
     glPushMatrix();
 
       glPushMatrix();
-		//glTranslatef((myX/10.0), 0, (-myZ/10.0));
-		printf("x: %d\n", player->_pos.x());
-		glTranslatef(player->_pos.x(), 0, player->_pos.y());
-		glRotatef(angle, 0, 1, 0);
+	  if (flag){
+	  }
+		glTranslatef((myX/10.0), 0, (-myZ/10.0));
+        glRotatef(angle, 0, 1, 0);
         drawPlayer();
       glPopMatrix();
 
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
         drawGrid();
+		glTranslatef(1.0,0,1.0);
+		glutSolidSphere(1.0,10,10);
       glPopMatrix();
-
+	  if(fbtim>-1) drawFireball();
+	  if(explo) drawExplosion();
+	  drawRapid();
     glPopMatrix();
   glPopMatrix();
   
@@ -222,6 +326,12 @@ void mouse(int button, int state, int x, int y) {
 		flag = false;
 	}
   }
+	if(button == GLUT_LEFT_BUTTON) {
+		if (state == GLUT_DOWN) {
+			if(rfire) { rapid(); }
+			else if(fbtim<0) {spawnFireball(); fbtim = 0;}
+		}
+	}
 }
 
 void processMousePassiveMotion(int x, int y) {
@@ -289,7 +399,7 @@ void processMouseActiveMotion(int x, int y) {
 	angle=theta*(180.0f / M_PI);
 	//myX += -sin(theta);
 	//myZ += cos(theta);
-	
+	//if(rfire) { rapid(); }
   glutPostRedisplay();
 
 }
@@ -299,27 +409,59 @@ void keyboard(unsigned char key, int x, int y ){
     case 'q': case 'Q' :
       exit( EXIT_SUCCESS );
       break;
+	case ' ':
+		rfire = !rfire;
+		break;
   }
 }
 
 void tick(int state) {
 
-	
-
-
 	if (flag){
 		myX += -sin(theta);
 		myZ += cos(theta);
-		vel.x() = 2;
-		vel.y() = 2;
-		
-		player->change_velocity(vel);
 	}
-
+	if (fbtim>-1){
+		fbtim++;
+		fbsrc->move();
+		for(int i=0;i<fbpar.size();i++){
+			fbpar[i]->move();
+			if(fbpar[i]->life<0.0f){
+				fbpar[i] = new fireball_p(fbsrc);
+			}
+		}
+	}
+	if(fbtim>50||(fbtim>-1&&fbsrc->collide(1.0,1.0,1.0))){
+		fbtim=-1;
+		fbsrc->active = false;
+		fbpar.clear();
+		detonate(fbsrc);
+		explo = true;
+	}
+	if (explo){
+		exsrc->move();
+		for(int i=expar.size()-1;i>-1;i--){
+			expar[i]->move();
+			if(expar[i]->life<0.0f){
+				expar.erase(expar.begin()+i);
+			}
+		}
+		if(expar.empty()){
+			explo = false;
+		}
+	}
+	for(int i=rfpar.size()-1;i>-1;i--){
+		rfpar[i]->move();
+		if(!rfpar[i]->boom&&rfpar[i]->collide(1.0,1.0,1.0)){
+			rfpar[i]->boom = true;
+			rfpar[i]->life = 0.0;
+		}
+		if(!rfpar[i]->active){
+			rfpar.erase(rfpar.begin()+i);
+		}
+	}
 	glutPostRedisplay();
-	worldtime+=WORLD_TIME_RESOLUTION;
-	player->tick(worldtime);
-	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
+	glutTimerFunc(30, &tick, 0);
 }
 
 int main( int argc, char** argv ) {
@@ -328,18 +470,19 @@ int main( int argc, char** argv ) {
   //set up my window
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  glutInitWindowSize(800, 600); 
+  //glutInitWindowSize(800, 600); 
   GW = 800;
   GH = 600;
-  glutInitWindowPosition(0, 0);
-  glutCreateWindow("Mesh display");
-  /*glutGameModeString("800x600:32");
+  //glutInitWindowPosition(0, 0);
+  //glutCreateWindow("Mesh display");
+  glutGameModeString("800x600:32");
   if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 	glutEnterGameMode();
   }
   else{
 	  exit(1);
-  }*/
+  }
+  //glClearColor(0.0, 0.0, 0.0, 1.0);
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
   myX = 0;
@@ -353,7 +496,8 @@ int main( int argc, char** argv ) {
   LAx = 0;
   LAy = 0;
   LAz = 0;
-  player = new playerstate_t(worldtime);
+  fbtim = -1;
+  explo = false;
 
 
   
@@ -364,13 +508,13 @@ int main( int argc, char** argv ) {
   glutKeyboardFunc( keyboard );
   glutPassiveMotionFunc(processMousePassiveMotion);
   glutMotionFunc(processMouseActiveMotion);
-  glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
+  glutTimerFunc(30,&tick,0);
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();
-
   glEnable(GL_LIGHTING);
-
+	init_tex();
+	init_particle();
   
   glutMainLoop();
 }
