@@ -57,6 +57,13 @@ materialStruct Grey = {
   {0.3, 0.3, 0.3, 1.0},
   {0.3}
 };
+
+materialStruct Sand = {
+	{0.85, 0.79, 0.71, 1.0},
+	{0.85, 0.79, 0.71, 1.0},
+	{0.0, 0.0, 0.0, 1.0},
+	{0.0}
+};
 coord2d_t vel;
 playerstate_t* player;
 
@@ -100,8 +107,6 @@ vector<fireball_p *> fbpar;
 int fbtim;
 explosion_s * exsrc;
 vector<particle *> expar;
-//vector<explosion_p *> expar;
-//vector<splinter *> expar;
 bool explo;
 vector<rapidfire *> rfpar;
 
@@ -268,7 +273,13 @@ void drawGrid() {
       glVertex3f(i, 0, rows);
     }
   glEnd();
-
+  glBegin(GL_POLYGON);
+	materials(Sand);
+	glVertex3f(columns,-0.01,rows);
+	glVertex3f(columns,-0.01,-rows);
+	glVertex3f(-columns,-0.01,-rows);
+	glVertex3f(-columns,-0.01,rows);
+  glEnd();
 }
 
 

@@ -257,8 +257,8 @@ splinter::splinter(explosion_s * sour)
 	vx = v*DSIN(t)*DCOS(p);
 	vy = v*DSIN(p);
 	vz = v*DCOS(t)*DCOS(p);
-	life = (float)(rand()%4+1);
-	fade = .5f;
+	life = (float)(rand()%7+1);
+	fade = .2f;
 	roh = (float)(rand()%360);
 	rov = (float)(rand()%360);
 	sph = (float)(rand()%30-15);
@@ -270,12 +270,14 @@ splinter::splinter(explosion_s * sour)
 void splinter::move(void)
 {
 	life -= fade;
-	x += vx; y += vy; z += vz;
-	vy -= .1;
-	roh += sph;
-	rov += spv;
-	if(y<0) life = -0.1f;
-
+	if(y>0){
+		x += vx; y += vy; z += vz;
+		vy -= .1;
+		roh += sph;
+		rov += spv;
+	}
+	//if(y<0) life = -0.1f;
+	else a *= .9;
 }
 
 void splinter::draw(void)
