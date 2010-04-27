@@ -100,7 +100,9 @@ class playerstate_t: public netobj{
       int sync(char* buf, int sz) {return 0;};
 };
 
-#define OBJECTSTATE_CRATE 1
+#define OBJECTSTATE_CRATE 0
+#define OBJECTSTATE_CRATE_DIM 1
+
 class objectstate_t: public netobj{
    public:
 
