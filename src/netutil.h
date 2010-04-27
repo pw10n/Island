@@ -119,6 +119,9 @@ class objectstate_t: public netobj{
 	 objectstate_t(const objectstate_t& other): _id(other._id), _hp(other._hp),
                            _type(other._type), _pos(other._pos) {};
 
+
+	  void setType(uint8_t type);
+
 	  //network functions:
       int serialize_delta(char* buf, int sz) {return 0;};
 	  int serialize_sync(char* buf, int sz) {return 0;};

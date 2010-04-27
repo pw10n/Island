@@ -115,9 +115,9 @@ void playerstate_t::change_velocity(double nVx, double nVy){
 //objectstate_t::objectstate_t(): _id(0), _type(0), _hp(10){
 //}
 
-//void objectstate_t::setType(uint8_t type){
-//	_type = type;
-//}
+void objectstate_t::setType(uint8_t type){
+	_type = type;
+}
 
 /*void objectstate_t::draw(coord2d_t pos, unsigned int texture){
 	if (_type == OBJECTSTATE_CRATE){
