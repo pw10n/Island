@@ -82,3 +82,16 @@ public:
 	bool collide(float,float,float);
 };
 
+class splinter : public particle
+{
+public:
+	float roh,rov,sph,spv; //ROtation/SPin; horizontal/vertical
+	float vx,vy,vz;
+	explosion_s *src;
+	//float scalw,scall; //Scale width/length
+
+	splinter(explosion_s *);
+	void move(void);
+	void draw(void);
+};
+

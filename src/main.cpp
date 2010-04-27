@@ -56,6 +56,13 @@ materialStruct Grey = {
   {0.3, 0.3, 0.3, 1.0},
   {0.3}
 };
+
+materialStruct Sand = {
+	{0.85, 0.79, 0.71, 1.0},
+	{0.85, 0.79, 0.71, 1.0},
+	{0.0, 0.0, 0.0, 1.0},
+	{0.0}
+};
 coord2d_t vel;
 playerstate_t* player;
 
@@ -100,7 +107,7 @@ fireball_s * fbsrc;
 vector<fireball_p *> fbpar;
 int fbtim;
 explosion_s * exsrc;
-vector<explosion_p *> expar;
+vector<particle *> expar;
 bool explo;
 vector<rapidfire *> rfpar;
 
@@ -207,10 +214,20 @@ void spawnFireball(){
 	}
 }
 
-void detonate(fireball_s * fbs){
+void detonate(fireball_s * fbs, bool splin){
 	exsrc = new explosion_s(fbs->x,fbs->z);
-	for(int i=0;i<400;i++){
-		expar.push_back(new explosion_p(exsrc));
+	if(!splin){
+		for(int i=0;i<400;i++){
+			expar.push_back(new explosion_p(exsrc));
+		}
+	}
+	else{
+		for(int i=0;i<200;i++){
+			expar.push_back(new explosion_p(exsrc));
+		}
+		for(int i=0;i<200;i++){
+			expar.push_back(new splinter(exsrc));
+		}
 	}
 }
 
@@ -257,7 +274,13 @@ void drawGrid() {
       glVertex3f(i, 0, rows);
     }
   glEnd();
-
+  glBegin(GL_POLYGON);
+	materials(Sand);
+	glVertex3f(columns,-0.01,rows);
+	glVertex3f(columns,-0.01,-rows);
+	glVertex3f(-columns,-0.01,-rows);
+	glVertex3f(-columns,-0.01,rows);
+  glEnd();
 }
 
 
@@ -352,6 +375,7 @@ void processMousePassiveMotion(int x, int y) {
 
 	//float theta = 0;
 	x -= GW/2;
+	x *= .5;
 	y -= GH/2;
 	
 	//        0  dir
@@ -387,6 +411,7 @@ void processMouseActiveMotion(int x, int y) {
 	
 	//float theta = 0;
 	x -= GW/2;
+	x *= .5;
 	y -= GH/2;
 	
 	//        0  dir
@@ -464,11 +489,18 @@ void tick(int state) {
 			}
 		}
 	}
-	if(fbtim>50||(fbtim>-1&&fbsrc->collide(1.0,1.0,1.0))){
+	if(fbtim>50){
 		fbtim=-1;
 		fbsrc->active = false;
 		fbpar.clear();
-		detonate(fbsrc);
+		detonate(fbsrc,false);
+		explo = true;
+	}
+	else if(fbtim>-1&&fbsrc->collide(1.0,1.0,1.0)){
+		fbtim=-1;
+		fbsrc->active = false;
+		fbpar.clear();
+		detonate(fbsrc,true); //if fbtim less than 50, fb must have collided with something
 		explo = true;
 	}
 	if (explo){

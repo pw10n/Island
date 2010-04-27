@@ -112,6 +112,12 @@ class objectstate_t: public netobj{
 
 	  vector<gDelta_data> _deltas;
 
+     objectstate_t(): _id(0), _hp(0), _type(0) {};
+	 objectstate_t(uint16_t id, uint8_t hp, uint8_t type, coord2d_t pos): _id(id), _hp(hp), _type(type), _pos(pos) {};
+	 objectstate_t(uint16_t id, uint8_t hp, uint8_t type, double x, double y): _id(id), _hp(hp), _type(type), _pos(x,y) {};
+	 objectstate_t(const objectstate_t& other): _id(other._id), _hp(other._hp),
+                           _type(other._type), _pos(other._pos) {};
+
 	  //network functions:
       int serialize_delta(char* buf, int sz) {return 0;};
 	  int serialize_sync(char* buf, int sz) {return 0;};
