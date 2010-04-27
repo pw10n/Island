@@ -10,6 +10,7 @@
 #include "collision.h"
 #include "netutil.h"
 #include "network.h"
+#include "texture.h"
 
 #include "types.h"
 
@@ -111,6 +112,8 @@ vector<particle *> expar;
 bool explo;
 vector<rapidfire *> rfpar;
 
+vector<unsigned int> textures;
+vector<objectstate_t> crates;
 
 float p2w_x(int x) {
   float x1;
@@ -141,15 +144,17 @@ void genTex(){
 	}
 }
 
-void init_tex() {
+unsigned int init_particletex() {
+	unsigned int texid;
 	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);									// Enable Blending
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
 	genTex();
 	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &texid);
 	//glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, texid);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 16, 16, 0, GL_ALPHA, GL_UNSIGNED_BYTE, alpha);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -158,24 +163,28 @@ void init_tex() {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glDisable(GL_TEXTURE_2D);
 
+	return texid;
 }
 
 void init_particle(){
 	glNewList(PARTLIST,GL_COMPILE);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0.1f,0.1f,0);
 	glTexCoord2d(0,1); glVertex3f(-0.1f,0.1f,0);
 	glTexCoord2d(1,0); glVertex3f(0.1f,-0.1f,0);
 	glTexCoord2d(0,0); glVertex3f(-0.1f,-0.1f,0);
 	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0.1f,0,0.1f);
 	glTexCoord2d(0,1); glVertex3f(-0.1f,0,0.1f);
 	glTexCoord2d(1,0); glVertex3f(0.1f,0,-0.1f);
 	glTexCoord2d(0,0); glVertex3f(-0.1f,0,-0.1f);
 	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0,0.1f,0.1f);
 	glTexCoord2d(0,1); glVertex3f(0,-0.1f,0.1f);
@@ -314,6 +323,61 @@ void drawRapid() {
 	}
 }
 
+void drawCrate(){
+	objectstate_t crate;
+	crate.setType(OBJECTSTATE_CRATE);
+
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	// it'll be 2x2x2 for now
+	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	// "front"
+	glBegin(GL_QUADS);
+	glTexCoord2f (0.0, 0.0);
+	glVertex3f (-0.5, 0.0, 1.0);
+	glTexCoord2f (1.0, 0.0);
+	glVertex3f (1.0, 0.0, 1.0);
+	glTexCoord2f (1.0, 1.0);
+	glVertex3f (1.0, 1.0, 1.0);
+	glTexCoord2f (0.0, 1.0);
+	glVertex3f (0.0, 1.0, 1.0);
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	glBegin(GL_QUADS);
+	glTexCoord2f (0.0, 0.0);
+	glVertex3f (1.0, 0.0, 0.0);
+	glTexCoord2f (1.0, 0.0);
+	glVertex3f (1.0, 0.0, 1.0);
+	glTexCoord2f (1.0, 1.0);
+	glVertex3f (1.0, 1.0, 1.0);
+	glTexCoord2f (0.0, 1.0);
+	glVertex3f (1.0, 1.0, 0.0);
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	glBegin(GL_QUADS);
+	glTexCoord2f (0.0, 0.0);
+	glVertex3f (0.0, 1.0, 0.0);
+	glTexCoord2f (1.0, 0.0);
+	glVertex3f (1.0, 1.0, 0.0);
+	glTexCoord2f (1.0, 1.0);
+	glVertex3f (1.0, 1.0, 1.0);
+	glTexCoord2f (0.0, 1.0);
+	glVertex3f (0.0, 1.0, 1.0);
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	glBegin(GL_QUADS);
+	glTexCoord2f (0.0, 0.0);
+	glVertex3f (0.0, 0.0, 1.0);
+	glTexCoord2f (1.0, 0.0);
+	glVertex3f (0.0, 0.0, 0.0);
+	glTexCoord2f (1.0, 1.0);
+	glVertex3f (0.0, 1.0, 0.0);
+	glTexCoord2f (0.0, 1.0);
+	glVertex3f (0.0, 1.0, 1.0);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+}
+
 void display() {
 
   
@@ -336,8 +400,9 @@ void display() {
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
         drawGrid();
-		glTranslatef(1.0,0,1.0);
-		glutSolidSphere(1.0,10,10);
+		glTranslatef(-1.0,0,-1.0);
+		drawCrate();
+		//glutSolidSphere(1.0,10,10);
       glPopMatrix();
 	  if(fbtim>-1) drawFireball();
 	  if(explo) drawExplosion();
@@ -542,7 +607,7 @@ int main( int argc, char** argv ) {
   GW = 800;
   GH = 600;
   glutInitWindowPosition(0, 0);
-  glutCreateWindow("Game");
+  glutCreateWindow("Island");
   /*glutGameModeString("800x600:32");
   if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 	glutEnterGameMode();
@@ -580,6 +645,7 @@ int main( int argc, char** argv ) {
 	cerr << e.what() << endl;
 	exit(1);
   }
+  //
   //register glut callback functions
   glutDisplayFunc( display );
   glutReshapeFunc( reshape );
@@ -592,7 +658,16 @@ int main( int argc, char** argv ) {
 
   init_lighting();
   glEnable(GL_LIGHTING);
-	init_tex();
+
+	// loading textures
+	// clearing the vector
+	// Prentice says a vector is overkill for holding textures, but I'll do it for now
+	textures.clear();
+	unsigned int crateTexture;
+	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp");
+	textures.push_back(crateTexture);
+	unsigned int partTexture = init_particletex();
+	textures.push_back(partTexture);
 	init_particle();
   
   glutMainLoop();

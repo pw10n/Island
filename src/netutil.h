@@ -101,7 +101,9 @@ class playerstate_t: public netobj{
       int sync(char* buf, int sz) {return 0;};
 };
 
-#define OBJECTSTATE_CRATE 1
+#define OBJECTSTATE_CRATE 0
+#define OBJECTSTATE_CRATE_DIM 1
+
 class objectstate_t: public netobj{
    public:
 
@@ -117,6 +119,9 @@ class objectstate_t: public netobj{
 	 objectstate_t(uint16_t id, uint8_t hp, uint8_t type, double x, double y): _id(id), _hp(hp), _type(type), _pos(x,y) {};
 	 objectstate_t(const objectstate_t& other): _id(other._id), _hp(other._hp),
                            _type(other._type), _pos(other._pos) {};
+
+
+	  void setType(uint8_t type);
 
 	  //network functions:
       int serialize_delta(char* buf, int sz) {return 0;};

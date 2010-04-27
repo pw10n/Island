@@ -23,7 +23,7 @@ unsigned int BindTextureBMP(char *fn){
 
 	if( !(file = fopen(fn, "rb")) ){
 		cerr << "ERROR: file does not exist." << endl;
-		exit(-1);
+		exit(-2);
 	}
 
 	fseek(file, 14, SEEK_CUR);
@@ -34,17 +34,17 @@ unsigned int BindTextureBMP(char *fn){
 
 	if (infoheader->biBitCount != 24){
 		cerr << "ERROR: Bpp is not 24." << endl;
-		exit(-1);
+		exit(-3);
 	}
 	
 	if(!(data = (char*) malloc(infoheader->biWidth * infoheader->biHeight * 3))){
 		cerr << "ERROR: malloc failed.";
-		exit(-1);
+		exit(-4);
 	}
 
 	if(!(i = fread(data, infoheader->biWidth * infoheader->biHeight * 3, 1, file))){
 		cerr << "ERROR: can not read texture.";
-		exit(-1);
+		exit(-5);
 	}
 
 	//bgr -> rgb
