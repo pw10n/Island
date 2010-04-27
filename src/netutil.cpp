@@ -109,6 +109,35 @@ void playerstate_t::change_velocity(double nVx, double nVy){
 	_vel.y() = nVy;
 }
 
+// objectstate_t
+// default hp is 10 and id is 0
+// TO DO
+objectstate_t::objectstate_t(): _id(0), _type(0), _hp(10){
+}
+
+void objectstate_t::setType(uint8_t type){
+	_type = type;
+}
+
+/*void objectstate_t::draw(coord2d_t pos, unsigned int texture){
+	if (_type == OBJECTSTATE_CRATE){
+		// draw crate
+		// it'll be 5x5x5 for now
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glBegin(GL_QUADS);
+		// "front"
+		glTexCoord2f (0.0, 0.0);
+		glVertex3f (0.0, 0.0, 0.0);
+		glTexCoord2f (1.0, 0.0);
+		glVertex3f (5.0, 0.0, 0.0);
+		glTexCoord2f (1.0, 1.0);
+		glVertex3f (5.0, 5.0, 0.0);
+		glTexCoord2f (0.0, 1.0);
+		glVertex3f (0.0, 5.0, 0.0);
+		glEnd();
+	}
+}*/
+
 int make_ack(char * buf, int bufsz, 
 			 uint8_t value, uint32_t seq){
 	if (bufsz < sizeof(pkt_header) + sizeof(gAck_data))

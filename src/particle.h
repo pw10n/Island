@@ -1,5 +1,6 @@
 #pragma once
 #define PARTLIST 1
+#define PARTICLE_TEXTURE 1
 
 class particle
 {
