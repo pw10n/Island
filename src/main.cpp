@@ -66,6 +66,7 @@ materialStruct Sand = {
 };
 coord2d_t vel;
 playerstate_t* player;
+objectstate_t crates[5];
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -111,7 +112,7 @@ bool explo;
 vector<rapidfire *> rfpar;
 
 vector<unsigned int> textures;
-vector<objectstate_t> crates;
+//vector<objectstate_t> crates;
 
 float p2w_x(int x) {
   float x1;
@@ -321,58 +322,61 @@ void drawRapid() {
 	}
 }
 
-void drawCrate(){
-	objectstate_t crate;
-	crate.setType(OBJECTSTATE_CRATE);
+void drawCrates(){
 
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	// it'll be 2x2x2 for now
 	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
 	// "front"
-	glBegin(GL_QUADS);
-	glTexCoord2f (0.0, 0.0);
-	glVertex3f (-0.5, 0.0, 1.0);
-	glTexCoord2f (1.0, 0.0);
-	glVertex3f (1.0, 0.0, 1.0);
-	glTexCoord2f (1.0, 1.0);
-	glVertex3f (1.0, 1.0, 1.0);
-	glTexCoord2f (0.0, 1.0);
-	glVertex3f (0.0, 1.0, 1.0);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
-	glBegin(GL_QUADS);
-	glTexCoord2f (0.0, 0.0);
-	glVertex3f (1.0, 0.0, 0.0);
-	glTexCoord2f (1.0, 0.0);
-	glVertex3f (1.0, 0.0, 1.0);
-	glTexCoord2f (1.0, 1.0);
-	glVertex3f (1.0, 1.0, 1.0);
-	glTexCoord2f (0.0, 1.0);
-	glVertex3f (1.0, 1.0, 0.0);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
-	glBegin(GL_QUADS);
-	glTexCoord2f (0.0, 0.0);
-	glVertex3f (0.0, 1.0, 0.0);
-	glTexCoord2f (1.0, 0.0);
-	glVertex3f (1.0, 1.0, 0.0);
-	glTexCoord2f (1.0, 1.0);
-	glVertex3f (1.0, 1.0, 1.0);
-	glTexCoord2f (0.0, 1.0);
-	glVertex3f (0.0, 1.0, 1.0);
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
-	glBegin(GL_QUADS);
-	glTexCoord2f (0.0, 0.0);
-	glVertex3f (0.0, 0.0, 1.0);
-	glTexCoord2f (1.0, 0.0);
-	glVertex3f (0.0, 0.0, 0.0);
-	glTexCoord2f (1.0, 1.0);
-	glVertex3f (0.0, 1.0, 0.0);
-	glTexCoord2f (0.0, 1.0);
-	glVertex3f (0.0, 1.0, 1.0);
-	glEnd();
+	for(int i=0;i<5;i++){
+		glPushMatrix();
+		glTranslatef(crates[i]._pos.x(),0,crates[i]._pos.y());
+		glBegin(GL_QUADS);
+		glTexCoord2f (0.0, 0.0);
+		glVertex3f (-.5, 0.0, 0.5);
+		glTexCoord2f (1.0, 0.0);
+		glVertex3f (0.5, 0.0, 0.5);
+		glTexCoord2f (1.0, 1.0);
+		glVertex3f (0.5, 1.0, 0.5);
+		glTexCoord2f (0.0, 1.0);
+		glVertex3f (-.5, 1.0, 0.5);
+		glEnd();
+		glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+		glBegin(GL_QUADS);
+		glTexCoord2f (0.0, 0.0);
+		glVertex3f (0.5, 0.0, -.5);
+		glTexCoord2f (1.0, 0.0);
+		glVertex3f (0.5, 0.0, 0.5);
+		glTexCoord2f (1.0, 1.0);
+		glVertex3f (0.5, 1.0, 0.5);
+		glTexCoord2f (0.0, 1.0);
+		glVertex3f (0.5, 1.0, -.5);
+		glEnd();
+		glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+		glBegin(GL_QUADS);
+		glTexCoord2f (0.0, 0.0);
+		glVertex3f (-.5, 1.0, -.5);
+		glTexCoord2f (1.0, 0.0);
+		glVertex3f (0.5, 1.0, -.5);
+		glTexCoord2f (1.0, 1.0);
+		glVertex3f (0.5, 1.0, 0.5);
+		glTexCoord2f (0.0, 1.0);
+		glVertex3f (-.5, 1.0, 0.5);
+		glEnd();
+		glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+		glBegin(GL_QUADS);
+		glTexCoord2f (0.0, 0.0);
+		glVertex3f (-.5, 0.0, 0.5);
+		glTexCoord2f (1.0, 0.0);
+		glVertex3f (-.5, 0.0, -.5);
+		glTexCoord2f (1.0, 1.0);
+		glVertex3f (-.5, 1.0, -.5);
+		glTexCoord2f (0.0, 1.0);
+		glVertex3f (-.5, 1.0, 0.5);
+		glEnd();
+		glPopMatrix();
+	}
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -398,8 +402,8 @@ void display() {
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
         drawGrid();
-		glTranslatef(-1.0,0,-1.0);
-		drawCrate();
+		//glTranslatef(-1.0,0,-1.0);
+		drawCrates();
 		//glutSolidSphere(1.0,10,10);
       glPopMatrix();
 	  if(fbtim>-1) drawFireball();
@@ -527,6 +531,13 @@ void keyboard(unsigned char key, int x, int y ){
   }
 }
 
+bool checkCollision(source * src){
+	for(int i=0;i<5;i++){
+		if(sphereAABBcollide(src->body,crates[i].body)) return true;
+	}
+	return spherecollide(src->body,player->body);
+}
+
 void tick(int state) {
 	player->change_velocity(vel);
 	player->tick(worldtime);
@@ -559,7 +570,7 @@ void tick(int state) {
 		detonate(fbsrc,false);
 		explo = true;
 	}
-	else if(fbtim>-1&&fbsrc->collide(1.0,1.0,1.0)){
+	else if(fbtim>-1&&checkCollision(fbsrc)){
 		fbtim=-1;
 		fbsrc->active = false;
 		fbpar.clear();
@@ -580,7 +591,7 @@ void tick(int state) {
 	}
 	for(int i=rfpar.size()-1;i>-1;i--){
 		rfpar[i]->move();
-		if(!rfpar[i]->boom&&rfpar[i]->collide(1.0,1.0,1.0)){
+		if(!rfpar[i]->boom&&checkCollision(rfpar[i])){
 			rfpar[i]->boom = true;
 			rfpar[i]->life = 0.0;
 		}
@@ -631,6 +642,11 @@ int main( int argc, char** argv ) {
   player = new playerstate_t(worldtime);
   fbtim = -1;
   explo = false;
+  for(int i=0;i<5;i++){
+	crates[i].setType(OBJECTSTATE_CRATE);
+	crates[i]._pos = coord2d_t(rand()%20-10,rand()%20-10);
+	crates[i].body = struct AABB(crates[i]._pos);
+  }
   
   //register glut callback functions
   glutDisplayFunc( display );
@@ -650,7 +666,8 @@ int main( int argc, char** argv ) {
 	// Prentice says a vector is overkill for holding textures, but I'll do it for now
 	textures.clear();
 	unsigned int crateTexture;
-	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp");
+	crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
+	//crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp");
 	textures.push_back(crateTexture);
 	unsigned int partTexture = init_particletex();
 	textures.push_back(partTexture);

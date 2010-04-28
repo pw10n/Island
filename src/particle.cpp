@@ -14,6 +14,7 @@ using namespace std;
 #define DCOS(x) cos(x*.01745329)
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
+#define DONTCOLLIDE sphere(0,100,100)
 
 particle::particle(void)
 {
@@ -28,6 +29,7 @@ fireball_s::fireball_s(float ix,float iz,float ivx,float ivz)
 	x = ix; y = .1f; z = iz; vx = ivx; vz = ivz;
 	age = 0; active = true;
 	r = 1.0f; g = .5f; b = 0.0f; a = 1.0f;
+	body = DONTCOLLIDE; //set to prevent collision when "charging"
 }
 
 void fireball_s::move(void)
@@ -35,6 +37,9 @@ void fireball_s::move(void)
 	if(!active) return;
 	if(age>15){
 		x += vx; z += vz;
+	}
+	if(age>20){ //waits until 20 to keep it from colliding with the user
+		body = sphere(.15,x,z);
 	}
 	age++;
 }
@@ -52,14 +57,14 @@ void fireball_s::draw(void)
 	glPopMatrix();
 	glEnable(GL_LIGHTING);
 }
-
+/*
 bool fireball_s::collide(float obx, float obz, float obr)
 {
 	float rad = (float)MIN(age,15)/100.f;
 	float dist = hypot(obx-x,obz-z);
 	return (dist<(obr+rad));
 }
-
+*/
 fireball_p::fireball_p(fireball_s * sour)
 {
 	src = sour;
@@ -124,12 +129,14 @@ explosion_s::explosion_s(float ix, float iz)
 	//fade = (float)(rand()%7+3)/50.0f;
 	r = g = a = 1.0f; b = 0.0f;
 	active = true;
+	body = sphere(life,x,z);
 }
 
 void explosion_s::move(void)
 {
 	if(!active) return;
 	life -= fade;
+	body = sphere(life,x,z);
 }
 
 void explosion_s::draw(void)
@@ -142,13 +149,13 @@ void explosion_s::draw(void)
 	glCallList(PARTLIST);
 	glPopMatrix();
 }
-
+/*
 bool explosion_s::collide(float obx, float obz, float obr)
 {
 	float dist = hypot(obx-x,obz-z);
 	return (dist<(obr+life));
 }
-
+*/
 explosion_p::explosion_p(explosion_s * sour)
 {
 	src = sour;
@@ -198,6 +205,7 @@ rapidfire::rapidfire(float ix, float iz, float itr, float itd)
 	x = ix; y = .1; z = iz; vtr = itr; vtd = itd;
 	life = 0.0; r = a = 1.0f; g = b = 0.0f;
 	active = true; boom = false;
+	body = sphere(.2f,x,z);
 }
 
 void rapidfire::move(void)
@@ -206,10 +214,12 @@ void rapidfire::move(void)
 	if(!boom){
 		x += -sin(vtr)*.5;
 		z += -cos(vtr)*.5;
+		body = sphere(.2f,x,z);
 		if(life>3.0){
 			life = 0.0;
 			boom = true;
 			g = 1.0f;
+			body = DONTCOLLIDE;
 		}
 	}else{
 		g = MAX(0.0f,1.0f-life*2.0f);
@@ -238,13 +248,13 @@ void rapidfire::draw(void)
 	}
 	glPopMatrix();
 }
-
+/*
 bool rapidfire::collide(float obx, float obz, float obr)
 {
 	float dist = hypot(obx-x,obz-z);
 	return (dist<(obr+.2f));
 }
-
+*/
 splinter::splinter(explosion_s * sour)
 {
 	src = sour;

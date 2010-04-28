@@ -77,6 +77,7 @@ playerstate_t::playerstate_t(const playerstate_t &player){
 	_vel = player._vel;
 	_state = player._state;
 	_score = player._score;
+	body = player.body;
 
 	for( vector<gDelta_data>::const_iterator it = player._deltas.begin();
 		it != player._deltas.end();
@@ -89,6 +90,7 @@ void playerstate_t::tick(uint32_t time){
 		if (_vel.y() > DBL_EPSILON){
 			_pos.x() += (-sin(_vel.x()) * _vel.y());
 			_pos.y() += (cos(_vel.x()) * _vel.y());
+			body = sphere(1,_pos.x(),_pos.y());
 		}
 	}
 }
