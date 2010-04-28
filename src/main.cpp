@@ -131,6 +131,8 @@ float p2w_y(int y) {
 return y1;
 }
 
+void drawCharacter();
+
 ////// dummy ai functions for 25% /////////
 /*
 
@@ -167,33 +169,48 @@ void init_ai(){
 	others[0]._pos.x() = 3.0;
 	others[0]._pos.y() = 3.0;
 	others[0]._vel.x() = 45.0;
-	others[0]._vel.y() = 0.1;
+	others[0]._vel.y() = 0.001;
 
 	others[1]._pos.x() = -3.0;
 	others[1]._pos.y() = -3.0;
 	others[1]._vel.x() = 32.0;
-	others[1]._vel.y() = 0.1;
+	others[1]._vel.y() = 0.001;
 
 	others[2]._pos.x() = 3.0;
 	others[2]._pos.y() = -3.0;
 	others[2]._vel.x() = 15.0;
-	others[2]._vel.y() = 0.1;
+	others[2]._vel.y() = 0.001;
 
 	others[3]._pos.x() = -3.0;
 	others[3]._pos.y() = 3.0;
 	others[3]._vel.x() = -45.0;
-	others[3]._vel.y() = 0.1;
+	others[3]._vel.y() = 0.001;
 
 	others[4]._pos.x() = 0.0;
 	others[4]._pos.y() = -5.0;
 	others[4]._vel.x() = 90.0;
-	others[4]._vel.y() = 0.1;
+	others[4]._vel.y() = 0.001;
+}
+
+void drawAi(){
+	for(vector<playerstate_t>::iterator it = others.begin();
+		it != others.end();
+		++it)
+	{
+		glPushMatrix();
+		//translate
+		glTranslatef((*it)._pos.x(), 0.2, (*it)._pos.y());
+		//rotate
+		glRotatef((*it)._vel.x(), 0.0, 1.0, 0.0);
+		drawCharacter();
+		glPopMatrix();
+	}
 }
 
 void tick(uint32_t time){
-	for(vector<int>::iterator it = others.begin();
+	for(vector<playerstate_t>::iterator it = others.begin();
 		it != others.end();
-		((*it)._hp<=0)others.erase(it):++it)
+		((*it)._hp<=0)?others.erase(it):++it)
 	{
 		switch((*it)._state){
 			case PSTATE_AI_SEARCHING:
@@ -224,7 +241,6 @@ void tick(uint32_t time){
 				(*it)._state = PSTATE_AI_SEARCHING;
 		}
 	}
-	
 }
 
 
@@ -392,6 +408,14 @@ void drawGrid() {
   glEnd();
 }
 
+// draws the character facing forward.
+void drawCharacter(){
+  materials(Grey);
+  glPushMatrix();
+	glRotatef(90.0f, 1.0, 0.0, 0.0);
+	glutSolidCone(0.3,0.1,20,20);
+  glPopMatrix();
+}
 
 void drawPlayer() {
   materials(Grey);
