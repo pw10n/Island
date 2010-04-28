@@ -39,6 +39,7 @@ class coord2d_t{
    public:
 	   coord2d_t(): _x(0.0), _y(0.0) {};
 	   coord2d_t(double x, double y): _x(x), _y(y) {};
+	   coord2d_t(const coord2d_t &o): _x(o._x), _y(o._y) {};
 
 	   coord2d_t operator=( const coord2d_t& );
 	   coord2d_t operator*( const coord2d_t& ); // multiply

@@ -214,7 +214,7 @@ void rapidfire::move(void)
 	if(!boom){
 		x += -sin(vtr)*.5;
 		z += -cos(vtr)*.5;
-		body = sphere(.2f,x,z);
+		body = (life>.25)?sphere(.2f,x,z):DONTCOLLIDE;
 		if(life>3.0){
 			life = 0.0;
 			boom = true;

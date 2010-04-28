@@ -514,7 +514,7 @@ void processMouseActiveMotion(int x, int y) {
 	vel.x() = theta;
 
 
-	
+	vel.y() = (flag)?.005:0;
 
   glutPostRedisplay();
 
@@ -531,14 +531,22 @@ void keyboard(unsigned char key, int x, int y ){
   }
 }
 
-bool checkCollision(source * src){
+bool checkPaCollision(source * src){
 	for(int i=0;i<5;i++){
 		if(sphereAABBcollide(src->body,crates[i].body)) return true;
 	}
 	return spherecollide(src->body,player->body);
 }
 
+bool checkPlCollision(playerstate_t * pls){
+	for(int i=0;i<5;i++){
+		if(sphereAABBcollide(pls->front,crates[i].body)) return true;
+	}
+	return false;
+}
+
 void tick(int state) {
+	if(checkPlCollision(player)) vel.y() = 0;
 	player->change_velocity(vel);
 	player->tick(worldtime);
 	if (flag){
@@ -570,7 +578,7 @@ void tick(int state) {
 		detonate(fbsrc,false);
 		explo = true;
 	}
-	else if(fbtim>-1&&checkCollision(fbsrc)){
+	else if(fbtim>-1&&checkPaCollision(fbsrc)){
 		fbtim=-1;
 		fbsrc->active = false;
 		fbpar.clear();
@@ -591,7 +599,7 @@ void tick(int state) {
 	}
 	for(int i=rfpar.size()-1;i>-1;i--){
 		rfpar[i]->move();
-		if(!rfpar[i]->boom&&checkCollision(rfpar[i])){
+		if(!rfpar[i]->boom&&checkPaCollision(rfpar[i])){
 			rfpar[i]->boom = true;
 			rfpar[i]->life = 0.0;
 		}

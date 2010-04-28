@@ -175,6 +175,26 @@
 				RelativePath="..\..\..\src\main.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\src\netutil.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\network.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\particle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\texture.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\types.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -182,7 +202,31 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\..\src\collision.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\netutil.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\network.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\particle.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\stdint.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\texture.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\types.h"
 				>
 			</File>
 		</Filter>
