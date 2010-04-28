@@ -66,6 +66,7 @@ materialStruct Sand = {
 };
 coord2d_t vel;
 playerstate_t* player;
+vector<playerstate_t> others;
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -129,6 +130,51 @@ float p2w_y(int y) {
 
 return y1;
 }
+
+////// dummy ai functions for 25% /////////
+
+#define PSTATE_AI_SEARCHING 11
+#define PSTATE_AI_TARGETING_1 12
+#define PSTATE_AI_TARGETING_2 13
+#define PSTATE_AI_TARGETING_3 14
+#define PSTATE_AI_ATACKING 15
+
+void init_ai(){
+	for(int i=0; i<5; ++i){
+		playerstate_t temp(0);
+		temp._tick = 0;
+		temp._hp = 100;
+		temp._mp = 0;
+		temp._weapon = 0;
+		temp._state = PSTATE_AI_SEARCHING;
+		temp._score = 0;
+		others.push_back(temp);
+	}
+	others[0]._pos.x() = 3.0;
+	others[0]._pos.y() = 3.0;
+
+	others[1]._pos.x() = -3.0;
+	others[1]._pos.y() = -3.0;
+
+	others[2]._pos.x() = 3.0;
+	others[2]._pos.y() = -3.0;
+
+	others[3]._pos.x() = -3.0;
+	others[3]._pos.y() = 3.0;
+
+	others[4]._pos.x() = 0.0;
+	others[4]._pos.y() = -5.0;
+}
+
+void tick(uint32_t time){
+
+	
+}
+
+
+//////////////////////////////////////////
+
+
 
 void genTex(){
 	alpha = new GLubyte[16 * 16];
@@ -534,12 +580,6 @@ void tick(int state) {
 
 		//myX += -sin(theta);
 		///myZ += cos(theta);
-		
-
-
-
-		
-
 
 	}
 	if (fbtim>-1){
