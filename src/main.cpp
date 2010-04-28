@@ -132,6 +132,20 @@ return y1;
 }
 
 ////// dummy ai functions for 25% /////////
+/*
+
+AI LOGIC PLAN:
+
+AI will move in random direction bouncing off the 
+walls in a 10.0 x 10.0 map until it encounters a player
+in firing range. Once the player is encountered, it will
+wait 3 ticks (30ms x 3) before firing.
+
+Once the player has moved out of range, it continues to move
+forward in the last direction it was facing.
+
+*/
+
 
 #define PSTATE_AI_SEARCHING 11
 #define PSTATE_AI_TARGETING_1 12
@@ -152,22 +166,64 @@ void init_ai(){
 	}
 	others[0]._pos.x() = 3.0;
 	others[0]._pos.y() = 3.0;
+	others[0]._vel.x() = 45.0;
+	others[0]._vel.y() = 0.1;
 
 	others[1]._pos.x() = -3.0;
 	others[1]._pos.y() = -3.0;
+	others[1]._vel.x() = 32.0;
+	others[1]._vel.y() = 0.1;
 
 	others[2]._pos.x() = 3.0;
 	others[2]._pos.y() = -3.0;
+	others[2]._vel.x() = 15.0;
+	others[2]._vel.y() = 0.1;
 
 	others[3]._pos.x() = -3.0;
 	others[3]._pos.y() = 3.0;
+	others[3]._vel.x() = -45.0;
+	others[3]._vel.y() = 0.1;
 
 	others[4]._pos.x() = 0.0;
 	others[4]._pos.y() = -5.0;
+	others[4]._vel.x() = 90.0;
+	others[4]._vel.y() = 0.1;
 }
 
 void tick(uint32_t time){
-
+	for(vector<int>::iterator it = others.begin();
+		it != others.end();
+		((*it)._hp<=0)others.erase(it):++it)
+	{
+		switch((*it)._state){
+			case PSTATE_AI_SEARCHING:
+				// move forward
+				// check bounds
+				break;
+			case PSTATE_AI_TARGETING_1:
+				// if still in range
+				(*it)._state = PSTATE_AI_TARGETING_2;
+				// else : return to searching state
+				break;
+			case PSTATE_AI_TARGETING_2:
+				// if still in range
+				(*it)._state = PSTATE_AI_TARGETING_3;
+				// else : return to searching state
+				break;
+			case PSTATE_AI_TARGETING_3:
+				// if still in range
+				(*it)._state = PSTATE_AI_ATACKING;
+				// else : return to searching state
+				break;
+			case PSTATE_AI_ATACKING:
+				// if still in rage
+				(*it)._state = PSTATE_AI_TARGETING_1;
+				// else : return to searching state
+				break;
+			default:
+				(*it)._state = PSTATE_AI_SEARCHING;
+		}
+	}
 	
 }
 
