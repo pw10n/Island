@@ -172,31 +172,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\gs_types.cpp"
+				RelativePath="..\..\..\src\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\main.cpp"
+				RelativePath="..\..\..\src\netutil.cpp"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\netutil.cpp"
+				RelativePath="..\..\..\src\network.cpp"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\network.cpp"
+				RelativePath="..\..\..\src\particle.cpp"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\particle.cpp"
+				RelativePath="..\..\..\src\texture.cpp"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\texture.cpp"
-				>
-			</File>
-			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\types.cpp"
+				RelativePath="..\..\..\src\types.cpp"
 				>
 			</File>
 		</Filter>
@@ -206,35 +202,31 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\collision.h"
+				RelativePath="..\..\..\src\collision.h"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\gs_types.h"
+				RelativePath="..\..\..\src\netutil.h"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\netutil.h"
+				RelativePath="..\..\..\src\network.h"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\network.h"
+				RelativePath="..\..\..\src\particle.h"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\particle.h"
+				RelativePath="..\..\..\src\stdint.h"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\stdint.h"
+				RelativePath="..\..\..\src\texture.h"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\texture.h"
-				>
-			</File>
-			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\Island\src\types.h"
+				RelativePath="..\..\..\src\types.h"
 				>
 			</File>
 		</Filter>
