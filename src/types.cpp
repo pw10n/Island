@@ -26,6 +26,10 @@ coord2d_t coord2d_t::operator*( const coord2d_t& c1) {
    return(*this );
 }
 
+double coord2d_t::distanceTo( const coord2d_t& c1 ){
+	return sqrt((c1.x() - this->_x)*(c1.x() - this->_x) + (c1.y() - this->_y)*(c1.y() - this->_y));
+}
+
 
 /* vec3d_t constructors */
 /* default */

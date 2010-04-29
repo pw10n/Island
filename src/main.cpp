@@ -217,28 +217,63 @@ void tick(uint32_t time){
 		switch((*it)._state){
 			case PSTATE_AI_SEARCHING:
 				// move forward
-				
+				(*it)._pos.x() += (-sin((*it)._vel.x()) * (*it)._vel.y());
+				(*it)._pos.y() += (cos((*it)._vel.x()) * (*it)._vel.y());
+
 				// check bounds
+				if ((*it)._pos.x() > 10.0){
+					(*it)._pos.x() = 10.0;
+					(*it)._vel.y() *= -1.0;
+				}
+				else if ((*it)._pos.x() < -10.0){
+					(*it)._pos.x() = -10.0;
+					(*it)._vel.y() *= -1.0;
+				}
+				if ((*it)._pos.y() > 10.0){
+					(*it)._pos.y() = 10.0;
+					(*it)._vel.y() *= -1.0;
+				}
+				else if ((*it)._pos.y() < -10.0){
+					(*it)._pos.y() = -10.0;
+					(*it)._vel.y() *= -1.0;
+				}
+
+				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+					(*it)._state = PSTATE_AI_TARGETING_1;
+				
+
 				break;
 			case PSTATE_AI_TARGETING_1:
 				// if still in range
-				(*it)._state = PSTATE_AI_TARGETING_2;
+				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+					(*it)._state = PSTATE_AI_TARGETING_2;
 				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
 				break;
 			case PSTATE_AI_TARGETING_2:
 				// if still in range
-				(*it)._state = PSTATE_AI_TARGETING_3;
+				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+					(*it)._state = PSTATE_AI_TARGETING_3;
 				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
 				break;
 			case PSTATE_AI_TARGETING_3:
 				// if still in range
-				(*it)._state = PSTATE_AI_ATACKING;
+				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+					(*it)._state = PSTATE_AI_ATACKING;
 				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
 				break;
 			case PSTATE_AI_ATACKING:
 				// if still in rage
-				(*it)._state = PSTATE_AI_TARGETING_1;
+				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+					(*it)._state = PSTATE_AI_TARGETING_1;
 				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
 				break;
 			default:
 				(*it)._state = PSTATE_AI_SEARCHING;
