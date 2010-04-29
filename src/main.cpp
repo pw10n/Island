@@ -674,8 +674,8 @@ int main( int argc, char** argv ) {
 	// Prentice says a vector is overkill for holding textures, but I'll do it for now
 	textures.clear();
 	unsigned int crateTexture;
-	crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
-	//crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp");
+	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
+	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp");
 	textures.push_back(crateTexture);
 	unsigned int partTexture = init_particletex();
 	textures.push_back(partTexture);
