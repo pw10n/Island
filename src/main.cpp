@@ -67,7 +67,6 @@ materialStruct Sand = {
 coord2d_t vel;
 playerstate_t* player;
 vector<playerstate_t> others;
-objectstate_t crates[5];
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -114,7 +113,7 @@ bool explo;
 vector<rapidfire *> rfpar;
 
 vector<unsigned int> textures;
-//vector<objectstate_t> crates;
+vector<objectstate_t> crates;
 
 float p2w_x(int x) {
   float x1;
@@ -378,25 +377,33 @@ void spawnFireball(){
 	float fbz = -cos(theta);
 	coord2d_t dummy;
 	dummy = player->calcHotSpot(dummy,.6);
-	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0f,fbz/5.0f);
+	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0f,fbz/5.0f, PARTICLE_FIREBALL);
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
 }
 
-void detonate(fireball_s * fbs, bool splin){
-	exsrc = new explosion_s(fbs->x,fbs->z);
+void detonate(source * ws, bool splin){
+	explo = true;
+	exsrc = new explosion_s(ws->x,ws->z);
 	if(!splin){
 		for(int i=0;i<400;i++){
 			expar.push_back(new explosion_p(exsrc));
 		}
 	}
 	else{
-		for(int i=0;i<200;i++){
-			expar.push_back(new explosion_p(exsrc));
+		if (ws->_type == PARTICLE_FIREBALL){
+			for(int i=0;i<200;i++){
+				expar.push_back(new explosion_p(exsrc));
+			}
+			for(int i=0;i<200;i++){
+				expar.push_back(new splinter(exsrc));
+			}
 		}
-		for(int i=0;i<200;i++){
-			expar.push_back(new splinter(exsrc));
+		else if (ws->_type == PARTICLE_RAPID){
+			for(int i=0;i<200;i++){
+				expar.push_back(new splinter(exsrc));
+			}
 		}
 	}
 }
@@ -405,7 +412,7 @@ void rapid(playerstate_t& player){
 	if(rfpar.size()<100&&rfire==0){
 		coord2d_t dummy;
 		dummy = player.calcHotSpot(dummy,.6);
-		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),player._vel.x(),player._vel.x()*(180.00/M_PI)));
+		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),player._vel.x(),player._vel.x()*(180.00/M_PI),PARTICLE_RAPID));
 	}
 }
 
@@ -573,7 +580,7 @@ void drawCrates(){
 	// it'll be 2x2x2 for now
 	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
 	// "front"
-	for(int i=0;i<5;i++){
+	for(int i = 0; i < crates.size(); i++){
 		glPushMatrix();
 		glTranslatef(crates[i]._pos.x(),0,crates[i]._pos.y());
 		glBegin(GL_QUADS);
@@ -618,6 +625,18 @@ void drawCrates(){
 		glVertex3f (-.5, 1.0, -.5);
 		glTexCoord2f (0.0, 1.0);
 		glVertex3f (-.5, 1.0, 0.5);
+		glEnd();
+		glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+		//back
+		glBegin(GL_QUADS);
+		glTexCoord2f (0.0, 0.0);
+		glVertex3f (-.5, 0.0, -0.5);
+		glTexCoord2f (1.0, 0.0);
+		glVertex3f (0.5, 0.0, -0.5);
+		glTexCoord2f (1.0, 1.0);
+		glVertex3f (0.5, 1.0, -0.5);
+		glTexCoord2f (0.0, 1.0);
+		glVertex3f (-.5, 1.0, -0.5);
 		glEnd();
 		glPopMatrix();
 	}
@@ -835,8 +854,20 @@ void keyboard(unsigned char key, int x, int y ){
 }
 
 bool checkPaCollision(source * src){
-	for(int i=0;i<5;i++){
-		if(sphereAABBcollide(src->body,crates[i].body)) return true;
+	for(int i = 0 ; i < crates.size(); i++){
+		if(sphereAABBcollide(src->body,crates[i].body)){
+			if (src->_type == PARTICLE_FIREBALL){
+				crates[i]._hp -= 10;
+			}
+			else if (src->_type == PARTICLE_RAPID){
+				crates[i]._hp -= 1;
+			}
+			// this is wrong - hacked way of having the splinter effect on dead crate
+			if (crates[i]._hp <= 0){
+				detonate(src, true);
+			}
+			return true;
+		}
 	}
 	for(int i=0;i<others.size();i++){
 		if(spherecollide(src->body,others[i].body)) {
@@ -848,7 +879,7 @@ bool checkPaCollision(source * src){
 }
 
 bool checkPlCollision(playerstate_t * pls){
-	for(int i=0;i<5;i++){
+	for(int i=0; i < crates.size(); i++){
 		if(sphereAABBcollide(pls->front,crates[i].body)) return true;
 	}
 	return false;
@@ -861,16 +892,8 @@ void tick(int state) {
 	tickAi(worldtime);
 	rfire = (rfire+1)%5;
 	if (flag){
-
 		//myX += -sin(theta);
 		///myZ += cos(theta);
-		
-
-
-
-		
-
-
 	}
 	if (fbtim>-1){
 		fbtim++;
@@ -892,9 +915,10 @@ void tick(int state) {
 	else if(fbtim>-1&&checkPaCollision(fbsrc)){
 		fbtim=-1;
 		fbsrc->active = false;
+		fbsrc;
 		fbpar.clear();
-		detonate(fbsrc,true); //if fbtim less than 50, fb must have collided with something
-		explo = true;
+		//detonate(fbsrc,true); //if fbtim less than 50, fb must have collided with something
+		//explo = true;
 	}
 	if (explo){
 		exsrc->move();
@@ -913,10 +937,15 @@ void tick(int state) {
 		if(!rfpar[i]->boom&&checkPaCollision(rfpar[i])){
 			rfpar[i]->boom = true;
 			rfpar[i]->life = 0.0;
+			rfpar[i];
 		}
 		if(!rfpar[i]->active){
 			rfpar.erase(rfpar.begin()+i);
 		}
+	}
+	for(vector<objectstate_t>::iterator it = crates.begin();
+		it != crates.end();
+		it = (*it)._hp <= 0 ? crates.erase(it) : it + 1){
 	}
 	glutPostRedisplay();
 
@@ -952,8 +981,8 @@ int main( int argc, char** argv ) {
   angle = 0;
   theta = 0;
   eyex = 0;
-  eyey = 4.33;//4.33;
-  eyez = 5;//5;
+  eyey = 5;//4.33;
+  eyez = 3.5;//5;
   LAx = 0;
   LAy = 0;
   LAz = 0;
@@ -961,11 +990,11 @@ int main( int argc, char** argv ) {
   player = new playerstate_t(worldtime);
   fbtim = -1;
   explo = false;
-  for(int i=0;i<5;i++){
-	crates[i].setType(OBJECTSTATE_CRATE);
-	crates[i]._pos = coord2d_t(rand()%20-10,rand()%20-10);
-	crates[i].body = struct AABB(crates[i]._pos);
+  for(int i = 0; i < 5; i++){
+	  objectstate_t temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10));
+	  crates.push_back(temp);
   }
+  for(int i=0;i<5;i++) crates[i].body = struct AABB(crates[i]._pos);
   
   //register glut callback functions
   glutDisplayFunc( display );
