@@ -21,9 +21,16 @@ coord2d_t coord2d_t::operator=( const coord2d_t& c1) {
 }
 
 coord2d_t coord2d_t::operator*( const coord2d_t& c1) {
-   this->_x *= c1.x();
-   this->_y *= c1.y();
-   return(*this );
+	coord2d_t   temp;
+	temp.x() = this->_x * c1.x();
+   temp.y() = this->_y * c1.y();
+   return(temp );
+}
+coord2d_t coord2d_t::operator-( const coord2d_t& c1) {
+	coord2d_t   temp;
+	temp.x() = this->_x - c1.x();
+   temp.y() = this->_y- c1.y();
+   return(temp );
 }
 
 double coord2d_t::distanceTo( const coord2d_t& c1 ){

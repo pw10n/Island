@@ -43,6 +43,7 @@ class coord2d_t{
 
 	   coord2d_t operator=( const coord2d_t& );
 	   coord2d_t operator*( const coord2d_t& ); // multiply
+		coord2d_t operator-( const coord2d_t& );
 
 	   double distanceTo( const coord2d_t& );
 

@@ -295,8 +295,26 @@ void tickAi(uint32_t time){
 				break;
 			case PSTATE_AI_TARGETING_3:
 				// if still in range
-				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
+					coord2d_t pos = player->_pos - (*it)._pos;
+					float theta=(*it)._vel.x();
+					if (pos.x()==0 && pos.x()<0) // handle div by zero case.
+						theta = M_PI/2.0f;
+					else if (pos.y()==0 && pos.x()>0) // handle div by zero case.
+						theta = 3.0f*M_PI/2.0f;
+					else if (pos.y()<0 && pos.x()<0)
+						theta = atan((float)pos.x()/(float)pos.y());
+					else if (pos.y()>0 && pos.x()<=0)
+						theta = atan((float)pos.x()/(float)pos.y())+M_PI;
+					else if (pos.y()<0 && pos.x()>=0)
+						theta = atan((float)pos.x()/(float)pos.y())+2*M_PI;
+					else if (pos.y()>0 && pos.x()>0)
+						theta = atan((float)pos.x()/(float)pos.y())+M_PI;
+						
+					//angle=theta*(180.0f / M_PI);
+					(*it)._vel.x() = theta+(M_PI/2);
 					(*it)._state = PSTATE_AI_ATACKING;
+				}
 				// else : return to searching state
 				else
 					(*it)._state = PSTATE_AI_SEARCHING;
