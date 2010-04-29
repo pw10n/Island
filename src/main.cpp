@@ -16,6 +16,10 @@
 #include "texture.h"
 #include "types.h"
 
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -33,6 +37,8 @@ using namespace std;
 #define WORLD_TIME_RESOLUTION 30
 
 uint32_t worldtime=0;
+
+int hit_damage = 5;
 
 #define MIN(x,y) (x>y)?y:x
 #define MAX(x,y) (x>y)?x:y
@@ -187,40 +193,65 @@ forward in the last direction it was facing.
 #define PSTATE_AI_ATACKING 15
 
 void init_ai(){
-	for(int i=0; i<5; ++i){
+	for(int i=0; i<10; ++i){
 		playerstate_t temp(0);
 		temp._tick = 0;
-		temp._hp = 100;
+		temp._hp = 10;
 		temp._mp = 0;
 		temp._weapon = 0;
 		temp._state = PSTATE_AI_SEARCHING;
 		temp._score = 0;
 		others.push_back(temp);
 	}
-	others[0]._pos.x() = 3.0;
+	others[0]._pos.x() = 35.0;
 	others[0]._pos.y() = 3.0;
 	others[0]._vel.x() = 45.0;
 	others[0]._vel.y() = 0.05;
 
-	others[1]._pos.x() = -3.0;
-	others[1]._pos.y() = -3.0;
+	others[1]._pos.x() = -43.0;
+	others[1]._pos.y() = -13.0;
 	others[1]._vel.x() = 32.0;
 	others[1]._vel.y() = 0.05;
 
-	others[2]._pos.x() = 3.0;
-	others[2]._pos.y() = -3.0;
+	others[2]._pos.x() = 20.0;
+	others[2]._pos.y() = -13.0;
 	others[2]._vel.x() = 15.0;
 	others[2]._vel.y() = 0.05;
 
-	others[3]._pos.x() = -3.0;
-	others[3]._pos.y() = 3.0;
+	others[3]._pos.x() = -23.0;
+	others[3]._pos.y() = 43.0;
 	others[3]._vel.x() = -45.0;
 	others[3]._vel.y() = 0.05;
 
-	others[4]._pos.x() = 0.0;
+	others[4]._pos.x() = 5.0;
 	others[4]._pos.y() = 0.5;
-	others[4]._vel.x() = 90.0;
+	others[4]._vel.x() = 10.0;
 	others[4]._vel.y() = 0.05;
+
+	others[5]._pos.x() = 15.0;
+	others[5]._pos.y() = 3.0;
+	others[5]._vel.x() = 25.0;
+	others[5]._vel.y() = 0.05;
+
+	others[6]._pos.x() = -3.0;
+	others[6]._pos.y() = -13.0;
+	others[6]._vel.x() = 82.0;
+	others[6]._vel.y() = 0.05;
+
+	others[7]._pos.x() = 10.0;
+	others[7]._pos.y() = -13.0;
+	others[7]._vel.x() = 55.0;
+	others[7]._vel.y() = 0.05;
+
+	others[8]._pos.x() = -13.0;
+	others[8]._pos.y() = 31.0;
+	others[8]._vel.x() = -25.0;
+	others[8]._vel.y() = 0.05;
+
+	others[9]._pos.x() = 4.0;
+	others[9]._pos.y() = 41.5;
+	others[9]._vel.x() = 30.0;
+	others[9]._vel.y() = 0.05;
 }
 
 void drawAi(){
@@ -238,7 +269,9 @@ void drawAi(){
 	}
 }
 
-#define MIN_AI_DISTANCE 7.0
+#define MIN_AI_DISTANCE 5.0
+#define AI_BOUNDS_MAX 40.0
+#define AI_BOUNDS_MIN -40.0
 void tickAi(uint32_t time){
 	for(vector<playerstate_t>::iterator it = others.begin();
 		it != others.end();
@@ -255,20 +288,20 @@ void tickAi(uint32_t time){
 				(*it).body = sphere(1,(*it)._pos.x(),-(*it)._pos.y());
 
 				// check bounds
-				if ((*it)._pos.x() > 10.0){
-					(*it)._pos.x() = 10.0;
+				if ((*it)._pos.x() > AI_BOUNDS_MAX){
+					(*it)._pos.x() = AI_BOUNDS_MAX;
 					(*it)._vel.x() += M_PI;
 				}
-				else if ((*it)._pos.x() < -10.0){
-					(*it)._pos.x() = -10.0;
+				else if ((*it)._pos.x() < AI_BOUNDS_MIN){
+					(*it)._pos.x() = AI_BOUNDS_MIN;
 					(*it)._vel.x() += M_PI;
 				}
-				if ((*it)._pos.y() > 10.0){
-					(*it)._pos.y() = 10.0;
+				if ((*it)._pos.y() > AI_BOUNDS_MAX){
+					(*it)._pos.y() = AI_BOUNDS_MAX;
 					(*it)._vel.x() += M_PI;
 				}
-				else if ((*it)._pos.y() < -10.0){
-					(*it)._pos.y() = -10.0;
+				else if ((*it)._pos.y() < AI_BOUNDS_MIN){
+					(*it)._pos.y() = AI_BOUNDS_MIN;
 					(*it)._vel.x() += M_PI;
 				}
 
@@ -279,24 +312,8 @@ void tickAi(uint32_t time){
 				break;
 			case PSTATE_AI_TARGETING_1:
 				// if still in range
-				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
-					(*it)._state = PSTATE_AI_TARGETING_2;
-				// else : return to searching state
-				else
-					(*it)._state = PSTATE_AI_SEARCHING;
-				break;
-			case PSTATE_AI_TARGETING_2:
-				// if still in range
-				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
-					(*it)._state = PSTATE_AI_TARGETING_3;
-				// else : return to searching state
-				else
-					(*it)._state = PSTATE_AI_SEARCHING;
-				break;
-			case PSTATE_AI_TARGETING_3:
-				// if still in range
 				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
-					coord2d_t pos = player->_pos - (*it)._pos;
+					coord2d_t pos = (*it)._pos-player->_pos ;
 					float theta=(*it)._vel.x();
 					if (pos.x()==0 && pos.x()<0) // handle div by zero case.
 						theta = M_PI/2.0f;
@@ -312,7 +329,26 @@ void tickAi(uint32_t time){
 						theta = atan((float)pos.x()/(float)pos.y())+M_PI;
 						
 					//angle=theta*(180.0f / M_PI);
-					(*it)._vel.x() = theta+(M_PI/2);
+					(*it)._vel.x() = -theta;
+					(*it)._state = PSTATE_AI_TARGETING_2;
+				}
+				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
+				break;
+			case PSTATE_AI_TARGETING_2:
+				// if still in range
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
+					(*it)._state = PSTATE_AI_TARGETING_3;
+				}
+				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
+				break;
+			case PSTATE_AI_TARGETING_3:
+				// if still in range
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
+					
 					(*it)._state = PSTATE_AI_ATACKING;
 				}
 				// else : return to searching state
@@ -321,7 +357,12 @@ void tickAi(uint32_t time){
 				break;
 			case PSTATE_AI_ATACKING:
 				// TODO: FIRE
-				rapid((*it));
+				{
+					coord2d_t save = (*it)._vel;
+					(*it)._vel.x() += (rand() % 10)*0.1f-0.05f;
+					rapid((*it));
+					(*it)._vel = save;
+				}
 				// if still in rage
 				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
 					(*it)._state = PSTATE_AI_TARGETING_1;
@@ -976,6 +1017,7 @@ void processMouseActiveMotion(int x, int y) {
 }
 
 void keyboard(unsigned char key, int x, int y ){
+  float dist = 3.0;
   switch( key ) {
     case 'q': case 'Q' :
       exit( EXIT_SUCCESS );
@@ -986,6 +1028,18 @@ void keyboard(unsigned char key, int x, int y ){
 	case 's': case 'S' :
 		if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		break;
+
+	case '0': hit_damage = 0;
+		break;
+	case '5': hit_damage = 5;
+		break;
+
+	case 'd': case 'D' :
+
+		objectstate_t temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))));
+		
+		crates.push_back(temp);
+		crates[crates.size()-1].body = struct AABB(crates[crates.size()-1]._pos);
   }
 }
 
@@ -1007,7 +1061,7 @@ bool checkPaCollision(source * src){
 	}
 	if (spherecollide(src->body,player->body)){
 		if (player->_hp > 10)
-			player->_hp -= 10;
+			player->_hp -= hit_damage;
 		else if (player->_hp > 0)
 			player->_hp = 0;
 		return true;
@@ -1055,8 +1109,8 @@ void tick(int state) {
 		fbtim=-1;
 		fbsrc->active = false;
 		fbpar.clear();
-		//detonate(fbsrc,true); //if fbtim less than 50, fb must have collided with something
-		//explo = true;
+		detonate(fbsrc,true); //if fbtim less than 50, fb must have collided with something
+		explo = true;
 	}
 	if (explo){
 		exsrc->move();
@@ -1097,18 +1151,18 @@ int main( int argc, char** argv ) {
   //set up my window
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  glutInitWindowSize(800, 600); 
+  //glutInitWindowSize(800, 600); 
   GW = 800;
   GH = 600;
-  glutInitWindowPosition(0, 0);
-  glutCreateWindow("Island");
-  /*glutGameModeString("800x600:32");
+  //glutInitWindowPosition(0, 0);
+  //glutCreateWindow("Island");
+  glutGameModeString("800x600:32");
   if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 	glutEnterGameMode();
   }
   else{
 	  exit(1);
-  }*/
+  }
   //glClearColor(0.0, 0.0, 0.0, 1.0);
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
@@ -1128,11 +1182,14 @@ int main( int argc, char** argv ) {
   player->_hp = 100;
   fbtim = -1;
   explo = false;
-  for(int i = 0; i < 5; i++){
+
+  srand(time(NULL));
+
+  for(int i = 0; i < 10; i++){
 	  objectstate_t temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10));
 	  crates.push_back(temp);
   }
-  for(int i=0;i<5;i++) crates[i].body = struct AABB(crates[i]._pos);
+  for(int i=0;i<10;i++) crates[i].body = struct AABB(crates[i]._pos);
   
   //register glut callback functions
   glutDisplayFunc( display );
