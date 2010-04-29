@@ -115,8 +115,8 @@ void playerstate_t::change_velocity(double nVx, double nVy){
 }
 
 coord2d_t playerstate_t::calcHotSpot(coord2d_t hs, double dist){
-	hs.x() = _pos.x()-(sin(_vel.x())*.6);
-	hs.y() = -_pos.y()-(cos(_vel.x())*.6);
+	hs.x() = _pos.x()-(sin(_vel.x())*dist);
+	hs.y() = -_pos.y()-(cos(_vel.x())*dist);
 	return hs;
 }
 

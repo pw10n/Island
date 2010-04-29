@@ -77,7 +77,7 @@ void materials(materialStruct materials) {
   glMaterialfv(GL_FRONT, GL_SHININESS, materials.shininess);
 }
 
-
+void rapid(playerstate_t&);
 int light;
 //globals for lighting - use a white light and apply materials
 //light position
@@ -204,7 +204,7 @@ void drawAi(){
 		//translate
 		glTranslatef((*it)._pos.x(), 0.2, -(*it)._pos.y());
 		//rotate
-		glRotatef((*it)._vel.x(), 0.0, 1.0, 0.0);
+		glRotatef((*it)._vel.x() * (180.0 / M_PI), 0.0, 1.0, 0.0);
 		drawCharacter();
 		glPopMatrix();
 	}
@@ -219,25 +219,26 @@ void tickAi(uint32_t time){
 		switch((*it)._state){
 			case PSTATE_AI_SEARCHING:
 				// move forward
-				(*it)._pos.x() += (-sin((*it)._vel.x() * (M_PI / 180.0)) * (*it)._vel.y());
-				(*it)._pos.y() += (cos((*it)._vel.x() * (M_PI / 180.0) ) * (*it)._vel.y());
+				(*it)._pos.x() += (-sin((*it)._vel.x()) * (*it)._vel.y());
+				(*it)._pos.y() += (cos((*it)._vel.x()) * (*it)._vel.y());
+				(*it).body = sphere(1,(*it)._pos.x(),-(*it)._pos.y());
 
 				// check bounds
 				if ((*it)._pos.x() > 10.0){
 					(*it)._pos.x() = 10.0;
-					(*it)._vel.x() += 180.0;
+					(*it)._vel.x() += M_PI;
 				}
 				else if ((*it)._pos.x() < -10.0){
 					(*it)._pos.x() = -10.0;
-					(*it)._vel.x() += 180.0;
+					(*it)._vel.x() += M_PI;
 				}
 				if ((*it)._pos.y() > 10.0){
 					(*it)._pos.y() = 10.0;
-					(*it)._vel.x() += 180.0;
+					(*it)._vel.x() += M_PI;
 				}
 				else if ((*it)._pos.y() < -10.0){
 					(*it)._pos.y() = -10.0;
-					(*it)._vel.x() += 180.0;
+					(*it)._vel.x() += M_PI;
 				}
 
 				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
@@ -271,7 +272,7 @@ void tickAi(uint32_t time){
 				break;
 			case PSTATE_AI_ATACKING:
 				// TODO: FIRE
-
+				rapid((*it));
 				// if still in rage
 				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
 					(*it)._state = PSTATE_AI_TARGETING_1;
@@ -376,7 +377,7 @@ void spawnFireball(){
 	float fbx = -sin(theta);
 	float fbz = -cos(theta);
 	coord2d_t dummy;
-	dummy = player->calcHotSpot(dummy,1.0);
+	dummy = player->calcHotSpot(dummy,.6);
 	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0f,fbz/5.0f);
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
@@ -400,11 +401,11 @@ void detonate(fireball_s * fbs, bool splin){
 	}
 }
 
-void rapid(){
+void rapid(playerstate_t& player){
 	if(rfpar.size()<100&&rfire==0){
 		coord2d_t dummy;
-		dummy = player->calcHotSpot(dummy,1.0);
-		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),theta,angle));
+		dummy = player.calcHotSpot(dummy,.6);
+		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),player._vel.x(),player._vel.x()*(180.00/M_PI)));
 	}
 }
 
@@ -730,7 +731,7 @@ void mouse(int button, int state, int x, int y) {
   }
 	if(button == GLUT_LEFT_BUTTON) {
 		if (state == GLUT_DOWN) {
-			if(rfire) { rapid(); }
+			if(rfire) { rapid(*player); }
 			else if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		}
 	}
@@ -825,7 +826,7 @@ void keyboard(unsigned char key, int x, int y ){
       exit( EXIT_SUCCESS );
       break;
 	case 'a': case 'A' :
-		rapid();
+		rapid(*player);
 		break;
 	case 's': case 'S' :
 		if(fbtim<0) {spawnFireball(); fbtim = 0;}
@@ -836,6 +837,12 @@ void keyboard(unsigned char key, int x, int y ){
 bool checkPaCollision(source * src){
 	for(int i=0;i<5;i++){
 		if(sphereAABBcollide(src->body,crates[i].body)) return true;
+	}
+	for(int i=0;i<others.size();i++){
+		if(spherecollide(src->body,others[i].body)) {
+			others[i]._hp -= 5;
+			return true;
+		}
 	}
 	return spherecollide(src->body,player->body);
 }
