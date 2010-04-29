@@ -359,7 +359,7 @@ void tickAi(uint32_t time){
 				// TODO: FIRE
 				{
 					coord2d_t save = (*it)._vel;
-					(*it)._vel.x() += (rand() % 10)*0.1f-0.05f;
+					(*it)._vel.x() += (rand() % 10)*0.1f-0.5f;
 					rapid((*it));
 					(*it)._vel = save;
 				}
