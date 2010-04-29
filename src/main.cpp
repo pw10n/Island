@@ -67,6 +67,7 @@ materialStruct Sand = {
 coord2d_t vel;
 playerstate_t* player;
 vector<playerstate_t> others;
+//objectstate_t crates[5];
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -580,7 +581,7 @@ void drawCrates(){
 	// it'll be 2x2x2 for now
 	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
 	// "front"
-	for(int i = 0; i < crates.size(); i++){
+	for(unsigned int i = 0; i < crates.size(); i++){
 		glPushMatrix();
 		glTranslatef(crates[i]._pos.x(),0,crates[i]._pos.y());
 		glBegin(GL_QUADS);
@@ -690,9 +691,9 @@ void display() {
 	glLoadIdentity();
 
 	materials(Black);
-	sprintf(buff, "Health: %d", player->_hp);
+	sprintf(buff, "Health: %u", player->_hp);
     renderBitmapString(100,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
-	sprintf(buff, "Kills: %d", player->_score);
+	sprintf(buff, "Kills: %u", player->_score);
 	renderBitmapString(345,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
     sprintf(buff, "FPS: %f", fps);
 	renderBitmapString(550,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
@@ -854,7 +855,7 @@ void keyboard(unsigned char key, int x, int y ){
 }
 
 bool checkPaCollision(source * src){
-	for(int i = 0 ; i < crates.size(); i++){
+	for(unsigned int i = 0 ; i < crates.size(); i++){
 		if(sphereAABBcollide(src->body,crates[i].body)){
 			if (src->_type == PARTICLE_FIREBALL){
 				crates[i]._hp -= 10;
@@ -869,7 +870,7 @@ bool checkPaCollision(source * src){
 			return true;
 		}
 	}
-	for(int i=0;i<others.size();i++){
+	for(unsigned int i=0;i<others.size();i++){
 		if(spherecollide(src->body,others[i].body)) {
 			others[i]._hp -= 5;
 			return true;
@@ -879,7 +880,7 @@ bool checkPaCollision(source * src){
 }
 
 bool checkPlCollision(playerstate_t * pls){
-	for(int i=0; i < crates.size(); i++){
+	for(unsigned int i=0; i < crates.size(); i++){
 		if(sphereAABBcollide(pls->front,crates[i].body)) return true;
 	}
 	return false;
