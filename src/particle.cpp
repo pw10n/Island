@@ -38,7 +38,7 @@ void fireball_s::move(void)
 	if(age>15){
 		x += vx; z += vz;
 	}
-	if(age>20){ //waits until 20 to keep it from colliding with the user
+	if(age>17){ //waits to keep it from colliding with the user
 		body = sphere(.15,x,z);
 	}
 	age++;
@@ -205,16 +205,17 @@ rapidfire::rapidfire(float ix, float iz, float itr, float itd)
 	x = ix; y = .1; z = iz; vtr = itr; vtd = itd;
 	life = 0.0; r = a = 1.0f; g = b = 0.0f;
 	active = true; boom = false;
-	body = sphere(.2f,x,z);
+	body = sphere(.00,x,z);
 }
 
 void rapidfire::move(void)
 {
 	life += .1;
 	if(!boom){
-		x += -sin(vtr)*.5;
-		z += -cos(vtr)*.5;
-		body = (life>.25)?sphere(.2f,x,z):DONTCOLLIDE;
+		x += -sin(vtr)*.6;
+		z += -cos(vtr)*.6;
+		//body = (life>.05)?sphere(.05f,x,z):DONTCOLLIDE;
+		body = sphere(.01,x,z);
 		if(life>3.0){
 			life = 0.0;
 			boom = true;
@@ -236,9 +237,9 @@ void rapidfire::draw(void)
 	glColor4f(1.0f,g,b,a);
 	glPushMatrix();
 	glTranslatef(x,y,z);
-	//glRotatef(vtd,0,1,0);
 	if(!boom){
-		glScalef(4.0f,4.0f,4.0f);
+		glRotatef(vtd,0,1,0);
+		glScalef(2.0f,2.0f,4.0f);
 		glCallList(PARTLIST);
 	}
 	else{

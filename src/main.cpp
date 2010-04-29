@@ -101,8 +101,9 @@ float theta;
 float angle;
 float myX, myY, myZ;
 bool flag = false;
-bool rfire = false;
+int rfire = 0;
 GLubyte * alpha;
+float fps;
 
 fireball_s * fbsrc;
 vector<fireball_p *> fbpar;
@@ -374,7 +375,9 @@ void pos_light() {
 void spawnFireball(){
 	float fbx = -sin(theta);
 	float fbz = -cos(theta);
-	fbsrc = new fireball_s(player->_pos.x(),-player->_pos.y(),fbx/5.0f,fbz/5.0f);
+	coord2d_t dummy;
+	dummy = player->calcHotSpot(dummy,1.0);
+	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0f,fbz/5.0f);
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
@@ -398,8 +401,11 @@ void detonate(fireball_s * fbs, bool splin){
 }
 
 void rapid(){
-	if(rfpar.size()<100)
-		rfpar.push_back(new rapidfire(player->_pos.x(),-player->_pos.y(),theta,angle));
+	if(rfpar.size()<100&&rfire==0){
+		coord2d_t dummy;
+		dummy = player->calcHotSpot(dummy,1.0);
+		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),theta,angle));
+	}
 }
 
 void reshape(int w, int h) {
@@ -489,6 +495,66 @@ void drawRapid() {
 		rfpar[i]->draw();
 	}
 }
+void renderBitmapString(
+		float x, 
+		float y, 
+		void *text, 
+		char *buf) {  
+  char *d;
+  glRasterPos2f(x, y);
+  for (d=buf; *d != '\0'; d++) {
+    glutBitmapCharacter(text, *d);
+  }
+}
+
+void HudMode(bool flag)
+{
+	if(flag)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+
+		gluOrtho2D(0, GW, 0, GH);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		glDisable(GL_DEPTH_TEST);
+	}
+	else
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+		glEnable(GL_DEPTH_TEST);
+	}
+}
+
+
+void setOrthoProjection() {
+
+
+	glMatrixMode(GL_PROJECTION);
+
+	glPushMatrix();
+
+	glLoadIdentity();
+
+	gluOrtho2D(0, GW, 0, GH);
+
+	glScalef(1, -1, 1);
+
+	glTranslatef(0, -GH, 0);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void resetPerspectiveProjection() {
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
 
 void drawCrates(){
 
@@ -549,12 +615,64 @@ void drawCrates(){
 }
 
 void display() {
+  static int frame=0;
+  static int lasttime=0;
+  char buff[40];
+  
+  int time = glutGet(GLUT_ELAPSED_TIME);
+
 
   
+  ++frame;
+
+  if (time - lasttime > 1000){
+    fps = frame*1000.0/(time-lasttime);
+    lasttime = time;
+    frame = 0;
+  }
+
+
+
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  
   glMatrixMode(GL_MODELVIEW);
-    
+  materials(Black);
+
+  glPushMatrix();
+
+/*  HudMode(true);
+
+  glBegin(GL_QUADS);
+  glVertex2f(-.75, .75);
+  glVertex2f(.75, .75); 
+  glVertex2f(.75, -.75); 
+  glVertex2f(.75, -.75);
+  glEnd();
+
+
+  
+
+  HudMode(false);*/
+
+
+  setOrthoProjection();
+  glPushMatrix();
+	glLoadIdentity();
+
+	materials(Black);
+	sprintf(buff, "Health: %d", player->_hp);
+    renderBitmapString(100,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+	sprintf(buff, "Kills: %d", player->_score);
+	renderBitmapString(345,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+    sprintf(buff, "FPS: %f", fps);
+	renderBitmapString(550,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+	materials(Sand);
+  glPopMatrix();
+  resetPerspectiveProjection();
+
+
+
   glPushMatrix();
   //set up the camera
     gluLookAt(eyex + player->_pos.x(), eyey, eyez - player->_pos.y(), LAx + player->_pos.x(), LAy, LAz - player->_pos.y(), 0, 0, -1);
@@ -697,8 +815,11 @@ void keyboard(unsigned char key, int x, int y ){
     case 'q': case 'Q' :
       exit( EXIT_SUCCESS );
       break;
-	case ' ':
-		rfire = !rfire;
+	case 'a': case 'A' :
+		rapid();
+		break;
+	case 's': case 'S' :
+		if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		break;
   }
 }
@@ -722,6 +843,7 @@ void tick(int state) {
 	player->change_velocity(vel);
 	player->tick(worldtime);
 	tickAi(worldtime);
+	rfire = (rfire+1)%5;
 	if (flag){
 
 		//myX += -sin(theta);
