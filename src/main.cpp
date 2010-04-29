@@ -217,7 +217,7 @@ void tick(uint32_t time){
 		switch((*it)._state){
 			case PSTATE_AI_SEARCHING:
 				// move forward
-				(*it)._pos.x() = (*it)._pos * 
+				
 				// check bounds
 				break;
 			case PSTATE_AI_TARGETING_1:
