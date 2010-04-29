@@ -78,6 +78,14 @@ materialStruct Grey = {
   {0.3}
 };
 
+materialStruct Gray = {
+  {0.3, 0.3, 0.3, 0.1},
+  {0.3, 0.3, 0.3, 0.1},
+  {0.3, 0.3, 0.3, 0.1},
+  {0.0}
+};
+
+
 materialStruct Sand = {
 	{0.85, 0.79, 0.71, 1.0},
 	{0.85, 0.79, 0.71, 1.0},
@@ -236,6 +244,9 @@ void tickAi(uint32_t time){
 		it != others.end();
 		it=((*it)._hp<=0)?others.erase(it):it+1)
 	{
+		if ((*it)._hp <= 0){
+			player->_score++;
+		}
 		switch((*it)._state){
 			case PSTATE_AI_SEARCHING:
 				// move forward
@@ -736,7 +747,7 @@ void display() {
 	sprintf(buff, "Left Click");
 	renderBitmapString((GW/5.0)-28, GH-40,GLUT_BITMAP_HELVETICA_12,buff);
 
-	materials(White);
+	materials(Gray);
 	glPushMatrix();
 	glTranslatef(GW/5.0, GH-75, 0);
 	draw_circle();
@@ -751,7 +762,7 @@ void display() {
 	glPopMatrix();
 
     glLoadIdentity();
-	materials(White);
+	materials(Gray);
 	glPushMatrix();
 	glTranslatef(GW/3.0, GH-100, 0);
 	drawBox();
@@ -772,7 +783,7 @@ void display() {
 	drawBar();
 	glPopMatrix();
 
-    materials(White);
+    materials(Gray);
 
 	glPushMatrix();
 	glTranslatef(GW-160, GH-100, 0);
