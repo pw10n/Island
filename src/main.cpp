@@ -131,6 +131,7 @@ float p2w_y(int y) {
 return y1;
 }
 
+
 void genTex(){
 	alpha = new GLubyte[16 * 16];
 	int i,j;
