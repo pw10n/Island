@@ -50,6 +50,26 @@ materialStruct Black = {
   {0.0, 0.0, 0.0, 1.0},
   {0.0}
 };
+materialStruct White = {
+  {1.0, 1.0, 1.0, 0.0},
+  {1.0, 1.0, 1.0, 0.0},
+  {1.0, 1.0, 1.0, 0.0},
+  {1.0}
+};
+
+materialStruct Red = {
+  {1.0, 0.0, 0.0, 1.0},
+  {1.0, 0.0, 0.0, 1.0},
+  {1.0, 0.0, 0.0, 1.0},
+  {1.0}
+};
+
+materialStruct Blue = {
+  {0.0, 0.0, 1.0, 1.0},
+  {0.0, 0.0, 1.0, 1.0},
+  {0.0, 0.0, 1.0, 1.0},
+  {1.0}
+};
 
 materialStruct Grey = {
   {0.3, 0.3, 0.3, 1.0},
@@ -511,7 +531,7 @@ void HudMode(bool flag)
 		glPushMatrix();
 		glLoadIdentity();
 
-		gluOrtho2D(0, GW, 0, GH);
+		glOrtho( 0, GH , GW , 0, -1, 1 );
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glLoadIdentity();
@@ -610,6 +630,48 @@ void drawCrates(){
 	glDisable(GL_TEXTURE_2D);
 }
 
+
+void drawBox() {
+    glBegin(GL_QUADS);
+    glVertex2f(-25, -25);
+    glVertex2f(-25, 25); 
+    glVertex2f(25, 25); 
+    glVertex2f(25, -25);
+    glEnd();
+}
+
+void drawBar() {
+    glBegin(GL_QUADS);
+    glVertex2f(-30, -100);
+    glVertex2f(-30, 100); 
+    glVertex2f(30, 100); 
+    glVertex2f(30, -100);
+    glEnd();
+}
+
+void draw_circle() {
+    //Code from wikipedia.
+    int i;
+    int sections = 30; 
+    GLfloat radius = 50.0f;
+    GLfloat twoPi = 2.0f * 3.14159f;
+
+
+    glBegin(GL_TRIANGLE_FAN);
+        //glColor3f(0.5, 0.2, 0.8); 
+
+        glVertex2f(0, 0);
+          //glVertex2f(.5, .5);
+        for(i = 0; i <= sections;i++) {
+          glVertex2f((radius * cos(i *  twoPi / sections)) + 0, 
+          (radius* sin(i * twoPi / sections)) + 0);
+        }
+    
+    glEnd();
+
+
+}
+
 void display() {
   static int frame=0;
   static int lasttime=0;
@@ -633,39 +695,111 @@ void display() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  
   glMatrixMode(GL_MODELVIEW);
-  materials(Black);
+
 
   glPushMatrix();
 
-/*  HudMode(true);
 
-  glBegin(GL_QUADS);
-  glVertex2f(-.75, .75);
-  glVertex2f(.75, .75); 
-  glVertex2f(.75, -.75); 
-  glVertex2f(.75, -.75);
-  glEnd();
-
-
-  
-
-  HudMode(false);*/
 
 
   setOrthoProjection();
   glPushMatrix();
 	glLoadIdentity();
 
+	/* BEGIN HUD */
+
+	materials(Red);
+	if(player->_hp == 0) {
+		sprintf(buff, "YOU DIED");
+		renderBitmapString((GW/2.0)-15, GH/2.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+	}
+
+	materials(Black);
+	sprintf(buff, "Rapid");
+	renderBitmapString((GW/3.0)-15, GH-112,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "Fire");
+	renderBitmapString((GW/3.0)-10, GH-100,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "a");
+	renderBitmapString((GW/3.0), GH-80,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "FireBall");
+	renderBitmapString((GW/3.0)+30, GH-110,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "s");
+	renderBitmapString((GW/3.0)+45, GH-80,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "Melee");
+	renderBitmapString((GW/5.0)-30, GH-65,GLUT_BITMAP_TIMES_ROMAN_24 ,buff);
+	sprintf(buff, "Left Click");
+	renderBitmapString((GW/5.0)-28, GH-40,GLUT_BITMAP_HELVETICA_12,buff);
+
+	materials(White);
+	glPushMatrix();
+	glTranslatef(GW/5.0, GH-75, 0);
+	draw_circle();
+	glPopMatrix();
+
+	materials(Black);
+	glPushMatrix();
+    glBegin(GL_LINES);
+    glVertex2f((GW/3.0) + 25, GH-75);
+    glVertex2f((GW/3.0) + 25, GH-125);
+    glEnd();
+	glPopMatrix();
+
+    glLoadIdentity();
+	materials(White);
+	glPushMatrix();
+	glTranslatef(GW/3.0, GH-100, 0);
+	drawBox();
+	glPopMatrix();
+
+	materials(Red);
+	glPushMatrix();
+
+
+	glTranslatef(GW-160, GH + 100 + (200*(-player->_hp/100.0)), 0);
+	drawBar();
+
+	glPopMatrix();
+
+	materials(Blue);
+	glPushMatrix();
+	glTranslatef(GW-80, GH + 100 + (200*(-player->_mp/100.0)), 0);
+	drawBar();
+	glPopMatrix();
+
+    materials(White);
+
+	glPushMatrix();
+	glTranslatef(GW-160, GH-100, 0);
+	drawBar();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(GW-80, GH-100, 0);
+	drawBar();
+	glPopMatrix();
+
+
+
+    glPushMatrix();
+	glTranslatef((GW/3.0) + 50, GH-100, 0);
+	drawBox();
+	glPopMatrix();
+
+
+
 	materials(Black);
 	sprintf(buff, "Health: %d", player->_hp);
-    renderBitmapString(100,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+    renderBitmapString(2*GW/10.0,GH/11.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
 	sprintf(buff, "Kills: %d", player->_score);
-	renderBitmapString(345,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+	renderBitmapString(5*GW/10.0,GH/11.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
     sprintf(buff, "FPS: %f", fps);
-	renderBitmapString(550,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+	renderBitmapString(7*GW/10.0,GH/11.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
 	materials(Sand);
   glPopMatrix();
   resetPerspectiveProjection();
+
+      /* END HUD */
 
 
 
@@ -677,8 +811,11 @@ void display() {
       glPushMatrix();
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
         glRotatef(angle, 0, 1, 0);
+		if(!(player->_hp == 0)) {
+			drawPlayer();
+		}
 
-        drawPlayer();
+        
       glPopMatrix();
 
       glPushMatrix();
@@ -818,12 +955,23 @@ bool checkPaCollision(source * src){
 	for(int i=0;i<5;i++){
 		if(sphereAABBcollide(src->body,crates[i].body)) return true;
 	}
-	return spherecollide(src->body,player->body);
+	if (spherecollide(src->body,player->body)){
+		if (player->_hp > 10){
+			player->_hp -= 10;
+		}
+		else if (player->_hp > 0){
+			player->_hp = 0;
+		}
+		return true;
+	}
+	return false;
 }
 
 bool checkPlCollision(playerstate_t * pls){
 	for(int i=0;i<5;i++){
-		if(sphereAABBcollide(pls->front,crates[i].body)) return true;
+		if(sphereAABBcollide(pls->front,crates[i].body)){
+			return true;
+		}
 	}
 	return false;
 }
@@ -932,6 +1080,7 @@ int main( int argc, char** argv ) {
   LAz = 0;
 
   player = new playerstate_t(worldtime);
+  player->_hp = 100;
   fbtim = -1;
   explo = false;
   for(int i=0;i<5;i++){
