@@ -24,12 +24,13 @@ particle::~particle(void)
 {
 }
 
-fireball_s::fireball_s(float ix,float iz,float ivx,float ivz)
+fireball_s::fireball_s(float ix,float iz,float ivx,float ivz, unsigned int type)
 {
 	x = ix; y = .1f; z = iz; vx = ivx; vz = ivz;
 	age = 0; active = true;
 	r = 1.0f; g = .5f; b = 0.0f; a = 1.0f;
 	body = DONTCOLLIDE; //set to prevent collision when "charging"
+	_type = type;
 }
 
 void fireball_s::move(void)
@@ -200,12 +201,13 @@ void explosion_p::draw(void)
 	glPopMatrix();
 }
 
-rapidfire::rapidfire(float ix, float iz, float itr, float itd)
+rapidfire::rapidfire(float ix, float iz, float itr, float itd, unsigned int type)
 {
 	x = ix; y = .1; z = iz; vtr = itr; vtd = itd;
 	life = 0.0; r = a = 1.0f; g = b = 0.0f;
 	active = true; boom = false;
 	body = sphere(.2f,x,z);
+	_type = type;
 }
 
 void rapidfire::move(void)

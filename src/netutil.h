@@ -84,7 +84,7 @@ class playerstate_t: public netobj{
       coord2d_t _vel; //8
       uint8_t _state; //1
       uint16_t _score; //2
-	  struct sphere body; //used for collision
+	  struct sphere body, front; //used for collision
 
 	  vector<gDelta_data> _deltas;
 
@@ -124,6 +124,7 @@ class objectstate_t: public netobj{
 
 
 	  void setType(uint8_t type);
+	  void setHP(uint8_t hp);
 
 	  //network functions:
       int serialize_delta(char* buf, int sz) {return 0;};
