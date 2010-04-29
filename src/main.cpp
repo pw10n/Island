@@ -66,6 +66,7 @@ materialStruct Sand = {
 };
 coord2d_t vel;
 playerstate_t* player;
+vector<playerstate_t> others;
 objectstate_t crates[5];
 
 //sets up a specific material
@@ -211,11 +212,12 @@ void drawAi(){
 void tick(uint32_t time){
 	for(vector<playerstate_t>::iterator it = others.begin();
 		it != others.end();
-		((*it)._hp<=0)?others.erase(it):++it)
+		it=((*it)._hp<=0)?others.erase(it):it+1)
 	{
 		switch((*it)._state){
 			case PSTATE_AI_SEARCHING:
 				// move forward
+				(*it)._pos.x() = (*it)._pos * 
 				// check bounds
 				break;
 			case PSTATE_AI_TARGETING_1:
@@ -409,6 +411,15 @@ void drawGrid() {
   glEnd();
 }
 
+// draws the character facing forward.
+
+void drawCharacter(){
+	materials(Grey);
+	glPushMatrix();
+	glRotatef(90.0f, 1.0, 0.0, 0.0);
+	glutSolidCone(0.3,0.1,20,20);
+	glPopMatrix();
+}
 
 void drawPlayer() {
   materials(Grey);
