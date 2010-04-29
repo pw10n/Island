@@ -102,6 +102,7 @@ float myX, myY, myZ;
 bool flag = false;
 bool rfire = false;
 GLubyte * alpha;
+float fps;
 
 fireball_s * fbsrc;
 vector<fireball_p *> fbpar;
@@ -321,6 +322,66 @@ void drawRapid() {
 		rfpar[i]->draw();
 	}
 }
+void renderBitmapString(
+		float x, 
+		float y, 
+		void *text, 
+		char *buf) {  
+  char *d;
+  glRasterPos2f(x, y);
+  for (d=buf; *d != '\0'; d++) {
+    glutBitmapCharacter(text, *d);
+  }
+}
+
+void HudMode(bool flag)
+{
+	if(flag)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+
+		gluOrtho2D(0, GW, 0, GH);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		glDisable(GL_DEPTH_TEST);
+	}
+	else
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+		glEnable(GL_DEPTH_TEST);
+	}
+}
+
+
+void setOrthoProjection() {
+
+
+	glMatrixMode(GL_PROJECTION);
+
+	glPushMatrix();
+
+	glLoadIdentity();
+
+	gluOrtho2D(0, GW, 0, GH);
+
+	glScalef(1, -1, 1);
+
+	glTranslatef(0, -GH, 0);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void resetPerspectiveProjection() {
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
 
 void drawCrates(){
 
@@ -381,12 +442,64 @@ void drawCrates(){
 }
 
 void display() {
+  static int frame=0;
+  static int lasttime=0;
+  char buff[40];
+  
+  int time = glutGet(GLUT_ELAPSED_TIME);
+
 
   
+  ++frame;
+
+  if (time - lasttime > 1000){
+    fps = frame*1000.0/(time-lasttime);
+    lasttime = time;
+    frame = 0;
+  }
+
+
+
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  
   glMatrixMode(GL_MODELVIEW);
-    
+  materials(Black);
+
+  glPushMatrix();
+
+/*  HudMode(true);
+
+  glBegin(GL_QUADS);
+  glVertex2f(-.75, .75);
+  glVertex2f(.75, .75); 
+  glVertex2f(.75, -.75); 
+  glVertex2f(.75, -.75);
+  glEnd();
+
+
+  
+
+  HudMode(false);*/
+
+
+  setOrthoProjection();
+  glPushMatrix();
+	glLoadIdentity();
+
+	materials(Black);
+	sprintf(buff, "Health: %d", player->_hp);
+    renderBitmapString(100,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+	sprintf(buff, "Kills: %d", player->_score);
+	renderBitmapString(345,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+    sprintf(buff, "FPS: %f", fps);
+	renderBitmapString(550,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+	materials(Sand);
+  glPopMatrix();
+  resetPerspectiveProjection();
+
+
+
   glPushMatrix();
   //set up the camera
     gluLookAt(eyex + player->_pos.x(), eyey, eyez - player->_pos.y(), LAx + player->_pos.x(), LAy, LAz - player->_pos.y(), 0, 0, -1);
@@ -674,8 +787,8 @@ int main( int argc, char** argv ) {
 	// Prentice says a vector is overkill for holding textures, but I'll do it for now
 	textures.clear();
 	unsigned int crateTexture;
-	crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
-	//crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp");
+	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
+	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp");
 	textures.push_back(crateTexture);
 	unsigned int partTexture = init_particletex();
 	textures.push_back(partTexture);

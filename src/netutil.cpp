@@ -116,8 +116,8 @@ void playerstate_t::change_velocity(double nVx, double nVy){
 // objectstate_t
 // default hp is 10 and id is 0
 // TO DO
-objectstate_t::objectstate_t(): _id(0), _type(0), _hp(10){
-}
+/*objectstate_t::objectstate_t(): _id(0), _type(0), _hp(10){
+}*/
 
 void objectstate_t::setType(uint8_t type){
 	_type = type;
