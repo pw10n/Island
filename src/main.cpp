@@ -100,7 +100,8 @@ float theta;
 float angle;
 float myX, myY, myZ;
 bool flag = false;
-bool rfire = false;
+//bool rfire = false;
+int rfire = 0;
 GLubyte * alpha;
 
 fireball_s * fbsrc;
@@ -216,7 +217,9 @@ void pos_light() {
 void spawnFireball(){
 	float fbx = -sin(theta);
 	float fbz = -cos(theta);
-	fbsrc = new fireball_s(player->_pos.x(),-player->_pos.y(),fbx/5.0f,fbz/5.0f);
+	coord2d_t dummy;
+	dummy = player->calcHotSpot(dummy,1.0);
+	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0f,fbz/5.0f);
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
@@ -240,8 +243,11 @@ void detonate(fireball_s * fbs, bool splin){
 }
 
 void rapid(){
-	if(rfpar.size()<100)
-		rfpar.push_back(new rapidfire(player->_pos.x(),-player->_pos.y(),theta,angle));
+	if(rfpar.size()<100&&rfire==0){
+		coord2d_t dummy;
+		dummy = player->calcHotSpot(dummy,1.0);
+		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),theta,angle));
+	}
 }
 
 void reshape(int w, int h) {
@@ -431,8 +437,8 @@ void mouse(int button, int state, int x, int y) {
   }
 	if(button == GLUT_LEFT_BUTTON) {
 		if (state == GLUT_DOWN) {
-			if(rfire) { rapid(); }
-			else if(fbtim<0) {spawnFireball(); fbtim = 0;}
+			//if(rfire) { rapid(); }
+			//else if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		}
 	}
 }
@@ -525,8 +531,14 @@ void keyboard(unsigned char key, int x, int y ){
     case 'q': case 'Q' :
       exit( EXIT_SUCCESS );
       break;
-	case ' ':
+	/*case ' ':
 		rfire = !rfire;
+		break;*/
+	case 'a': case 'A' :
+		rapid();
+		break;
+	case 's': case 'S' :
+		if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		break;
   }
 }
@@ -549,6 +561,7 @@ void tick(int state) {
 	if(checkPlCollision(player)) vel.y() = 0;
 	player->change_velocity(vel);
 	player->tick(worldtime);
+	rfire = (rfire+1)%5;
 	if (flag){
 
 		//myX += -sin(theta);

@@ -18,6 +18,8 @@ struct sphere {
   double radius;
   sphere(float in_radius, const double in_x, const double in_y)
     : radius(in_radius), pos(in_x, in_y){}
+  sphere(float in_radius, coord2d_t in_pos)
+    : radius(in_radius), pos(in_pos.x(), in_pos.y()){}
   sphere() : radius(0), pos(){}
 };
 /* returns true if two spheres collide, false otherwise*/
