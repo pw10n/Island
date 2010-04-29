@@ -1,6 +1,8 @@
 #pragma once
 #define PARTLIST 1
 #define PARTICLE_TEXTURE 1
+#define PARTICLE_FIREBALL 0
+#define PARTICLE_RAPID 1
 #include "collision.h"
 
 
@@ -24,8 +26,9 @@ public:
 class source : public particle
 {
 public:
-	struct sphere body; //use this for testing collision
+	struct sphere body;//use this for testing collision
 	//virtual bool collide(float,float,float) = 0;
+	unsigned int _type;
 };
 
 //fireball source
@@ -37,7 +40,7 @@ public:
 
 	/*maybe give this a vector containing its particles?*/
 
-	fireball_s(float,float,float,float);
+	fireball_s(float,float,float,float,unsigned int);
 	void move(void);
 	void draw(void);
 	//bool collide(float,float,float);
@@ -81,7 +84,7 @@ public:
 	float vtr,vtd; //theta: rad, deg
 	bool boom; //has it hit yet?
 	
-	rapidfire(float,float,float,float);
+	rapidfire(float,float,float,float, unsigned int);
 	void move(void);
 	void draw(void);
 	//bool collide(float,float,float);

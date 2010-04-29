@@ -115,19 +115,23 @@ void playerstate_t::change_velocity(double nVx, double nVy){
 }
 
 coord2d_t playerstate_t::calcHotSpot(coord2d_t hs, double dist){
-	hs.x() = _pos.x()-(sin(_vel.x())*.6);
-	hs.y() = -_pos.y()-(cos(_vel.x())*.6);
+	hs.x() = _pos.x()-(sin(_vel.x())*dist);
+	hs.y() = -_pos.y()-(cos(_vel.x())*dist);
 	return hs;
 }
 
 // objectstate_t
 // default hp is 10 and id is 0
 // TO DO
-objectstate_t::objectstate_t(): _id(0), _type(0), _hp(10){
-}
+//objectstate_t::objectstate_t(): _id(0), _type(0), _hp(10){
+//}
 
 void objectstate_t::setType(uint8_t type){
 	_type = type;
+}
+
+void objectstate_t::setHP(uint8_t hp){
+	_hp = hp;
 }
 
 /*void objectstate_t::draw(coord2d_t pos, unsigned int texture){
