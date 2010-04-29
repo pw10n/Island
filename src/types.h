@@ -44,6 +44,8 @@ class coord2d_t{
 	   coord2d_t operator=( const coord2d_t& );
 	   coord2d_t operator*( const coord2d_t& ); // multiply
 
+	   double distanceTo( const coord2d_t& );
+
 	   double x() const { return _x; }
 	   double& x() { return _x; }
 	   double y() const { return _y; }

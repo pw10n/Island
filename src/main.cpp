@@ -66,6 +66,8 @@ materialStruct Sand = {
 };
 coord2d_t vel;
 playerstate_t* player;
+vector<playerstate_t> others;
+//objectstate_t crates[5];
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -75,7 +77,7 @@ void materials(materialStruct materials) {
   glMaterialfv(GL_FRONT, GL_SHININESS, materials.shininess);
 }
 
-
+void rapid(playerstate_t&);
 int light;
 //globals for lighting - use a white light and apply materials
 //light position
@@ -99,8 +101,9 @@ float theta;
 float angle;
 float myX, myY, myZ;
 bool flag = false;
-bool rfire = false;
+int rfire = 0;
 GLubyte * alpha;
+float fps;
 
 fireball_s * fbsrc;
 vector<fireball_p *> fbpar;
@@ -129,6 +132,164 @@ float p2w_y(int y) {
 
 return y1;
 }
+
+
+void drawCharacter();
+
+////// dummy ai functions for 25% /////////
+/*
+
+AI LOGIC PLAN:
+
+AI will move in random direction bouncing off the 
+walls in a 10.0 x 10.0 map until it encounters a player
+in firing range. Once the player is encountered, it will
+Wait 3 ticks (30ms x 3) before firing.
+
+Once the player has moved out of range, it continues to move
+forward in the last direction it was facing.
+
+*/
+
+
+#define PSTATE_AI_SEARCHING 11
+#define PSTATE_AI_TARGETING_1 12
+#define PSTATE_AI_TARGETING_2 13
+#define PSTATE_AI_TARGETING_3 14
+#define PSTATE_AI_ATACKING 15
+
+void init_ai(){
+	for(int i=0; i<5; ++i){
+		playerstate_t temp(0);
+		temp._tick = 0;
+		temp._hp = 100;
+		temp._mp = 0;
+		temp._weapon = 0;
+		temp._state = PSTATE_AI_SEARCHING;
+		temp._score = 0;
+		others.push_back(temp);
+	}
+	others[0]._pos.x() = 3.0;
+	others[0]._pos.y() = 3.0;
+	others[0]._vel.x() = 45.0;
+	others[0]._vel.y() = 0.05;
+
+	others[1]._pos.x() = -3.0;
+	others[1]._pos.y() = -3.0;
+	others[1]._vel.x() = 32.0;
+	others[1]._vel.y() = 0.05;
+
+	others[2]._pos.x() = 3.0;
+	others[2]._pos.y() = -3.0;
+	others[2]._vel.x() = 15.0;
+	others[2]._vel.y() = 0.05;
+
+	others[3]._pos.x() = -3.0;
+	others[3]._pos.y() = 3.0;
+	others[3]._vel.x() = -45.0;
+	others[3]._vel.y() = 0.05;
+
+	others[4]._pos.x() = 0.0;
+	others[4]._pos.y() = 0.5;
+	others[4]._vel.x() = 90.0;
+	others[4]._vel.y() = 0.05;
+}
+
+void drawAi(){
+	for(vector<playerstate_t>::iterator it = others.begin();
+		it != others.end();
+		++it)
+	{
+		glPushMatrix();
+		//translate
+		glTranslatef((*it)._pos.x(), 0.2, -(*it)._pos.y());
+		//rotate
+		glRotatef((*it)._vel.x() * (180.0 / M_PI), 0.0, 1.0, 0.0);
+		drawCharacter();
+		glPopMatrix();
+	}
+}
+
+#define MIN_AI_DISTANCE 7.0
+void tickAi(uint32_t time){
+	for(vector<playerstate_t>::iterator it = others.begin();
+		it != others.end();
+		it=((*it)._hp<=0)?others.erase(it):it+1)
+	{
+		switch((*it)._state){
+			case PSTATE_AI_SEARCHING:
+				// move forward
+				(*it)._pos.x() += (-sin((*it)._vel.x()) * (*it)._vel.y());
+				(*it)._pos.y() += (cos((*it)._vel.x()) * (*it)._vel.y());
+				(*it).body = sphere(1,(*it)._pos.x(),-(*it)._pos.y());
+
+				// check bounds
+				if ((*it)._pos.x() > 10.0){
+					(*it)._pos.x() = 10.0;
+					(*it)._vel.x() += M_PI;
+				}
+				else if ((*it)._pos.x() < -10.0){
+					(*it)._pos.x() = -10.0;
+					(*it)._vel.x() += M_PI;
+				}
+				if ((*it)._pos.y() > 10.0){
+					(*it)._pos.y() = 10.0;
+					(*it)._vel.x() += M_PI;
+				}
+				else if ((*it)._pos.y() < -10.0){
+					(*it)._pos.y() = -10.0;
+					(*it)._vel.x() += M_PI;
+				}
+
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
+					(*it)._state = PSTATE_AI_TARGETING_1;
+				
+
+				break;
+			case PSTATE_AI_TARGETING_1:
+				// if still in range
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
+					(*it)._state = PSTATE_AI_TARGETING_2;
+				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
+				break;
+			case PSTATE_AI_TARGETING_2:
+				// if still in range
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
+					(*it)._state = PSTATE_AI_TARGETING_3;
+				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
+				break;
+			case PSTATE_AI_TARGETING_3:
+				// if still in range
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
+					(*it)._state = PSTATE_AI_ATACKING;
+				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
+				break;
+			case PSTATE_AI_ATACKING:
+				// TODO: FIRE
+				rapid((*it));
+				// if still in rage
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
+					(*it)._state = PSTATE_AI_TARGETING_1;
+				// else : return to searching state
+				else
+					(*it)._state = PSTATE_AI_SEARCHING;
+				break;
+			default:
+				(*it)._state = PSTATE_AI_SEARCHING;
+		}
+	}
+}
+
+
+//////////////////////////////////////////
+
+
 
 void genTex(){
 	alpha = new GLubyte[16 * 16];
@@ -215,7 +376,9 @@ void pos_light() {
 void spawnFireball(){
 	float fbx = -sin(theta);
 	float fbz = -cos(theta);
-	fbsrc = new fireball_s(player->_pos.x(),-player->_pos.y(),fbx/5.0f,fbz/5.0f, PARTICLE_FIREBALL);
+	coord2d_t dummy;
+	dummy = player->calcHotSpot(dummy,.6);
+	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0f,fbz/5.0f, PARTICLE_FIREBALL);
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
@@ -246,9 +409,12 @@ void detonate(source * ws, bool splin){
 	}
 }
 
-void rapid(){
-	if(rfpar.size()<100)
-		rfpar.push_back(new rapidfire(player->_pos.x(),-player->_pos.y(),theta,angle,PARTICLE_RAPID));
+void rapid(playerstate_t& player){
+	if(rfpar.size()<100&&rfire==0){
+		coord2d_t dummy;
+		dummy = player.calcHotSpot(dummy,.6);
+		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),player._vel.x(),player._vel.x()*(180.00/M_PI),PARTICLE_RAPID));
+	}
 }
 
 void reshape(int w, int h) {
@@ -298,6 +464,25 @@ void drawGrid() {
   glEnd();
 }
 
+// draws the character facing forward.
+
+
+
+void drawCharacter(){
+
+	materials(Grey);
+
+	glPushMatrix();
+
+	glRotatef(180.0f, 0.0, 1.0, 0.0);
+
+	glTranslatef(0.0, 0.25, 0.0);
+
+	glutSolidCone(0.3,1.0,20,20);
+
+	glPopMatrix();
+
+}
 
 void drawPlayer() {
   materials(Grey);
@@ -328,6 +513,66 @@ void drawRapid() {
 		rfpar[i]->draw();
 	}
 }
+void renderBitmapString(
+		float x, 
+		float y, 
+		void *text, 
+		char *buf) {  
+  char *d;
+  glRasterPos2f(x, y);
+  for (d=buf; *d != '\0'; d++) {
+    glutBitmapCharacter(text, *d);
+  }
+}
+
+void HudMode(bool flag)
+{
+	if(flag)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+
+		gluOrtho2D(0, GW, 0, GH);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		glDisable(GL_DEPTH_TEST);
+	}
+	else
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+		glEnable(GL_DEPTH_TEST);
+	}
+}
+
+
+void setOrthoProjection() {
+
+
+	glMatrixMode(GL_PROJECTION);
+
+	glPushMatrix();
+
+	glLoadIdentity();
+
+	gluOrtho2D(0, GW, 0, GH);
+
+	glScalef(1, -1, 1);
+
+	glTranslatef(0, -GH, 0);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void resetPerspectiveProjection() {
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
 
 void drawCrates(){
 
@@ -400,12 +645,64 @@ void drawCrates(){
 }
 
 void display() {
+  static int frame=0;
+  static int lasttime=0;
+  char buff[40];
+  
+  int time = glutGet(GLUT_ELAPSED_TIME);
+
 
   
+  ++frame;
+
+  if (time - lasttime > 1000){
+    fps = frame*1000.0/(time-lasttime);
+    lasttime = time;
+    frame = 0;
+  }
+
+
+
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  
   glMatrixMode(GL_MODELVIEW);
-    
+  materials(Black);
+
+  glPushMatrix();
+
+/*  HudMode(true);
+
+  glBegin(GL_QUADS);
+  glVertex2f(-.75, .75);
+  glVertex2f(.75, .75); 
+  glVertex2f(.75, -.75); 
+  glVertex2f(.75, -.75);
+  glEnd();
+
+
+  
+
+  HudMode(false);*/
+
+
+  setOrthoProjection();
+  glPushMatrix();
+	glLoadIdentity();
+
+	materials(Black);
+	sprintf(buff, "Health: %d", player->_hp);
+    renderBitmapString(100,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+	sprintf(buff, "Kills: %d", player->_score);
+	renderBitmapString(345,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+    sprintf(buff, "FPS: %f", fps);
+	renderBitmapString(550,575,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+	materials(Sand);
+  glPopMatrix();
+  resetPerspectiveProjection();
+
+
+
   glPushMatrix();
   //set up the camera
     gluLookAt(eyex + player->_pos.x(), eyey, eyez - player->_pos.y(), LAx + player->_pos.x(), LAy, LAz - player->_pos.y(), 0, 0, -1);
@@ -417,6 +714,10 @@ void display() {
 
         drawPlayer();
       glPopMatrix();
+
+	  glPushMatrix();
+	  drawAi();
+	  glPopMatrix();
 
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
@@ -450,7 +751,7 @@ void mouse(int button, int state, int x, int y) {
   }
 	if(button == GLUT_LEFT_BUTTON) {
 		if (state == GLUT_DOWN) {
-			if(rfire) { rapid(); }
+			if(rfire) { rapid(*player); }
 			else if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		}
 	}
@@ -544,8 +845,11 @@ void keyboard(unsigned char key, int x, int y ){
     case 'q': case 'Q' :
       exit( EXIT_SUCCESS );
       break;
-	case ' ':
-		rfire = !rfire;
+	case 'a': case 'A' :
+		rapid(*player);
+		break;
+	case 's': case 'S' :
+		if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		break;
   }
 }
@@ -566,6 +870,12 @@ bool checkPaCollision(source * src){
 			return true;
 		}
 	}
+	for(int i=0;i<others.size();i++){
+		if(spherecollide(src->body,others[i].body)) {
+			others[i]._hp -= 5;
+			return true;
+		}
+	}
 	return spherecollide(src->body,player->body);
 }
 
@@ -580,6 +890,8 @@ void tick(int state) {
 	if(checkPlCollision(player)) vel.y() = 0;
 	player->change_velocity(vel);
 	player->tick(worldtime);
+	tickAi(worldtime);
+	rfire = (rfire+1)%5;
 	if (flag){
 		//myX += -sin(theta);
 		///myZ += cos(theta);
@@ -696,6 +1008,7 @@ int main( int argc, char** argv ) {
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();
+  init_ai();
   glEnable(GL_LIGHTING);
 
 	// loading textures

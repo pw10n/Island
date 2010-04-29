@@ -94,7 +94,8 @@ void playerstate_t::tick(uint32_t time){
 		}
 	}
 	body = sphere(1,_pos.x(),-_pos.y());
-	front = sphere(.1,_pos.x()-(sin(_vel.x())*.5),-_pos.y() -(cos(_vel.x())*.5));
+	coord2d_t dummy;
+	front = sphere(.1,this->calcHotSpot(dummy,.5));
 }
 
 void playerstate_t::change_velocity(coord2d_t nV){
@@ -111,6 +112,12 @@ void playerstate_t::change_velocity(coord2d_t nV){
 void playerstate_t::change_velocity(double nVx, double nVy){
 	_vel.x() = nVx;
 	_vel.y() = nVy;
+}
+
+coord2d_t playerstate_t::calcHotSpot(coord2d_t hs, double dist){
+	hs.x() = _pos.x()-(sin(_vel.x())*dist);
+	hs.y() = -_pos.y()-(cos(_vel.x())*dist);
+	return hs;
 }
 
 // objectstate_t
