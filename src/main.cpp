@@ -269,7 +269,7 @@ void drawAi(){
 	}
 }
 
-#define MIN_AI_DISTANCE 5.0
+#define MIN_AI_DISTANCE 7.0
 #define AI_BOUNDS_MAX 40.0
 #define AI_BOUNDS_MIN -40.0
 void tickAi(uint32_t time){
@@ -803,6 +803,10 @@ void display() {
 	renderBitmapString((GW/3.0)+30, GH-110,GLUT_BITMAP_HELVETICA_12,buff);
 	sprintf(buff, "s");
 	renderBitmapString((GW/3.0)+45, GH-80,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "Crate");
+	renderBitmapString((GW/3.0)+80, GH-110,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "d");
+	renderBitmapString((GW/3.0)+95, GH-80,GLUT_BITMAP_HELVETICA_12,buff);
 	sprintf(buff, "Melee");
 	renderBitmapString((GW/5.0)-30, GH-65,GLUT_BITMAP_TIMES_ROMAN_24 ,buff);
 	sprintf(buff, "Left Click");
@@ -821,6 +825,13 @@ void display() {
     glBegin(GL_LINES);
     glVertex2f((GW/3.0) + 25, GH-75);
     glVertex2f((GW/3.0) + 25, GH-125);
+    glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+    glBegin(GL_LINES);
+    glVertex2f((GW/3.0) + 75, GH-75);
+    glVertex2f((GW/3.0) + 75, GH-125);
     glEnd();
 	glPopMatrix();
 
@@ -866,6 +877,11 @@ void display() {
 
     glPushMatrix();
 	glTranslatef((GW/3.0) + 50, GH-100, 0);
+	drawBox();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef((GW/3.0) + 100, GH-100, 0);
 	drawBox();
 	glPopMatrix();
 
