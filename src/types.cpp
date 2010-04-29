@@ -27,6 +27,7 @@ coord2d_t coord2d_t::operator*( const coord2d_t& c1) {
 }
 
 double coord2d_t::distanceTo( const coord2d_t& c1 ){
+	// sqrt( (x2-x1)^2 + (y2-y1)^2 )
 	return sqrt((c1.x() - this->_x)*(c1.x() - this->_x) + (c1.y() - this->_y)*(c1.y() - this->_y));
 }
 

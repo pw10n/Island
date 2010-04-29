@@ -171,27 +171,27 @@ void init_ai(){
 	others[0]._pos.x() = 3.0;
 	others[0]._pos.y() = 3.0;
 	others[0]._vel.x() = 45.0;
-	others[0]._vel.y() = 0.001;
+	others[0]._vel.y() = 0.05;
 
 	others[1]._pos.x() = -3.0;
 	others[1]._pos.y() = -3.0;
 	others[1]._vel.x() = 32.0;
-	others[1]._vel.y() = 0.001;
+	others[1]._vel.y() = 0.05;
 
 	others[2]._pos.x() = 3.0;
 	others[2]._pos.y() = -3.0;
 	others[2]._vel.x() = 15.0;
-	others[2]._vel.y() = 0.001;
+	others[2]._vel.y() = 0.05;
 
 	others[3]._pos.x() = -3.0;
 	others[3]._pos.y() = 3.0;
 	others[3]._vel.x() = -45.0;
-	others[3]._vel.y() = 0.001;
+	others[3]._vel.y() = 0.05;
 
 	others[4]._pos.x() = 0.0;
-	others[4]._pos.y() = -5.0;
+	others[4]._pos.y() = 0.5;
 	others[4]._vel.x() = 90.0;
-	others[4]._vel.y() = 0.001;
+	others[4]._vel.y() = 0.05;
 }
 
 void drawAi(){
@@ -201,7 +201,7 @@ void drawAi(){
 	{
 		glPushMatrix();
 		//translate
-		glTranslatef((*it)._pos.x(), 0.2, (*it)._pos.y());
+		glTranslatef((*it)._pos.x(), 0.2, -(*it)._pos.y());
 		//rotate
 		glRotatef((*it)._vel.x(), 0.0, 1.0, 0.0);
 		drawCharacter();
@@ -209,7 +209,8 @@ void drawAi(){
 	}
 }
 
-void tick(uint32_t time){
+#define MIN_AI_DISTANCE 7.0
+void tickAi(uint32_t time){
 	for(vector<playerstate_t>::iterator it = others.begin();
 		it != others.end();
 		it=((*it)._hp<=0)?others.erase(it):it+1)
@@ -217,35 +218,35 @@ void tick(uint32_t time){
 		switch((*it)._state){
 			case PSTATE_AI_SEARCHING:
 				// move forward
-				(*it)._pos.x() += (-sin((*it)._vel.x()) * (*it)._vel.y());
-				(*it)._pos.y() += (cos((*it)._vel.x()) * (*it)._vel.y());
+				(*it)._pos.x() += (-sin((*it)._vel.x() * (M_PI / 180.0)) * (*it)._vel.y());
+				(*it)._pos.y() += (cos((*it)._vel.x() * (M_PI / 180.0) ) * (*it)._vel.y());
 
 				// check bounds
 				if ((*it)._pos.x() > 10.0){
 					(*it)._pos.x() = 10.0;
-					(*it)._vel.y() *= -1.0;
+					(*it)._vel.x() += 180.0;
 				}
 				else if ((*it)._pos.x() < -10.0){
 					(*it)._pos.x() = -10.0;
-					(*it)._vel.y() *= -1.0;
+					(*it)._vel.x() += 180.0;
 				}
 				if ((*it)._pos.y() > 10.0){
 					(*it)._pos.y() = 10.0;
-					(*it)._vel.y() *= -1.0;
+					(*it)._vel.x() += 180.0;
 				}
 				else if ((*it)._pos.y() < -10.0){
 					(*it)._pos.y() = -10.0;
-					(*it)._vel.y() *= -1.0;
+					(*it)._vel.x() += 180.0;
 				}
 
-				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
 					(*it)._state = PSTATE_AI_TARGETING_1;
 				
 
 				break;
 			case PSTATE_AI_TARGETING_1:
 				// if still in range
-				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
 					(*it)._state = PSTATE_AI_TARGETING_2;
 				// else : return to searching state
 				else
@@ -253,7 +254,7 @@ void tick(uint32_t time){
 				break;
 			case PSTATE_AI_TARGETING_2:
 				// if still in range
-				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
 					(*it)._state = PSTATE_AI_TARGETING_3;
 				// else : return to searching state
 				else
@@ -261,15 +262,17 @@ void tick(uint32_t time){
 				break;
 			case PSTATE_AI_TARGETING_3:
 				// if still in range
-				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
 					(*it)._state = PSTATE_AI_ATACKING;
 				// else : return to searching state
 				else
 					(*it)._state = PSTATE_AI_SEARCHING;
 				break;
 			case PSTATE_AI_ATACKING:
+				// TODO: FIRE
+
 				// if still in rage
-				if((*it)._pos.distanceTo((*player)._pos) < 0.5 )
+				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
 					(*it)._state = PSTATE_AI_TARGETING_1;
 				// else : return to searching state
 				else
@@ -451,8 +454,9 @@ void drawGrid() {
 void drawCharacter(){
 	materials(Grey);
 	glPushMatrix();
-	glRotatef(90.0f, 1.0, 0.0, 0.0);
-	glutSolidCone(0.3,0.1,20,20);
+	glRotatef(180.0f, 0.0, 1.0, 0.0);
+	glTranslatef(0.0, 0.25, 0.0);
+	glutSolidCone(0.3,1.0,20,20);
 	glPopMatrix();
 }
 
@@ -562,6 +566,10 @@ void display() {
 
         drawPlayer();
       glPopMatrix();
+
+	  glPushMatrix();
+	  drawAi();
+	  glPopMatrix();
 
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
@@ -713,6 +721,7 @@ void tick(int state) {
 	if(checkPlCollision(player)) vel.y() = 0;
 	player->change_velocity(vel);
 	player->tick(worldtime);
+	tickAi(worldtime);
 	if (flag){
 
 		//myX += -sin(theta);
@@ -831,6 +840,7 @@ int main( int argc, char** argv ) {
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();
+  init_ai();
   glEnable(GL_LIGHTING);
 
 	// loading textures
