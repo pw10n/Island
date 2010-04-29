@@ -38,7 +38,7 @@ using namespace std;
 
 uint32_t worldtime=0;
 
-int hit_damage = 5;
+int hit_damage = 10;
 
 #define MIN(x,y) (x>y)?y:x
 #define MAX(x,y) (x>y)?x:y
@@ -783,14 +783,16 @@ void display() {
 	glLoadIdentity();
 
 	/* BEGIN HUD */
-
-	materials(Red);
+	glDisable(GL_LIGHTING);
+	//materials(Red);
+	glColor3f(1.0, 0.0, 0.0);
 	if(player->_hp == 0) {
 		sprintf(buff, "YOU DIED");
 		renderBitmapString((GW/2.0)-15, GH/2.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
 	}
 
-	materials(Black);
+	//materials(Black);
+	glColor3f(0.0, 0.0, 0.0);
 	sprintf(buff, "Rapid");
 	renderBitmapString((GW/3.0)-15, GH-112,GLUT_BITMAP_HELVETICA_12,buff);
 	sprintf(buff, "Fire");
@@ -806,13 +808,15 @@ void display() {
 	sprintf(buff, "Left Click");
 	renderBitmapString((GW/5.0)-28, GH-40,GLUT_BITMAP_HELVETICA_12,buff);
 
-	materials(Gray);
+	//materials(Gray);
+	glColor3f(0.7, 0.7, 0.7);
 	glPushMatrix();
 	glTranslatef(GW/5.0, GH-75, 0);
 	draw_circle();
 	glPopMatrix();
 
-	materials(Black);
+	//materials(Black);
+	glColor3f(0.0, 0.0, 0.0);
 	glPushMatrix();
     glBegin(GL_LINES);
     glVertex2f((GW/3.0) + 25, GH-75);
@@ -821,13 +825,15 @@ void display() {
 	glPopMatrix();
 
     glLoadIdentity();
-	materials(Gray);
+	//materials(Gray);
+	glColor3f(0.7, 0.7, 0.7);
 	glPushMatrix();
 	glTranslatef(GW/3.0, GH-100, 0);
 	drawBox();
 	glPopMatrix();
 
-	materials(Red);
+	//materials(Red);
+	glColor3f(1.0, 0.0, 0.0);
 	glPushMatrix();
 
 
@@ -836,14 +842,15 @@ void display() {
 
 	glPopMatrix();
 
-	materials(Blue);
+	//materials(Blue);
+	glColor3f(0.0, 0.0, 1.0);
 	glPushMatrix();
 	glTranslatef(GW-80, GH + 100 + (200*(-player->_mp/100.0)), 0);
 	drawBar();
 	glPopMatrix();
 
-    materials(Gray);
-
+    //materials(Gray);
+	glColor3f(0.7, 0.7, 0.7);
 	glPushMatrix();
 	glTranslatef(GW-160, GH-100, 0);
 	drawBar();
@@ -864,7 +871,8 @@ void display() {
 
 
 
-	materials(Black);
+	//materials(Black);
+	glColor3f(0.0, 0.0, 0.0);
 	sprintf(buff, "Health: %d", player->_hp);
     renderBitmapString(2*GW/10.0,GH/11.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
 	sprintf(buff, "Kills: %d", player->_score);
@@ -874,7 +882,7 @@ void display() {
 	materials(Sand);
   glPopMatrix();
   resetPerspectiveProjection();
-
+glEnable(GL_LIGHTING);
       /* END HUD */
 
 
@@ -1031,7 +1039,7 @@ void keyboard(unsigned char key, int x, int y ){
 
 	case '0': hit_damage = 0;
 		break;
-	case '5': hit_damage = 5;
+	case '-': hit_damage = 10;
 		break;
 
 	case 'd': case 'D' :
