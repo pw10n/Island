@@ -449,15 +449,15 @@ void drawGrid() {
   glEnd();
 }
 
-// draws the character facing forward.
-
-void drawCharacter(){
-	materials(Grey);
-	glPushMatrix();
-	glRotatef(180.0f, 0.0, 1.0, 0.0);
-	glTranslatef(0.0, 0.25, 0.0);
-	glutSolidCone(0.3,1.0,20,20);
-	glPopMatrix();
+// draws the character facing forward.
+
+void drawCharacter(){
+	materials(Grey);
+	glPushMatrix();
+	glRotatef(180.0f, 0.0, 1.0, 0.0);
+	glTranslatef(0.0, 0.25, 0.0);
+	glutSolidCone(0.3,1.0,20,20);
+	glPopMatrix();
 }
 
 void drawPlayer() {
