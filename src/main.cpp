@@ -1192,7 +1192,7 @@ int main( int argc, char** argv ) {
   GW = 800;
   GH = 600;
   //glutInitWindowPosition(0, 0);
-  glutCreateWindow("Island");
+  //glutCreateWindow("Island");
   glutGameModeString("800x600:32");
   if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 	glutEnterGameMode();
