@@ -91,6 +91,7 @@ class playerstate_t: public netobj{
 	  playerstate_t(psSync_data* data);
 
 	  void tick(uint32_t time);
+	  void draw();
 
 	  void change_velocity(coord2d_t nV);
 	  void change_velocity(double nVx, double nVy);
@@ -123,6 +124,8 @@ class objectstate_t: public netobj{
 
 	  void setType(uint8_t type);
 
+	  void draw();
+
 	  //network functions:
       int serialize_delta(char* buf, int sz) {return 0;};
 	  int serialize_sync(char* buf, int sz) {return 0;};
@@ -138,6 +141,8 @@ class wepfirestate_t{
       uint8_t _type;
 
 	  vector<gDelta_data> _deltas;
+
+	  void draw();
 
 	  //network functions:
       int serialize_delta(char* buf, int sz) {return 0;};
