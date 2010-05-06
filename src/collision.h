@@ -22,6 +22,7 @@ struct sphere {
     : radius(in_radius), pos(in_pos.x(), in_pos.y()){}
   sphere() : radius(0), pos(){}
 };
+
 /* returns true if two spheres collide, false otherwise*/
 bool spherecollide(struct sphere sphere1, struct sphere sphere2);
 

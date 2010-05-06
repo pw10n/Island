@@ -167,6 +167,10 @@ float p2w_y(int y) {
 return y1;
 }
 
+void damage(uint8_t *target, int dam){
+	if(*target>dam) *target -= dam;
+	else *target = 0;
+}
 
 void drawCharacter();
 
@@ -464,11 +468,11 @@ void pos_light() {
 }
 
 void spawnFireball(){
-	float fbx = -sin(theta);
-	float fbz = -cos(theta);
+	double fbx = -sin(theta);
+	double fbz = -cos(theta);
 	coord2d_t dummy;
 	dummy = player->calcHotSpot(dummy,.6);
-	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0f,fbz/5.0f, PARTICLE_FIREBALL);
+	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0,fbz/5.0);
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
@@ -476,7 +480,7 @@ void spawnFireball(){
 
 void detonate(source * ws, bool splin){
 	explo = true;
-	exsrc = new explosion_s(ws->x,ws->z);
+	exsrc = new explosion_s(ws->_pos.x(),ws->_pos.z());
 	if(!splin){
 		for(int i=0;i<400;i++){
 			expar.push_back(new explosion_p(exsrc));
@@ -503,7 +507,10 @@ void rapid(playerstate_t& player){
 	if(rfpar.size()<100&&rfire==0){
 		coord2d_t dummy;
 		dummy = player.calcHotSpot(dummy,.6);
-		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),player._vel.x(),player._vel.x()*(180.00/M_PI),PARTICLE_RAPID));
+		double vx = -sin(player._vel.x())*.6;
+		double vz = -cos(player._vel.x())*.6;
+		//rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),player._vel.x(),player._vel.x()*(180.00/M_PI)));
+		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz));
 	}
 }
 
@@ -895,7 +902,6 @@ void display() {
 	renderBitmapString(5*GW/10.0,GH/11.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
     sprintf(buff, "FPS: %f", fps);
 	renderBitmapString(7*GW/10.0,GH/11.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
-	materials(Sand);
   glPopMatrix();
   resetPerspectiveProjection();
 glEnable(GL_LIGHTING);
@@ -923,6 +929,7 @@ glEnable(GL_LIGHTING);
 
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
+		//materials(Sand);
         drawGrid();
 		//glTranslatef(-1.0,0,-1.0);
 		drawCrates();
@@ -1058,12 +1065,21 @@ void keyboard(unsigned char key, int x, int y ){
 	case '-': hit_damage = 10;
 		break;
 
+	case 't':
+		printf("showing hps\n");
+		for(vector<playerstate_t>::iterator it = others.begin();it != others.end();++it)
+		{
+			printf("hp: %d\n",(*it)._hp);
+		}
+		break;
 	case 'd': case 'D' :
 
 		objectstate_t temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))));
 		
 		crates.push_back(temp);
 		crates[crates.size()-1].body = struct AABB(crates[crates.size()-1]._pos);
+		break;
+
   }
 }
 
@@ -1071,28 +1087,25 @@ bool checkPaCollision(source * src){
 	for(unsigned int i = 0 ; i < crates.size(); i++){
 		if(sphereAABBcollide(src->body,crates[i].body)){
 			if (src->_type == PARTICLE_FIREBALL){
-				crates[i]._hp -= 10;
+				damage(&crates[i]._hp,10);
 			}
 			else if (src->_type == PARTICLE_RAPID){
-				crates[i]._hp -= 1;
+				damage(&crates[i]._hp,1);
 			}
 			// this is wrong - hacked way of having the splinter effect on dead crate
-			if (crates[i]._hp <= 0){
+			if (crates[i]._hp == 0){
 				detonate(src, true);
 			}
 			return true;
 		}
 	}
 	if (spherecollide(src->body,player->body)){
-		if (player->_hp > 10)
-			player->_hp -= hit_damage;
-		else if (player->_hp > 0)
-			player->_hp = 0;
+		damage(&player->_hp,hit_damage);
 		return true;
 	}
 	for(unsigned int i=0;i<others.size();i++){
 		if(spherecollide(src->body,others[i].body)) {
-			others[i]._hp -= 5;
+			damage(&others[i]._hp,5);
 			return true;
 		}
 	}
@@ -1160,7 +1173,7 @@ void tick(int state) {
 	}
 	for(vector<objectstate_t>::iterator it = crates.begin();
 		it != crates.end();
-		it = (*it)._hp <= 0 ? crates.erase(it) : it + 1){
+		it = (*it)._hp == 0 ? crates.erase(it) : it + 1){
 	}
 	glutPostRedisplay();
 
@@ -1179,7 +1192,7 @@ int main( int argc, char** argv ) {
   GW = 800;
   GH = 600;
   //glutInitWindowPosition(0, 0);
-  //glutCreateWindow("Island");
+  glutCreateWindow("Island");
   glutGameModeString("800x600:32");
   if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 	glutEnterGameMode();

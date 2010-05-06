@@ -9,8 +9,8 @@
 class particle
 {
 public:
-	float x,y,z; //Cartesian position
-	//particle *src; //Origin point for the effect (will always be a source)
+	vec3d_t _pos; //Cartesian position
+	vec3d_t _vel;
 	float r,g,b,a; //Color
 	float life,fade;
 	bool active;
@@ -35,12 +35,12 @@ public:
 class fireball_s : public source
 {
 public:
-	float vx,vz; //Cartesian velocity
+	//float vx,vz; //Cartesian velocity
 	int age; //used for time-based changes
 
 	/*maybe give this a vector containing its particles?*/
 
-	fireball_s(float,float,float,float,unsigned int);
+	fireball_s(double,double,double,double);
 	void move(void);
 	void draw(void);
 	//bool collide(float,float,float);
@@ -49,7 +49,7 @@ public:
 class fireball_p : public particle
 {
 public:
-	float vx,vy,vz; //Cartesian velocity
+	//float vx,vy,vz; //Cartesian velocity
 	fireball_s *src; //Origin point for the effect
 
 	fireball_p(fireball_s *);
@@ -61,7 +61,7 @@ class explosion_s : public source
 {
 public:
 
-	explosion_s(float,float);
+	explosion_s(double,double);
 	void move(void);
 	void draw(void);
 	//bool collide(float,float,float);
@@ -70,7 +70,7 @@ public:
 class explosion_p : public particle
 {
 public:
-	float vx,vy,vz;
+	//float vx,vy,vz;
 	explosion_s *src; //Origin point for the effect
 
 	explosion_p(explosion_s *);
@@ -81,10 +81,10 @@ public:
 class rapidfire : public source
 {
 public:
-	float vtr,vtd; //theta: rad, deg
+	//float vtr,vtd; //theta: rad, deg
 	bool boom; //has it hit yet?
 	
-	rapidfire(float,float,float,float, unsigned int);
+	rapidfire(double,double,double,double);
 	void move(void);
 	void draw(void);
 	//bool collide(float,float,float);
@@ -94,7 +94,7 @@ class splinter : public particle
 {
 public:
 	float roh,rov,sph,spv; //ROtation/SPin; horizontal/vertical
-	float vx,vy,vz;
+	//float vx,vy,vz;
 	explosion_s *src;
 	//float scalw,scall; //Scale width/length
 
