@@ -149,6 +149,7 @@ vector<particle *> expar;
 bool explo;
 vector<rapidfire *> rfpar;
 int beatim;
+bool bflag;
 beam * besrc;
 
 vector<unsigned int> textures;
@@ -966,8 +967,10 @@ void mouse(int button, int state, int x, int y) {
   }
 	if(button == GLUT_LEFT_BUTTON) {
 		if (state == GLUT_DOWN) {
+			bflag = true;
 			beatim = 5;
 		}
+		else bflag = false;
 	}
 }
 
@@ -1049,6 +1052,7 @@ void processMouseActiveMotion(int x, int y) {
 
 
 	vel.y() = (flag)?.005:0;
+	if(bflag) beatim = 5;
 
   glutPostRedisplay();
 
