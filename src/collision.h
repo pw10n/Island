@@ -22,7 +22,7 @@
 #define VBCO valb
 #define VCCO valc
 #define VDCO vald
-#define LINELEN 6.0 //this is assuming lines will have uniform length
+#define LINELEN .05 //this is assuming lines will have uniform length
 
 typedef struct bbody {
 	double vala, valb, valc, vald; //uses the V* defines above for naming, based on the type

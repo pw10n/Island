@@ -23,9 +23,9 @@ particle::~particle(void)
 {
 }
 
-fireball_s::fireball_s(double ix,double iz,double ivx,double ivz)
+fireball_s::fireball_s(double ix,double iz,double ivx,double ivz,uint16_t id)
 {
-	//x = ix; y = .1f; z = iz; vx = ivx; vz = ivz;
+	pid = id;
 	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t(ivx,0,ivz);
 	age = 0; active = true;
 	r = 1.0f; g = .5f; b = 0.0f; a = 1.0f;
@@ -148,6 +148,7 @@ void fireball_p::draw(void)
 
 explosion_s::explosion_s(double ix, double iz)
 {
+	pid = 0;
 	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t();
 	life = 4.0f;
 	fade = .5f;
@@ -224,8 +225,9 @@ void explosion_p::draw(void)
 	glPopMatrix();
 }
 
-rapidfire::rapidfire(double ix, double iz, double ivx, double ivz)
+rapidfire::rapidfire(double ix, double iz, double ivx, double ivz, uint16_t id)
 {
+	pid = id;
 	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t(ivx,0,ivz);
 	life = 0.0; r = a = 1.0f; g = b = 0.0f;
 	active = true; boom = false;
@@ -328,5 +330,43 @@ void splinter::draw(void)
 	float sca = 4.0f;
 	glScalef(1,1,sca);
 	glCallList(PARTLIST);
+	glPopMatrix();
+}
+
+beam::beam(playerstate_t *pla)
+{
+	play = pla;
+	pid = play->_id;
+	_pos = vec3d_t(play->front.VCENX,.25,play->front.VCENZ);
+	ang = play->_vel.x();
+	_vel = vec3d_t(-sin(ang)*5,0,-cos(ang)*5);
+	life = 0.0; g = a = 1.0f; b = 0.2f; r = 0.0f;
+	active = true;
+	body = bbody(_pos,_pos + _vel,BB_LINE);
+	_type = PARTICLE_BEAM; //LASER!!
+}
+
+void beam::move(void)
+{
+	_pos = vec3d_t(play->front.VCENX,.25,play->front.VCENZ);
+	ang = play->_vel.x();
+	_vel = vec3d_t(-sin(ang)*5,0,-cos(ang)*5);
+	body = bbody(_pos,_pos + _vel,BB_LINE);
+	b += (float)(rand()%3-1)*.1f;
+	if(b>1.0f) b=1.0f;
+	else if(b<0.0f) b=0.0f;
+}
+
+void beam::draw(void)
+{
+	glColor4f(r,g,b,a);
+	glPushMatrix();
+	glTranslatef(_pos.x(),_pos.y(),_pos.z());
+	glRotatef(180.0f+ang*180.0f/3.1415f,0,1,0);
+	glTranslatef(0,0,.1f); glCallList(PARTLIST);
+	glTranslatef(0,0,.1f); glCallList(PARTLIST);
+	glTranslatef(0,0,.1f); glCallList(PARTLIST);
+	glTranslatef(0,0,.1f); glCallList(PARTLIST);
+	glTranslatef(0,0,.1f); glCallList(PARTLIST);
 	glPopMatrix();
 }

@@ -61,6 +61,9 @@ playerstate_t::playerstate_t(uint32_t time): _tick(time), _hp(0), _mp(0),
 	
 	for (int i=0; i<PLAYERSTATE_MAXABILITY; ++i)
 		_ability[i]=0;
+	body = bbody(_pos.x(),-_pos.y(),1,0,BB_CIRC);
+	coord2d_t dummy;
+	front = bbody(this->calcHotSpot(dummy,.6),.1,BB_CIRC);
 }
 
 playerstate_t::playerstate_t(const playerstate_t &player){

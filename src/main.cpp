@@ -148,6 +148,8 @@ explosion_s * exsrc;
 vector<particle *> expar;
 bool explo;
 vector<rapidfire *> rfpar;
+int beatim;
+beam * besrc;
 
 vector<unsigned int> textures;
 vector<objectstate_t> crates;
@@ -279,6 +281,7 @@ void drawAi(){
 #define AI_BOUNDS_MAX 40.0
 #define AI_BOUNDS_MIN -40.0
 void tickAi(uint32_t time){
+	coord2d_t dummy;
 	for(vector<playerstate_t>::iterator it = others.begin();
 		it != others.end();
 		it=((*it)._hp<=0)?others.erase(it):it+1)
@@ -291,7 +294,8 @@ void tickAi(uint32_t time){
 				// move forward
 				(*it)._pos.x() += (-sin((*it)._vel.x()) * (*it)._vel.y());
 				(*it)._pos.y() += (cos((*it)._vel.x()) * (*it)._vel.y());
-				(*it).body = bbody((*it)._pos.x(),-(*it)._pos.y(),1,0,BB_CIRC);
+				(*it).body = bbody((*it)._pos.x(),-(*it)._pos.y(),1.0,0,BB_CIRC);
+				(*it).front = bbody((*it).calcHotSpot(dummy,.6),.1,BB_CIRC);
 
 				// check bounds
 				if ((*it)._pos.x() > AI_BOUNDS_MAX){
@@ -474,7 +478,7 @@ void spawnFireball(){
 	double fbz = -cos(theta);
 	coord2d_t dummy;
 	dummy = player->calcHotSpot(dummy,.6);
-	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0,fbz/5.0);
+	fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0,fbz/5.0,player->_id);
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
@@ -511,8 +515,7 @@ void rapid(playerstate_t& player){
 		dummy = player.calcHotSpot(dummy,.6);
 		double vx = -sin(player._vel.x())*.6;
 		double vz = -cos(player._vel.x())*.6;
-		//rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),player._vel.x(),player._vel.x()*(180.00/M_PI)));
-		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz));
+		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
 	}
 }
 
@@ -936,6 +939,7 @@ glEnable(GL_LIGHTING);
 		//glTranslatef(-1.0,0,-1.0);
 		drawCrates();
 		//glutSolidSphere(1.0,10,10);
+		if(beatim>-1) besrc->draw();
       glPopMatrix();
 	  if(fbtim>-1) drawFireball();
 	  if(explo) drawExplosion();
@@ -962,6 +966,7 @@ void mouse(int button, int state, int x, int y) {
   }
 	if(button == GLUT_LEFT_BUTTON) {
 		if (state == GLUT_DOWN) {
+			beatim = 5;
 		}
 	}
 }
@@ -1072,7 +1077,9 @@ void keyboard(unsigned char key, int x, int y ){
 	case 's': case 'S' :
 		if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		break;
-
+	case 'f': case 'F' :
+		beatim = 5;
+		break;
 	case '0': hit_damage = 0;
 		break;
 	case '-': hit_damage = 10;
@@ -1111,20 +1118,25 @@ int checkPaCollision(source * src){
 			else if (src->_type == PARTICLE_RAPID){
 				damage(&crates[i]._hp,1);
 			}
+			else if (src->_type == PARTICLE_BEAM){
+				damage(&crates[i]._hp,1);
+				//continue;
+			}
 			// this is wrong - hacked way of having the splinter effect on dead crate
 			if (crates[i]._hp == 0){
 			}
 			return HIT_CRATE;
 		}
 	}
-	if (collide(src->body,player->body)){
+	if (collide(src->body,player->body)&&!player->checkID(src->pid)){
 		damage(&player->_hp,hit_damage);
 		if(src->_type == PARTICLE_FIREBALL) detonate(fbsrc,false);
 		return HIT_PLAYER;
 	}
 	for(unsigned int i=0;i<others.size();i++){
-		if(collide(src->body,others[i].body)) {
+		if(collide(src->body,others[i].body)&&!others[i].checkID(src->pid)) {
 			damage(&others[i]._hp,5);
+			//if(src->_type == PARTICLE_BEAM) continue;
 			return HIT_PLAYER;
 		}
 	}
@@ -1204,6 +1216,11 @@ void tick(int state) {
 			delete rfpar[i];
 			rfpar.erase(rfpar.begin()+i);
 		}
+	}
+	if(beatim>-1){
+		beatim--;
+		besrc->move();
+		checkPaCollision(besrc);
 	}
 	for(vector<objectstate_t>::iterator it = crates.begin();
 		it != crates.end();
@@ -1297,5 +1314,6 @@ int main( int argc, char** argv ) {
 	textures.push_back(partTexture);
 	init_particle();
   
+	besrc = new beam(player); //only need one beam right now, so might as well initialize it now
   glutMainLoop();
 }

@@ -202,9 +202,9 @@ bool lineAABBcollide(bbody lin, bbody box){
 bool linecirclecollide(bbody lin, bbody cir){
 	coord2d_t pt = coord2d_t(cir.VCENX,cir.VCENZ);
 	double d = ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO);
-	if(d<cir.VRAD||d>-cir.VRAD){
+	if(d<cir.VRAD&&d>-cir.VRAD){
 		d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
-		return d<(cir.VRAD+LINELEN) && d>-cir.VRAD;
+		return (d<(cir.VRAD+LINELEN)) && (d>-cir.VRAD);
 	}
 	return false;
 }

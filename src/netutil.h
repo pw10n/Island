@@ -81,7 +81,7 @@ class playerstate_t: public netobj{
       uint8_t _ability[PLAYERSTATE_MAXABILITY]; //1*5
       uint8_t _weapon; //1
       coord2d_t _pos; //8
-      coord2d_t _vel; //8
+      coord2d_t _vel; //8  Radians
       uint8_t _state; //1
       uint16_t _score; //2
 	  bbody body, front; //used for collision
@@ -98,6 +98,7 @@ class playerstate_t: public netobj{
 	  void change_velocity(double nVx, double nVy);
 
 	  coord2d_t calcHotSpot(coord2d_t hs, double dist);
+	  bool checkID(uint16_t id){return (id==_id);}
 
 	  //network functions:
       int serialize_delta(char* buf, int sz) {return 0;};
