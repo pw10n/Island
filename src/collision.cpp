@@ -3,53 +3,76 @@
 #include <math.h>
 
 bbody::bbody(){
-	val[0] = val[1] = val[2] = val[3] = 0;
+	vala = valb = valc = vald = 0;
 	_type = 0;
 }
 
 //basic fill in the blank constructor
 bbody::bbody(const double ina, const double inb, const double inc, const double ind, const int intyp){
-	val[0] = ina; val[1] = inb; val[2] = inc; val[3] = ind; _type = intyp;}
-	//this is meant for AABBs and lines
+	vala = ina; valb = inb; valc = inc; vald = ind; _type = intyp;}
+	//these are meant for AABBs and lines
 bbody::bbody(coord2d_t ina, coord2d_t inb, int intyp){
 	if(intyp == BB_AABB){
-		val[VMINX] = ina.x();
-		val[VMINZ] = ina.y();
-		val[VMAXX] = inb.x();
-		val[VMAXZ] = inb.y();
+		VMINX = ina.x();
+		VMINZ = ina.y();
+		VMAXX = inb.x();
+		VMAXZ = inb.y();
 	}
 	else if(intyp == BB_CIRC){
-		val[VCENX] = ina.x();
-		val[VCENZ] = ina.y();
-		val[VRAD] = inb.x();
-		val[3] = 0;
+		VCENX = ina.x();
+		VCENZ = ina.y();
+		VRAD = inb.x();
+		vald = 0;
 	}
 	else{
 		double tempa = ina.y() - inb.y();
 		double tempb = inb.x() - ina.x();
-		val[VACO] = tempa/hypot(tempb,tempa);
-		val[VBCO] = tempb/hypot(tempb,tempa);
-		val[VCCO] = -(ina.x()*val[VACO] + ina.y()*val[VBCO]);//eq of line: ax+by+c=0
-		val[VDCO] = -(ina.x()*val[VBCO] - ina.y()*val[VACO]);//eq of perp line: bx-ay+d=0
+		VACO = tempa/hypot(tempb,tempa);
+		VBCO = tempb/hypot(tempb,tempa);
+		VCCO = -(ina.x()*VACO + ina.y()*VBCO);//eq of line: ax+by+c=0
+		VDCO = -(ina.x()*VBCO - ina.y()*VACO);//eq of perp line: bx-ay+d=0
+	}
+	_type = intyp;
+}
+bbody::bbody(vec3d_t ina, vec3d_t inb, int intyp){
+	if(intyp == BB_AABB){
+		VMINX = ina.x();
+		VMINZ = ina.z();
+		VMAXX = inb.x();
+		VMAXZ = inb.z();
+	}
+	else if(intyp == BB_CIRC){
+		VCENX = ina.x();
+		VCENZ = ina.z();
+		VRAD = inb.x();
+		vald = 0;
+	}
+	else{
+		double tempa = ina.z() - inb.z();
+		double tempb = inb.x() - ina.x();
+		VACO = tempa/hypot(tempb,tempa);
+		VBCO = tempb/hypot(tempb,tempa);
+		VCCO = -(ina.x()*VACO + ina.z()*VBCO);//eq of line: ax+by+c=0
+		VDCO = -(ina.x()*VBCO - ina.z()*VACO);//eq of perp line: bx-ay+d=0
 	}
 	_type = intyp;
 }
 	//these are meant for circles
-bbody::bbody(coord2d_t incor, const double inr, int intyp) {
-	val[0]=incor.x(); val[1]=incor.y(); val[2]=inr; val[3]=0; _type=intyp;}
-bbody::bbody(vec3d_t invec, const double inr, int intyp) {
-	val[0]=invec.x(); val[1]=invec.z(); val[2]=inr; val[3]=0; _type=intyp;}
+bbody::bbody(coord2d_t incor, const double inr, int intyp){
+	vala=incor.x(); valb=incor.y(); valc=inr; vald=0; _type=intyp;}
+bbody::bbody(vec3d_t invec, const double inr, int intyp){
+	vala=invec.x(); valb=invec.z(); valc=inr; vald=0; _type=intyp;}
 	//all constructors work for all types
 
 /* returns true if two circles collide, false otherwise*/
 bool circlecollide(bbody circle1, bbody circle2) {
   double distance = 0;
   /*compute distance*/
-  distance = sqrt(pow(circle1.val[VCENX]-circle2.val[VCENX], 2) 
-    + pow(circle1.val[VCENZ]-circle2.val[VCENZ], 2));
+  distance = sqrt(pow(circle1.VCENX-circle2.VCENX, 2) 
+    + pow(circle1.VCENZ-circle2.VCENZ, 2));
 
   /*compare*/
-  if (distance < circle1.val[VRAD] + circle2.val[VRAD]) {
+  if (distance < circle1.VRAD + circle2.VRAD) {
     return true;
   }
   return false;
@@ -59,11 +82,11 @@ bool circlecollide(bbody circle1, bbody circle2) {
 bool circleptcollide(bbody circle1, coord2d_t pt) {
   double distance = 0;
   /*compute distance*/
-  distance = sqrt(pow(circle1.val[VCENX]-pt.x(), 2) 
-    + pow(circle1.val[VCENZ]-pt.y(), 2));
+  distance = sqrt(pow(circle1.VCENX-pt.x(), 2) 
+    + pow(circle1.VCENZ-pt.y(), 2));
     
   /*compare*/
-  if (distance < circle1.val[VRAD]) {
+  if (distance < circle1.VRAD) {
     return true;
   }  
   return false;
@@ -74,8 +97,8 @@ bool circleptcollide(bbody circle1, coord2d_t pt) {
 bool AABBcollide(bbody box1, bbody box2) {
   
   /* test corners */  
-  if (box1.val[VMINX] < box2.val[VMINX] &&  box2.val[VMINX] < box1.val[VMAXX] &&
-      box1.val[VMINZ] < box2.val[VMINZ] &&  box2.val[VMINZ] < box1.val[VMAXZ] ) {
+  if (box1.VMINX < box2.VMINX &&  box2.VMINX < box1.VMAXX &&
+      box1.VMINZ < box2.VMINZ &&  box2.VMINZ < box1.VMAXZ ) {
 
       /* do nothing (check next case) */
   }
@@ -83,8 +106,8 @@ bool AABBcollide(bbody box1, bbody box2) {
     return true;
   }
 
-  if (box1.val[VMINX] < box2.val[VMAXX] &&  box2.val[VMAXX] < box1.val[VMAXX] &&
-      box1.val[VMINZ] < box2.val[VMAXZ] &&  box2.val[VMAXZ] < box1.val[VMAXZ] ) {
+  if (box1.VMINX < box2.VMAXX &&  box2.VMAXX < box1.VMAXX &&
+      box1.VMINZ < box2.VMAXZ &&  box2.VMAXZ < box1.VMAXZ ) {
       /* do nothing (check next case) */
   }
   else {
@@ -92,16 +115,16 @@ bool AABBcollide(bbody box1, bbody box2) {
   }
 
   /* test if box is fully within box */
-  if (box1.val[VMINX] > box2.val[VMAXX] ||
-      box2.val[VMINX] > box1.val[VMAXX] )  {
+  if (box1.VMINX > box2.VMAXX ||
+      box2.VMINX > box1.VMAXX )  {
       /* do nothing (check next case) */
   }
   else {
     return true;
   }
 
-  if (box1.val[VMINZ] > box2.val[VMAXZ] ||
-      box2.val[VMINZ] > box1.val[VMAXZ] )  {
+  if (box1.VMINZ > box2.VMAXZ ||
+      box2.VMINZ > box1.VMAXZ )  {
       /* do nothing (check next case) */
   }
   else {
@@ -114,8 +137,8 @@ bool AABBcollide(bbody box1, bbody box2) {
 bool AABBptcollide(bbody box1, coord2d_t pt) {
 
   /* test pt */  
-  if (box1.val[VMINX] < pt.x() &&  pt.x() < box1.val[VMAXX] &&
-      box1.val[VMINZ] < pt.y() &&  pt.y() < box1.val[VMAXZ] ) {
+  if (box1.VMINX < pt.x() &&  pt.x() < box1.VMAXX &&
+      box1.VMINZ < pt.y() &&  pt.y() < box1.VMAXZ ) {
 
 	/* Means collision */
     return true;
@@ -125,15 +148,15 @@ bool AABBptcollide(bbody box1, coord2d_t pt) {
 }
 
 bool circleAABBcollide(bbody cir, bbody box){
-	coord2d_t pt(box.val[VMINX],box.val[VMINZ]);
+	coord2d_t pt(box.VMINX,box.VMINZ);
 	if(circleptcollide(cir,pt)) return true;
-	pt = coord2d_t(box.val[VMINX],box.val[VMAXZ]);
+	pt = coord2d_t(box.VMINX,box.VMAXZ);
 	if(circleptcollide(cir,pt)) return true;
-	pt = coord2d_t(box.val[VMAXX],box.val[VMINZ]);
+	pt = coord2d_t(box.VMAXX,box.VMINZ);
 	if(circleptcollide(cir,pt)) return true;
-	pt = coord2d_t(box.val[VMAXX],box.val[VMAXZ]);
+	pt = coord2d_t(box.VMAXX,box.VMAXZ);
 	if(circleptcollide(cir,pt)) return true;
-	pt = coord2d_t(cir.val[VCENX],cir.val[VCENZ]);
+	pt = coord2d_t(cir.VCENX,cir.VCENZ);
 	return AABBptcollide(box,pt);
 }
 
@@ -142,9 +165,9 @@ double ptonline(coord2d_t pt, double la, double lb, double lc){
 }
 
 bool lineptcollide(bbody lin, coord2d_t pt){
-	double d = ptonline(pt,lin.val[VACO],lin.val[VBCO],lin.val[VCCO]);
+	double d = ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO);
 	if(d>-.001&&d<.001){
-		d = ptonline(pt,lin.val[VBCO],-lin.val[VACO],lin.val[VDCO]);
+		d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
 		return (d>0&&d<LINELEN); //checks that pt is within specific range and in right direction
 	}
 	return false;
@@ -155,33 +178,33 @@ bool lineAABBcollide(bbody lin, bbody box){
 	bool thrubox = false; //does line pass through box, true if at least one corner is on opp side of line from others
 	bool inrange = false; //is box in within correct range, true if at least one corner is
 	double d;
-	coord2d_t pt(box.val[VMINX],box.val[VMINZ]);
-	ean = (ptonline(pt,lin.val[VACO],lin.val[VBCO],lin.val[VCCO])>0);
-	d = ptonline(pt,lin.val[VBCO],-lin.val[VACO],lin.val[VDCO]);
+	coord2d_t pt(box.VMINX,box.VMINZ);
+	ean = (ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO)>0);
+	d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
 	inrange |= (d>0&&d<LINELEN);
-	pt = coord2d_t(box.val[VMINX],box.val[VMAXZ]);
-	thrubox = (ean != (ptonline(pt,lin.val[VACO],lin.val[VBCO],lin.val[VCCO])>0));
-	d = ptonline(pt,lin.val[VBCO],-lin.val[VACO],lin.val[VDCO]);
-	inrange |= (d>0&&d<LINELEN);
-	if(thrubox&&inrange) return true;
-	pt = coord2d_t(box.val[VMAXX],box.val[VMINZ]);
-	thrubox |= (ean != (ptonline(pt,lin.val[VACO],lin.val[VBCO],lin.val[VCCO])>0));
-	d = ptonline(pt,lin.val[VBCO],-lin.val[VACO],lin.val[VDCO]);
+	pt = coord2d_t(box.VMINX,box.VMAXZ);
+	thrubox = (ean != (ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO)>0));
+	d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
 	inrange |= (d>0&&d<LINELEN);
 	if(thrubox&&inrange) return true;
-	pt = coord2d_t(box.val[VMAXX],box.val[VMAXZ]);
-	thrubox |= (ean != (ptonline(pt,lin.val[VACO],lin.val[VBCO],lin.val[VCCO])>0));
-	d = ptonline(pt,lin.val[VBCO],-lin.val[VACO],lin.val[VDCO]);
+	pt = coord2d_t(box.VMAXX,box.VMINZ);
+	thrubox |= (ean != (ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO)>0));
+	d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
+	inrange |= (d>0&&d<LINELEN);
+	if(thrubox&&inrange) return true;
+	pt = coord2d_t(box.VMAXX,box.VMAXZ);
+	thrubox |= (ean != (ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO)>0));
+	d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
 	inrange |= (d>0&&d<LINELEN);
 	return thrubox && inrange;
 }
 
 bool linecirclecollide(bbody lin, bbody cir){
-	coord2d_t pt = coord2d_t(cir.val[VCENX],cir.val[VCENZ]);
-	double d = ptonline(pt,lin.val[VACO],lin.val[VBCO],lin.val[VCCO]);
-	if(d<cir.val[VRAD]||d>-cir.val[VRAD]){
-		d = ptonline(pt,lin.val[VBCO],-lin.val[VACO],lin.val[VDCO]);
-		return d<(cir.val[VRAD]+LINELEN) || d>-cir.val[VRAD];
+	coord2d_t pt = coord2d_t(cir.VCENX,cir.VCENZ);
+	double d = ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO);
+	if(d<cir.VRAD||d>-cir.VRAD){
+		d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
+		return d<(cir.VRAD+LINELEN) && d>-cir.VRAD;
 	}
 	return false;
 }
@@ -190,16 +213,16 @@ bool collide(bbody bod1, bbody bod2){
 	if(bod1._type==BB_AABB){
 		if(bod2._type==BB_AABB) return AABBcollide(bod1,bod2);
 		else if(bod2._type==BB_CIRC) {
-			if(bod2.val[3] == -1) return false;
+			if(bod2.vald == -1) return false;
 			return circleAABBcollide(bod2,bod1);
 		}
 		else return lineAABBcollide(bod2,bod1);
 	}
 	else if(bod1._type==BB_CIRC){
-		if(bod1.val[3] == -1) return false;
+		if(bod1.vald == -1) return false;
 		else if(bod2._type==BB_AABB) return circleAABBcollide(bod1,bod2);
 		else if(bod2._type==BB_CIRC) {
-			if(bod2.val[3] == -1) return false;
+			if(bod2.vald == -1) return false;
 			return circlecollide(bod1,bod2);
 		}
 		else return linecirclecollide(bod2,bod1);
@@ -207,7 +230,7 @@ bool collide(bbody bod1, bbody bod2){
 	else{
 		if(bod2._type==BB_AABB) return lineAABBcollide(bod1,bod2);
 		else if(bod2._type==BB_CIRC) {
-			if(bod2.val[3] == -1) return false;
+			if(bod2.vald == -1) return false;
 			return linecirclecollide(bod1,bod2);
 		}
 		else return true; //don't have a function for line to line collision. Will write one if we need one.
@@ -217,7 +240,7 @@ bool collide(bbody bod1, bbody bod2){
 bool ptcollide(bbody bod, coord2d_t pt){
 	if(bod._type==BB_AABB) return AABBptcollide(bod,pt);
 	else if(bod._type==BB_CIRC) {
-		if(bod.val[3] == -1) return false;
+		if(bod.vald == -1) return false;
 		else return circleptcollide(bod,pt);
 	}
 	else return lineptcollide(bod,pt);

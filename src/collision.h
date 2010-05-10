@@ -4,36 +4,36 @@
 #include <math.h>
 
 #define BB_AABB 0
-#define VMINX 0
-#define VMINZ 1
-#define VMAXX 2
-#define VMAXZ 3
+#define VMINX vala
+#define VMINZ valb
+#define VMAXX valc
+#define VMAXZ vald
 
 #define BB_CIRC 1
-#define VCENX 0
-#define VCENZ 1
-#define VRAD 2
+#define VCENX vala
+#define VCENZ valb
+#define VRAD valc
 //circle bbodies don't use val[3] so it has no define
 //instead, if val[3] of a circle = -1 then don't collide with anything
 #define DONTCOLLIDE bbody(0,0,0,-1,BB_CIRC)
 
 #define BB_LINE 2
-#define VACO 0
-#define VBCO 1
-#define VCCO 2
-#define VDCO 3
+#define VACO vala
+#define VBCO valb
+#define VCCO valc
+#define VDCO vald
 #define LINELEN 6.0 //this is assuming lines will have uniform length
 
 typedef struct bbody {
-	double val[4]; //uses the V* defines above for naming, based on the type
+	double vala, valb, valc, vald; //uses the V* defines above for naming, based on the type
 	uint8_t _type; //uses the BB_* defines above
 
 	bbody();
 	bbody(const double, const double, const double, const double, const int);
 	bbody(coord2d_t, coord2d_t, int);
+	bbody(vec3d_t, vec3d_t, int);
 	bbody(coord2d_t, const double, int);
 	bbody(vec3d_t, const double, int);
-	//~bbody() {delete val;}
 } bbody;
 
 /* returns true if two circles collide, false otherwise*/
