@@ -35,6 +35,8 @@
 using namespace std;
 
 #define WORLD_TIME_RESOLUTION 30
+#define HIT_CRATE 1
+#define HIT_PLAYER 2
 
 uint32_t worldtime=0;
 
@@ -1100,7 +1102,7 @@ void keyboard(unsigned char key, int x, int y ){
   }
 }
 
-bool checkPaCollision(source * src){
+int checkPaCollision(source * src){
 	for(unsigned int i = 0 ; i < crates.size(); i++){
 		if(collide(src->body,crates[i].body)){
 			if (src->_type == PARTICLE_FIREBALL){
@@ -1111,22 +1113,22 @@ bool checkPaCollision(source * src){
 			}
 			// this is wrong - hacked way of having the splinter effect on dead crate
 			if (crates[i]._hp == 0){
-				detonate(src, true);
 			}
-			return true;
+			return HIT_CRATE;
 		}
 	}
 	if (collide(src->body,player->body)){
 		damage(&player->_hp,hit_damage);
-		return true;
+		if(src->_type == PARTICLE_FIREBALL) detonate(fbsrc,false);
+		return HIT_PLAYER;
 	}
 	for(unsigned int i=0;i<others.size();i++){
 		if(collide(src->body,others[i].body)) {
 			damage(&others[i]._hp,5);
-			return true;
+			return HIT_PLAYER;
 		}
 	}
-	return false;
+	return 0;
 }
 
 bool checkPlCollision(playerstate_t * pls){
@@ -1137,6 +1139,7 @@ bool checkPlCollision(playerstate_t * pls){
 }
 
 void tick(int state) {
+	int coll = 0;
 	if(checkPlCollision(player)) vel.y() = 0;
 	player->change_velocity(vel);
 	player->tick(worldtime);
@@ -1168,12 +1171,12 @@ void tick(int state) {
 		delete fbsrc;
 		explo = true;
 	}
-	else if(fbtim>-1&&checkPaCollision(fbsrc)){
+	else if(fbtim>-1&&(coll = checkPaCollision(fbsrc))){
 		fbtim=-1;
 		fbsrc->active = false;
 		for(uint32_t i=0;i<fbpar.size();i++) delete fbpar[i];
 		fbpar.clear();
-		detonate(fbsrc,true); //if fbtim less than 50, fb must have collided with something
+		detonate(fbsrc,(coll==HIT_CRATE)); //if fbtim less than 50, fb must have collided with something
 		delete fbsrc;
 		explo = true;
 	}
