@@ -3,35 +3,62 @@
 #include "types.h"
 #include <math.h>
 
-/*axis alligned bounding box*/
-struct AABB {
-  coord2d_t mind;
-  coord2d_t maxd;
-  AABB(const double in_x, const double in_y, const double in_x2, const double in_y2) 
-    : mind(in_x, in_y), maxd(in_x2, in_y2){}
-  AABB(coord2d_t cen) : mind(cen.x()-.5,cen.y()-.5), maxd(cen.x()+.5,cen.y()+.5){}
-  AABB() : mind(0,0), maxd(0,0){}
-};
+#define BB_AABB 0
+#define VMINX 0
+#define VMINZ 1
+#define VMAXX 2
+#define VMAXZ 3
 
-struct sphere {
-  coord2d_t pos; /*position of center*/
-  double radius;
-  sphere(float in_radius, const double in_x, const double in_y)
-    : radius(in_radius), pos(in_x, in_y){}
-  sphere(float in_radius, coord2d_t in_pos)
-    : radius(in_radius), pos(in_pos.x(), in_pos.y()){}
-  sphere() : radius(0), pos(){}
-};
+#define BB_CIRC 1
+#define VCENX 0
+#define VCENZ 1
+#define VRAD 2
+//circle bbodies don't use val[3] so it has no define
+//instead, if val[3] of a circle = -1 then don't collide with anything
+#define DONTCOLLIDE bbody(0,0,0,-1,BB_CIRC)
 
-/* returns true if two spheres collide, false otherwise*/
-bool spherecollide(struct sphere sphere1, struct sphere sphere2);
+#define BB_LINE 2
+#define VACO 0
+#define VBCO 1
+#define VCCO 2
+#define VDCO 3
+#define LINELEN 6.0 //this is assuming lines will have uniform length
 
-/* returns true if sphere collides with point, false otherwise*/
-bool sphereptcollide(struct sphere sphere1, coord2d_t pt);
+typedef struct bbody {
+	double val[4]; //uses the V* defines above for naming, based on the type
+	uint8_t _type; //uses the BB_* defines above
+
+	bbody();
+	bbody(const double, const double, const double, const double, const int);
+	bbody(coord2d_t, coord2d_t, int);
+	bbody(coord2d_t, const double, int);
+	bbody(vec3d_t, const double, int);
+	//~bbody() {delete val;}
+} bbody;
+
+/* returns true if two circles collide, false otherwise*/
+bool circlecollide(bbody, bbody);
+
+/* returns true if circle collides with point, false otherwise*/
+bool circleptcollide(bbody, coord2d_t);
 
 /* returns true if two AABB's collide, false otherwise */
-bool AABBcollide(struct AABB box1, struct AABB box2);
+bool AABBcollide(bbody, bbody);
 
-bool AABBptcollide(struct AABB box1, coord2d_t pt);
+bool AABBptcollide(bbody, coord2d_t);
 
-bool sphereAABBcollide(struct sphere sph, struct AABB box);
+bool circleAABBcollide(bbody, bbody);
+
+/* plugs the point into the line eq (doubles) and returns sum*/
+double ptonline(coord2d_t, double, double, double);
+
+bool lineptcollide(bbody, coord2d_t);
+
+bool lineAABBcollide(bbody, bbody);
+
+bool linecirclecollide(bbody, bbody);
+
+/*master collide functions: main calls these, these call the above.*/
+bool collide(bbody, bbody);
+
+bool ptcollide(bbody, coord2d_t);

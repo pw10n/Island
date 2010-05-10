@@ -84,7 +84,7 @@ class playerstate_t: public netobj{
       coord2d_t _vel; //8
       uint8_t _state; //1
       uint16_t _score; //2
-	  struct sphere body, front; //used for collision
+	  bbody body, front; //used for collision
 
 	  vector<gDelta_data> _deltas;
 
@@ -114,7 +114,7 @@ class objectstate_t: public netobj{
       uint8_t _hp;
       uint8_t _type;
       coord2d_t _pos;
-	  struct AABB body; //used for collision detection
+	  bbody body; //used for collision detection
 
 	  vector<gDelta_data> _deltas;
 

@@ -26,8 +26,7 @@ public:
 class source : public particle
 {
 public:
-	struct sphere body;//use this for testing collision
-	//virtual bool collide(float,float,float) = 0;
+	bbody body;//use this for testing collision
 	unsigned int _type;
 };
 
@@ -38,21 +37,18 @@ public:
 	//float vx,vz; //Cartesian velocity
 	int age; //used for time-based changes
 
-	/*maybe give this a vector containing its particles?*/
-
 	fireball_s(double,double,double,double);
 	void move(void);
 	void draw(void);
-	//bool collide(float,float,float);
 };
 //fireball particle
 class fireball_p : public particle
 {
 public:
-	//float vx,vy,vz; //Cartesian velocity
 	fireball_s *src; //Origin point for the effect
 
 	fireball_p(fireball_s *);
+	void refresh(void);
 	void move(void);
 	void draw(void);
 };
@@ -60,17 +56,14 @@ public:
 class explosion_s : public source
 {
 public:
-
 	explosion_s(double,double);
 	void move(void);
 	void draw(void);
-	//bool collide(float,float,float);
 };
 
 class explosion_p : public particle
 {
 public:
-	//float vx,vy,vz;
 	explosion_s *src; //Origin point for the effect
 
 	explosion_p(explosion_s *);
@@ -81,22 +74,18 @@ public:
 class rapidfire : public source
 {
 public:
-	//float vtr,vtd; //theta: rad, deg
 	bool boom; //has it hit yet?
 	
 	rapidfire(double,double,double,double);
 	void move(void);
 	void draw(void);
-	//bool collide(float,float,float);
 };
 
 class splinter : public particle
 {
 public:
 	float roh,rov,sph,spv; //ROtation/SPin; horizontal/vertical
-	//float vx,vy,vz;
 	explosion_s *src;
-	//float scalw,scall; //Scale width/length
 
 	splinter(explosion_s *);
 	void move(void);

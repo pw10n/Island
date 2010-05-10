@@ -93,9 +93,9 @@ void playerstate_t::tick(uint32_t time){
 			_pos.y() += (cos(_vel.x()) * _vel.y());
 		}
 	}
-	body = sphere(1,_pos.x(),-_pos.y());
+	body = bbody(_pos.x(),-_pos.y(),1,0,BB_CIRC);
 	coord2d_t dummy;
-	front = sphere(.1,this->calcHotSpot(dummy,.5));
+	front = bbody(this->calcHotSpot(dummy,.5),.1,BB_CIRC);
 }
 
 void playerstate_t::change_velocity(coord2d_t nV){

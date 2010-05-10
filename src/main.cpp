@@ -1,6 +1,6 @@
-
-
-
+//#define _CRTDBG_MAPALLOC   //used to find memory leaks
+//#include <stdlib.h>
+//#include <crtdbg.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -16,8 +16,8 @@
 #include "texture.h"
 #include "types.h"
 
-#include <cstdio>
-#include <cstdlib>
+//#include <cstdio>
+//#include <cstdlib>
 #include <ctime>
 
 #define _USE_MATH_DEFINES
@@ -289,7 +289,7 @@ void tickAi(uint32_t time){
 				// move forward
 				(*it)._pos.x() += (-sin((*it)._vel.x()) * (*it)._vel.y());
 				(*it)._pos.y() += (cos((*it)._vel.x()) * (*it)._vel.y());
-				(*it).body = sphere(1,(*it)._pos.x(),-(*it)._pos.y());
+				(*it).body = bbody((*it)._pos.x(),-(*it)._pos.y(),1,0,BB_CIRC);
 
 				// check bounds
 				if ((*it)._pos.x() > AI_BOUNDS_MAX){
@@ -1051,6 +1051,17 @@ void keyboard(unsigned char key, int x, int y ){
   float dist = 3.0;
   switch( key ) {
     case 'q': case 'Q' :
+		for(uint32_t i=0;i<fbpar.size();i++){
+			delete fbpar[i];
+		}
+		for(uint32_t i=0;i<expar.size();i++){
+			delete expar[i];
+		}
+		for(uint32_t i=0;i<rfpar.size();i++){
+			delete rfpar[i];
+		}
+		fbpar.clear(); expar.clear(); rfpar.clear();
+		//delete fbsrc; delete exsrc;
       exit( EXIT_SUCCESS );
       break;
 	case 'a': case 'A' :
@@ -1072,12 +1083,18 @@ void keyboard(unsigned char key, int x, int y ){
 			printf("hp: %d\n",(*it)._hp);
 		}
 		break;
+	case 'm':
+		printf("sizeof fbsrc: %d\n", sizeof(*fbsrc));
+		printf("sizeof exsrc: %d\n", sizeof(*exsrc));
+		break;
 	case 'd': case 'D' :
 
 		objectstate_t temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))));
 		
 		crates.push_back(temp);
-		crates[crates.size()-1].body = struct AABB(crates[crates.size()-1]._pos);
+		double px = crates[crates.size()-1]._pos.x();
+		double pz = crates[crates.size()-1]._pos.y();
+		crates[crates.size()-1].body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
 		break;
 
   }
@@ -1085,7 +1102,7 @@ void keyboard(unsigned char key, int x, int y ){
 
 bool checkPaCollision(source * src){
 	for(unsigned int i = 0 ; i < crates.size(); i++){
-		if(sphereAABBcollide(src->body,crates[i].body)){
+		if(collide(src->body,crates[i].body)){
 			if (src->_type == PARTICLE_FIREBALL){
 				damage(&crates[i]._hp,10);
 			}
@@ -1099,12 +1116,12 @@ bool checkPaCollision(source * src){
 			return true;
 		}
 	}
-	if (spherecollide(src->body,player->body)){
+	if (collide(src->body,player->body)){
 		damage(&player->_hp,hit_damage);
 		return true;
 	}
 	for(unsigned int i=0;i<others.size();i++){
-		if(spherecollide(src->body,others[i].body)) {
+		if(collide(src->body,others[i].body)) {
 			damage(&others[i]._hp,5);
 			return true;
 		}
@@ -1114,7 +1131,7 @@ bool checkPaCollision(source * src){
 
 bool checkPlCollision(playerstate_t * pls){
 	for(unsigned int i=0; i < crates.size(); i++){
-		if(sphereAABBcollide(pls->front,crates[i].body)) return true;
+		if(collide(pls->front,crates[i].body)) return true;
 	}
 	return false;
 }
@@ -1131,22 +1148,27 @@ void tick(int state) {
 		for(uint32_t i=0;i<fbpar.size();i++){
 			fbpar[i]->move();
 			if(fbpar[i]->life<0.0f){
-				fbpar[i] = new fireball_p(fbsrc);
+				//fbpar[i] = new fireball_p(fbsrc);
+				fbpar[i]->refresh();
 			}
 		}
 	}
 	if(fbtim>50){
 		fbtim=-1;
 		fbsrc->active = false;
+		for(uint32_t i=0;i<fbpar.size();i++) delete fbpar[i];
 		fbpar.clear();
 		detonate(fbsrc,false);
+		delete fbsrc;
 		explo = true;
 	}
 	else if(fbtim>-1&&checkPaCollision(fbsrc)){
 		fbtim=-1;
 		fbsrc->active = false;
+		for(uint32_t i=0;i<fbpar.size();i++) delete fbpar[i];
 		fbpar.clear();
 		detonate(fbsrc,true); //if fbtim less than 50, fb must have collided with something
+		delete fbsrc;
 		explo = true;
 	}
 	if (explo){
@@ -1154,11 +1176,13 @@ void tick(int state) {
 		for(int i=expar.size()-1;i>-1;i--){
 			expar[i]->move();
 			if(expar[i]->life<0.0f){
+				delete expar[i];
 				expar.erase(expar.begin()+i);
 			}
 		}
 		if(expar.empty()){
 			explo = false;
+			delete exsrc;
 		}
 	}
 	for(int i=rfpar.size()-1;i>-1;i--){
@@ -1168,6 +1192,7 @@ void tick(int state) {
 			rfpar[i]->life = 0.0;
 		}
 		if(!rfpar[i]->active){
+			delete rfpar[i];
 			rfpar.erase(rfpar.begin()+i);
 		}
 	}
@@ -1184,21 +1209,26 @@ void tick(int state) {
 
 int main( int argc, char** argv ) {
   
+	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
+	bool windo = true; //true - window; false - full screen. quicker than commenting/uncommenting
   //set up my window
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  //glutInitWindowSize(800, 600); 
   GW = 800;
   GH = 600;
-  //glutInitWindowPosition(0, 0);
-  glutCreateWindow("Island");
-  glutGameModeString("800x600:32");
-  if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
-	glutEnterGameMode();
-  }
-  else{
-	  exit(1);
+  if(windo){
+		glutInitWindowSize(800, 600); 
+		glutInitWindowPosition(0, 0);
+		glutCreateWindow("Island");
+  }else{
+	  glutGameModeString("800x600:32");
+	  if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
+		glutEnterGameMode();
+	  }
+	  else{
+		  exit(1);
+	  }
   }
   //glClearColor(0.0, 0.0, 0.0, 1.0);
   glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -1226,7 +1256,11 @@ int main( int argc, char** argv ) {
 	  objectstate_t temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10));
 	  crates.push_back(temp);
   }
-  for(int i=0;i<10;i++) crates[i].body = struct AABB(crates[i]._pos);
+  for(int i=0;i<10;i++) {
+	  double px = crates[i]._pos.x();
+	  double pz = crates[i]._pos.y();
+	  crates[i].body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+  }
   
   //register glut callback functions
   glutDisplayFunc( display );

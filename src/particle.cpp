@@ -14,7 +14,6 @@ using namespace std;
 #define DCOS(x) cos(x*.01745329)
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
-#define DONTCOLLIDE sphere(0,100,100)
 
 particle::particle(void)
 {
@@ -43,7 +42,7 @@ void fireball_s::move(void)
 		_pos.z() += _vel.z();
 	}
 	if(age>17){ //waits to keep it from colliding with the user
-		body = sphere(.15,_pos.x(),_pos.z());
+		body = bbody(_pos,.15,BB_CIRC);
 	}
 	age++;
 }
@@ -75,6 +74,31 @@ fireball_p::fireball_p(fireball_s * sour)
 	float t = (float)(rand()%360);
 	float p = (float)(rand()%180) - 90.0f;
 	//float r = (float)(rand()%9+1)/50.0f;
+	int lim = MIN(src->age+1,14);
+	float r = (float)(rand()%lim+1)/300.0f;
+	_pos.x() = src->_pos.x()+r*DSIN(t)*DCOS(p)*2.0f;
+	_pos.y() = src->_pos.y()+r*DSIN(p)*2.0f;
+	_pos.z() = src->_pos.z()+r*DCOS(t)*DCOS(p)*2.0f;
+	if(src->age<15){
+		_vel.x() = r*DSIN(t)*DCOS(p);
+		_vel.y() = r*DSIN(p);
+		_vel.z() = r*DCOS(t)*DCOS(p);
+		life = (float)(rand()%20)/10;
+	}else{
+		_vel.x() = src->_vel.x()+r*DSIN(t)*DCOS(p);
+		_vel.y() = r*DSIN(p);
+		_vel.z() = src->_vel.z()+r*DCOS(t)*DCOS(p);
+		life = 2.0f;
+	}
+	fade = (float)(rand()%7+3)/50.0f;
+	r = g = a = 1.0f; b = 0.0f;
+	active = true;
+}
+
+void fireball_p::refresh(void)
+{
+	float t = (float)(rand()%360);
+	float p = (float)(rand()%180) - 90.0f;
 	int lim = MIN(src->age+1,14);
 	float r = (float)(rand()%lim+1)/300.0f;
 	_pos.x() = src->_pos.x()+r*DSIN(t)*DCOS(p)*2.0f;
@@ -131,14 +155,14 @@ explosion_s::explosion_s(double ix, double iz)
 	//fade = (float)(rand()%7+3)/50.0f;
 	r = g = a = 1.0f; b = 0.0f;
 	active = true;
-	body = sphere(life,_pos.x(),_pos.z());
+	body = bbody(_pos,(double)life,BB_CIRC);
 }
 
 void explosion_s::move(void)
 {
 	if(!active) return;
 	life -= fade;
-	body = sphere(life,_pos.x(),_pos.z());
+	body = bbody(_pos,(double)life,BB_CIRC);
 }
 
 void explosion_s::draw(void)
@@ -205,7 +229,7 @@ rapidfire::rapidfire(double ix, double iz, double ivx, double ivz)
 	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t(ivx,0,ivz);
 	life = 0.0; r = a = 1.0f; g = b = 0.0f;
 	active = true; boom = false;
-	body = sphere(.2,_pos.x(),_pos.z());
+	body = bbody(_pos,.01,BB_CIRC);
 	_type = PARTICLE_RAPID;
 }
 
@@ -216,8 +240,9 @@ void rapidfire::move(void)
 		//_pos.x() += -sin(vtr)*.6;
 		//_pos.z() += -cos(vtr)*.6;
 		_pos = _pos + _vel;
-		//body = (life>.05)?sphere(.05f,x,z):DONTCOLLIDE;
-		body = sphere(.01,_pos.x(),_pos.z());
+		//body = bbody(_pos,.01,BB_CIRC);
+		body.VCENX = _pos.x();
+		body.VCENZ = _pos.z();
 		if(life>3.0){
 			life = 0.0;
 			boom = true;
