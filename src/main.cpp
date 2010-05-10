@@ -1152,6 +1152,12 @@ void tick(int state) {
 				fbpar[i]->refresh();
 			}
 		}
+		if(fbtim<15){
+			fbsrc->_pos.x() = player->front.VCENX;
+			fbsrc->_pos.z() = player->front.VCENZ;
+			fbsrc->_vel.x() = -sin(player->_vel.x())/5.0;
+			fbsrc->_vel.z() = -cos(player->_vel.x())/5.0;
+		}
 	}
 	if(fbtim>50){
 		fbtim=-1;

@@ -95,7 +95,7 @@ void playerstate_t::tick(uint32_t time){
 	}
 	body = bbody(_pos.x(),-_pos.y(),1,0,BB_CIRC);
 	coord2d_t dummy;
-	front = bbody(this->calcHotSpot(dummy,.5),.1,BB_CIRC);
+	front = bbody(this->calcHotSpot(dummy,.6),.1,BB_CIRC);
 }
 
 void playerstate_t::change_velocity(coord2d_t nV){
