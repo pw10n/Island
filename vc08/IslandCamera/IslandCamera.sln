@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
+# Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IslandCamera", "IslandCamera\IslandCamera.vcproj", "{8D940050-97E0-4E45-BAFB-6805E215B214}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IslandServer", "IslandServer\IslandServer.vcproj", "{8CC27825-03AE-46E6-B35F-19E2698789B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,10 @@ Global
 		{8D940050-97E0-4E45-BAFB-6805E215B214}.Debug|Win32.Build.0 = Debug|Win32
 		{8D940050-97E0-4E45-BAFB-6805E215B214}.Release|Win32.ActiveCfg = Release|Win32
 		{8D940050-97E0-4E45-BAFB-6805E215B214}.Release|Win32.Build.0 = Release|Win32
+		{8CC27825-03AE-46E6-B35F-19E2698789B1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8CC27825-03AE-46E6-B35F-19E2698789B1}.Debug|Win32.Build.0 = Debug|Win32
+		{8CC27825-03AE-46E6-B35F-19E2698789B1}.Release|Win32.ActiveCfg = Release|Win32
+		{8CC27825-03AE-46E6-B35F-19E2698789B1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
