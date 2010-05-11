@@ -153,7 +153,7 @@ bool bflag;
 beam * besrc;
 
 vector<unsigned int> textures;
-vector<objectstate_t> crates;
+vector<objectstate_t*> crates;
 
 float p2w_x(int x) {
   float x1;
@@ -660,7 +660,7 @@ void drawCrates(){
 	// "front"
 	for(unsigned int i = 0; i < crates.size(); i++){
 		glPushMatrix();
-		glTranslatef(crates[i]._pos.x(),0,crates[i]._pos.y());
+		glTranslatef(crates[i]->_pos.x(),0,crates[i]->_pos.y());
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
 		glVertex3f (-.5, 0.0, 0.5);
@@ -671,7 +671,7 @@ void drawCrates(){
 		glTexCoord2f (0.0, 1.0);
 		glVertex3f (-.5, 1.0, 0.5);
 		glEnd();
-		glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+		glBindTexture(GL_TEXTURE_2D, ((crate*)crates[i])->texture);
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
 		glVertex3f (0.5, 0.0, -.5);
@@ -682,7 +682,7 @@ void drawCrates(){
 		glTexCoord2f (0.0, 1.0);
 		glVertex3f (0.5, 1.0, -.5);
 		glEnd();
-		glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+		//glBindTexture(GL_TEXTURE_2D, ((crate*)crates[i])->texture);
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
 		glVertex3f (-.5, 1.0, -.5);
@@ -693,7 +693,7 @@ void drawCrates(){
 		glTexCoord2f (0.0, 1.0);
 		glVertex3f (-.5, 1.0, 0.5);
 		glEnd();
-		glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+		//glBindTexture(GL_TEXTURE_2D, ((crate*)&crates[i])->texture);
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
 		glVertex3f (-.5, 0.0, 0.5);
@@ -704,7 +704,7 @@ void drawCrates(){
 		glTexCoord2f (0.0, 1.0);
 		glVertex3f (-.5, 1.0, 0.5);
 		glEnd();
-		glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+		//glBindTexture(GL_TEXTURE_2D, ((crate*)&crates[i])->texture);
 		//back
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
@@ -1164,12 +1164,12 @@ void keyboard(unsigned char key, int x, int y ){
 		break;
 	case 'd': case 'D' :
 
-		gameobj temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))));
+		crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
 		
 		crates.push_back(temp);
-		double px = crates[crates.size()-1]._pos.x();
-		double pz = crates[crates.size()-1]._pos.y();
-		crates[crates.size()-1].body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+		double px = crates[crates.size()-1]->_pos.x();
+		double pz = crates[crates.size()-1]->_pos.y();
+		crates[crates.size()-1]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
 		break;
 
   }
@@ -1177,19 +1177,19 @@ void keyboard(unsigned char key, int x, int y ){
 
 int checkPaCollision(source * src){
 	for(unsigned int i = 0 ; i < crates.size(); i++){
-		if(collide(src->body,crates[i].body)){
+		if(collide(src->body,crates[i]->body)){
 			if (src->_type == PARTICLE_FIREBALL){
-				damage(&crates[i]._hp,10);
+				damage(&crates[i]->_hp,10);
 			}
 			else if (src->_type == PARTICLE_RAPID){
-				damage(&crates[i]._hp,1);
+				damage(&crates[i]->_hp,1);
 			}
 			else if (src->_type == PARTICLE_BEAM){
-				damage(&crates[i]._hp,1);
+				damage(&crates[i]->_hp,1);
 				//continue;
 			}
 			// this is wrong - hacked way of having the splinter effect on dead crate
-			if (crates[i]._hp == 0){
+			if (crates[i]->_hp == 0){
 			}
 			return HIT_CRATE;
 		}
@@ -1211,7 +1211,7 @@ int checkPaCollision(source * src){
 
 bool checkPlCollision(playerstate_t * pls){
 	for(unsigned int i=0; i < crates.size(); i++){
-		if(collide(pls->front,crates[i].body)) return true;
+		if(collide(pls->front,crates[i]->body)) return true;
 	}
 	return false;
 }
@@ -1288,9 +1288,9 @@ void tick(int state) {
 		besrc->move();
 		checkPaCollision(besrc);
 	}
-	for(vector<objectstate_t>::iterator it = crates.begin();
+	for(vector<objectstate_t*>::iterator it = crates.begin();
 		it != crates.end();
-		it = (*it)._hp == 0 ? crates.erase(it) : it + 1){
+		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){
 	}
 	glutPostRedisplay();
 
@@ -1344,15 +1344,7 @@ int main( int argc, char** argv ) {
 
   srand(time(NULL));
 
-  for(int i = 0; i < 10; i++){
-	  gameobj temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10));
-	  crates.push_back(temp);
-  }
-  for(int i=0;i<10;i++) {
-	  double px = crates[i]._pos.x();
-	  double pz = crates[i]._pos.y();
-	  crates[i].body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
-  }
+
   
   //register glut callback functions
   glutDisplayFunc( display );
@@ -1382,6 +1374,16 @@ int main( int argc, char** argv ) {
   unsigned int tileTexture; 
   tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp");
   textures.push_back(tileTexture);
+
+  for(int i = 0; i < 10; i++){
+	  crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
+	  crates.push_back(temp);
+  }
+  for(int i=0;i<10;i++) {
+	  double px = crates[i]->_pos.x();
+	  double pz = crates[i]->_pos.y();
+	  crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+  }
 
 	init_particle();
   
