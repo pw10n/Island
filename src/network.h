@@ -52,7 +52,7 @@ public:
 	void change_velocity(double nVx, double nVy);
 	void change_velocity(coord2d_t nV);
 
-	void addPlayer(const playerstate_t &player){
+	void addPlayer(playerstate_t &player){
 		char buf[1024];
 		psSync_data* ptr;
 		((pkt_header*)(buf))->start = '#';

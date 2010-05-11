@@ -172,10 +172,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\src\gs_types.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\main.cpp"
 				>
 			</File>
@@ -207,10 +203,6 @@
 			>
 			<File
 				RelativePath="..\..\..\src\collision.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\gs_types.h"
 				>
 			</File>
 			<File

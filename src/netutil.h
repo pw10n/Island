@@ -13,6 +13,7 @@ class objectstate_t;
 class wepfirestate_t;
 
 struct gDelta_data;
+struct psSync_data;
 
 #define GSSTATE_INACTIVE 0
 #define GSSTATE_ACTIVE 1

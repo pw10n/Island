@@ -348,7 +348,7 @@ void server::tickRcv(){
 						++it){
 							if ((*it)._id == mvPtr->_id){
 								found=true;
-								(*it).sync(psSyncPtr, sizeof(psSync_data));
+								(*it).sync((char*)psSyncPtr, sizeof(psSync_data));
 								break;
 							}
 						}
@@ -356,7 +356,7 @@ void server::tickRcv(){
 						// if not found, add to end
 						if (!found){
 							playerstate_t nPlayer(psSyncPtr);
-							_gObj->_players.push_back(&nPlayer);
+							_gObj->_players.push_back(nPlayer);
 						}
 
 						// TODO: forward this change to clients

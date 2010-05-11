@@ -84,6 +84,12 @@ playerstate_t::playerstate_t(const playerstate_t &player){
 		_deltas.push_back((*it));
 }
 
+playerstate_t::playerstate_t(psSync_data* data){
+	//TODO
+	cerr << "**TODO**";
+	exit(1);
+}
+
 void playerstate_t::tick(uint32_t time){
 	for(; _tick<time; ++_tick){
 		if (_vel.y() > DBL_EPSILON){
@@ -109,7 +115,7 @@ void playerstate_t::change_velocity(double nVx, double nVy){
 	_vel.y() = nVy;
 }
 
-<<<<<<< HEAD:src/netutil.cpp
+//<<<<<<< HEAD:src/netutil.cpp
 int playerstate_t::serialize_delta(char* buf, int sz) {
 	psSync_data* ptr = (psSync_data*) (buf);
 	ptr->_tick = _tick;
@@ -118,25 +124,25 @@ int playerstate_t::serialize_delta(char* buf, int sz) {
 	ptr->_mp = _mp;
 	for(int i=0; i<PLAYERSTATE_MAXABILITY; ++i)
 		ptr->_ability[i] = _ability[i];
-	ptr->weapon = _weapon;
+	ptr->_weapon = _weapon;
 	ptr->_pos_x = _pos.x();
 	ptr->_pos_y = _pos.y();
 	ptr->_vel_x = _vel.x();
 	ptr->_vel_y = _vel.y();
 	ptr->_state = _state;
-	ptr-._score = _score;
-=======
+	ptr->_score = _score;
+/*=======
 // objectstate_t
 // default hp is 10 and id is 0
 // TO DO
 //objectstate_t::objectstate_t(): _id(0), _type(0), _hp(10){
 //}
->>>>>>> master:src/netutil.cpp
+>>>>>>> master:src/netutil.cpp*/
 
-<<<<<<< HEAD:src/netutil.cpp
+//<<<<<<< HEAD:src/netutil.cpp
 	return 0;
 };
-=======
+//=======
 void objectstate_t::setType(uint8_t type){
 	_type = type;
 }
@@ -159,7 +165,7 @@ void objectstate_t::setType(uint8_t type){
 		glEnd();
 	}
 }*/
->>>>>>> master:src/netutil.cpp
+//>>>>>>> master:src/netutil.cpp
 
 int make_ack(char * buf, int bufsz, 
 			 uint8_t value, uint32_t seq){
