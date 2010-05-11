@@ -28,7 +28,7 @@
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
 
-
+#include "gameobjects.h"
 //#include "types.h"
 //#include "gs_types.h"
 
@@ -558,13 +558,15 @@ void drawGrid() {
       glVertex3f(i, 0, rows);
     }
   glEnd();
-  glBegin(GL_POLYGON);
-	materials(Sand);
+  materials(Sand);
+  /*glBegin(GL_POLYGON);
+
+
 	glVertex3f(columns,-0.01,rows);
 	glVertex3f(columns,-0.01,-rows);
 	glVertex3f(-columns,-0.01,-rows);
 	glVertex3f(-columns,-0.01,rows);
-  glEnd();
+  glEnd();*/
 }
 
 // draws the character facing forward.
@@ -761,6 +763,34 @@ void draw_circle() {
 
 }
 
+void drawTiles(){
+  glDisable(GL_LIGHTING);
+  glColor3f(1, 1, 1);
+
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D, textures[2]);
+
+  glBegin(GL_QUADS);
+
+  glTexCoord2f (0.0, 0.0);
+  glVertex3f(-1, 0, 1);
+  glTexCoord2f (1.0, 0.0);
+  glVertex3f(-1, 0, -1);
+  glTexCoord2f (1.0, 1.0);
+  glVertex3f(1, 0, -1);
+  glTexCoord2f (0.0, 1.0);
+  glVertex3f(1, 0, 1);
+  glEnd();
+
+  glDisable(GL_TEXTURE_2D);
+  glEnable(GL_LIGHTING);
+
+
+
+
+}
+
 void display() {
   static int frame=0;
   static int lasttime=0;
@@ -783,17 +813,20 @@ void display() {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  
+
   glMatrixMode(GL_MODELVIEW);
-  materials(Black);
+
+
 
   glPushMatrix();
-
+  
 
 
 
   setOrthoProjection();
   glPushMatrix();
 	glLoadIdentity();
+  
 
 	/* BEGIN HUD */
 	glDisable(GL_LIGHTING);
@@ -916,9 +949,35 @@ glEnable(GL_LIGHTING);
 
 
   glPushMatrix();
+
   //set up the camera
     gluLookAt(eyex + player->_pos.x(), eyey, eyez - player->_pos.y(), LAx + player->_pos.x(), LAy, LAz - player->_pos.y(), 0, 0, -1);
     glPushMatrix();
+
+
+
+
+    //tileset texture mapping
+    for(int i=0; i<26; i+=2) {
+      for(int j=0; j<26; j+=2) {
+        glPushMatrix();
+          glTranslatef(i, 0, j);
+          drawTiles();
+        glPopMatrix();
+        glPushMatrix();
+          glTranslatef(-i, 0, j);
+          drawTiles();
+        glPopMatrix();
+        glPushMatrix();
+          glTranslatef(-i, 0, -j);
+          drawTiles();
+        glPopMatrix();
+        glPushMatrix();
+          glTranslatef(i, 0, -j);
+          drawTiles();
+        glPopMatrix();
+      }
+    }
 
       glPushMatrix();
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
@@ -929,18 +988,21 @@ glEnable(GL_LIGHTING);
 
       glPopMatrix();
 
+    
+
 	  glPushMatrix();
 	  drawAi();
+
 	  glPopMatrix();
 
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
-		//materials(Sand);
+		    //materials(Sand);
         drawGrid();
-		//glTranslatef(-1.0,0,-1.0);
-		drawCrates();
+		    //glTranslatef(-1.0,0,-1.0);
+		    drawCrates();
 		//glutSolidSphere(1.0,10,10);
-		if(beatim>-1) besrc->draw();
+		    if(beatim>-1) besrc->draw();
       glPopMatrix();
 	  if(fbtim>-1) drawFireball();
 	  if(explo) drawExplosion();
@@ -1102,7 +1164,7 @@ void keyboard(unsigned char key, int x, int y ){
 		break;
 	case 'd': case 'D' :
 
-		objectstate_t temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))));
+		gameobj temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))));
 		
 		crates.push_back(temp);
 		double px = crates[crates.size()-1]._pos.x();
@@ -1283,7 +1345,7 @@ int main( int argc, char** argv ) {
   srand(time(NULL));
 
   for(int i = 0; i < 10; i++){
-	  objectstate_t temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10));
+	  gameobj temp(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10));
 	  crates.push_back(temp);
   }
   for(int i=0;i<10;i++) {
@@ -1316,6 +1378,11 @@ int main( int argc, char** argv ) {
 	textures.push_back(crateTexture);
 	unsigned int partTexture = init_particletex();
 	textures.push_back(partTexture);
+
+  unsigned int tileTexture; 
+  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp");
+  textures.push_back(tileTexture);
+
 	init_particle();
   
 	besrc = new beam(player); //only need one beam right now, so might as well initialize it now
