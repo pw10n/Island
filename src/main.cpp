@@ -774,13 +774,13 @@ void drawTiles(){
   glBegin(GL_QUADS);
 
   glTexCoord2f (0.0, 0.0);
-  glVertex3f(-1, 0, 1);
-  glTexCoord2f (1.0, 0.0);
-  glVertex3f(-1, 0, -1);
-  glTexCoord2f (1.0, 1.0);
-  glVertex3f(1, 0, -1);
-  glTexCoord2f (0.0, 1.0);
-  glVertex3f(1, 0, 1);
+  glVertex3f(-50, 0, 50);
+  glTexCoord2f (50.0, 0.0);
+  glVertex3f(-50, 0, -50);
+  glTexCoord2f (50.0, 50.0);
+  glVertex3f(50, 0, -50);
+  glTexCoord2f (0.0, 50.0);
+  glVertex3f(50, 0, 50);
   glEnd();
 
   glDisable(GL_TEXTURE_2D);
@@ -956,28 +956,8 @@ glEnable(GL_LIGHTING);
 
 
 
+	drawTiles();
 
-    //tileset texture mapping
-    for(int i=0; i<26; i+=2) {
-      for(int j=0; j<26; j+=2) {
-        glPushMatrix();
-          glTranslatef(i, 0, j);
-          drawTiles();
-        glPopMatrix();
-        glPushMatrix();
-          glTranslatef(-i, 0, j);
-          drawTiles();
-        glPopMatrix();
-        glPushMatrix();
-          glTranslatef(-i, 0, -j);
-          drawTiles();
-        glPopMatrix();
-        glPushMatrix();
-          glTranslatef(i, 0, -j);
-          drawTiles();
-        glPopMatrix();
-      }
-    }
 
       glPushMatrix();
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
@@ -998,7 +978,7 @@ glEnable(GL_LIGHTING);
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
 		    //materials(Sand);
-        drawGrid();
+       // drawGrid();
 		    //glTranslatef(-1.0,0,-1.0);
 		    drawCrates();
 		//glutSolidSphere(1.0,10,10);
@@ -1366,13 +1346,13 @@ int main( int argc, char** argv ) {
 	textures.clear();
 	unsigned int crateTexture;
 	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
-	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp");
+	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false);
 	textures.push_back(crateTexture);
 	unsigned int partTexture = init_particletex();
 	textures.push_back(partTexture);
 
   unsigned int tileTexture; 
-  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp");
+  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
   textures.push_back(tileTexture);
 
   for(int i = 0; i < 10; i++){
