@@ -50,9 +50,9 @@ public:
 	void change_velocity(double nVx, double nVy);
 	void change_velocity(coord2d_t nV);
 
-	void addPlayer(playerstate_t &player){
+	void addPlayer(playerstate_t *player){
 		char buf[1024];
-		psSync_data* ptr;
+		//psSync_data* ptr;
 		((pkt_header*)(buf))->start = '#';
 		((pkt_header*)(buf))->type = PKT_SYNC_PLAYERSTATE;
 		((pkt_header*)(buf))->clientid = 0;
@@ -60,7 +60,7 @@ public:
 		((pkt_header*)(buf))->checksum = 0;
 		((pkt_header*)(buf))->length = 0;
 		((pkt_header*)(buf))->seq = 0; //TODO
-		player.serialize_delta(buf+sizeof(pkt_header),1024-sizeof(pkt_header));
+		player->serialize_delta(buf+sizeof(pkt_header),1024-sizeof(pkt_header));
 		sendBuf(buf,sizeof(pkt_header)+sizeof(psSync_data));
 	}
 

@@ -501,18 +501,11 @@ void processMouseActiveMotion(int x, int y) {
 		theta = atan((float)x/(float)y)+M_PI;
 		
 
-
-
-
-
 	angle=theta*(180.0f / M_PI);
 	//myX += -sin(theta);
 	//myZ += cos(theta);
 
 	vel.x() = theta;
-
-
-	
 
   glutPostRedisplay();
 
@@ -536,12 +529,6 @@ void tick(int state) {
 
 		//myX += -sin(theta);
 		///myZ += cos(theta);
-		
-
-
-
-		
-
 
 	}
 	if (fbtim>-1){
@@ -633,7 +620,9 @@ int main( int argc, char** argv ) {
   player = new playerstate_t(worldtime);
   gsObj = new gamestate_t(worldtime, "default.map");
 
-  gsObj->addPlayer(*player);
+  
+
+
 
   fbtim = -1;
   explo = false;
@@ -641,12 +630,17 @@ int main( int argc, char** argv ) {
   cerr << "Connecting to gameserver... ";
   try{
 	gClient.connectTo("127.0.0.1","13370");
+	gClient.setGameObj(gsObj);
 	cerr << " OK" << endl;
   }
   catch (gException e){
 	cerr << e.what() << endl;
 	exit(1);
   }
+
+  gsObj->addPlayer(player);
+  gClient.addPlayer(player);
+
   //
   //register glut callback functions
   glutDisplayFunc( display );

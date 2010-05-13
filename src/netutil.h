@@ -48,13 +48,13 @@ class gamestate_t: public netobj{
 
       void tick(uint32_t time);
 
-      void addPlayer(const playerstate_t &player);
+      void addPlayer(playerstate_t *player);
       void removePlayer(uint16_t id);
 
-      void addObject(const objectstate_t &object);
+      void addObject(objectstate_t *object);
       void removeObject(uint16_t id);
 
-      void addWepfire(const wepfirestate_t &wepfire);
+      void addWepfire(wepfirestate_t *wepfire);
 
       void updateState(uint8_t state);
 

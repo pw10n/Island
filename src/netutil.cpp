@@ -39,7 +39,7 @@ void gamestate_t::tick(uint32_t time){
 	// TODO: implement method	
 }
 
-void gamestate_t::addPlayer(const playerstate_t &player){
+void gamestate_t::addPlayer(playerstate_t *player){
 	// TODO: implement method	
 }
 
@@ -47,7 +47,7 @@ void gamestate_t::removePlayer(uint16_t id){
 	// TODO: implement method	
 }
 
-void gamestate_t::addObject(const objectstate_t &object){
+void gamestate_t::addObject(objectstate_t *object){
 	// TODO: implement method	
 }
 
@@ -55,7 +55,7 @@ void gamestate_t::removeObject(uint16_t id){
 	// TODO: implement method	
 }
 
-void gamestate_t::addWepfire(const wepfirestate_t &wepfire){
+void gamestate_t::addWepfire(wepfirestate_t *wepfire){
 	// TODO: implement method	
 }
 
@@ -217,7 +217,7 @@ bool verify_checksum(const char* buf, int size){
 	char* temp;
 
 	if (size >= sizeof(pkt_header)){
-		temp = (char*) malloc(sizeof(size));
+		temp = (char*) malloc(size);
 		memcpy(temp, buf, size);
 		((pkt_header*)temp)->checksum = 0;
 
