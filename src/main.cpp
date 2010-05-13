@@ -37,6 +37,7 @@ using namespace std;
 #define WORLD_TIME_RESOLUTION 30
 #define HIT_CRATE 1
 #define HIT_PLAYER 2
+#define MAP_SIZE 50
 
 uint32_t worldtime=0;
 
@@ -619,7 +620,7 @@ void renderBitmapString(
 		void *text, 
 		char *buf) {  
   char *d;
-  glRasterPos2f(x, y);
+  glRasterPos3f(x, y, .1);
   for (d=buf; *d != '\0'; d++) {
     glutBitmapCharacter(text, *d);
   }
@@ -763,72 +764,9 @@ void draw_circle() {
 
 }
 
-void drawTiles(){
-  glDisable(GL_LIGHTING);
-  glColor3f(1, 1, 1);
-
-  glEnable(GL_TEXTURE_2D);
-  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D, textures[2]);
-
-  glBegin(GL_QUADS);
-
-  glTexCoord2f (0.0, 0.0);
-  glVertex3f(-50, 0, 50);
-  glTexCoord2f (50.0, 0.0);
-  glVertex3f(-50, 0, -50);
-  glTexCoord2f (50.0, 50.0);
-  glVertex3f(50, 0, -50);
-  glTexCoord2f (0.0, 50.0);
-  glVertex3f(50, 0, 50);
-  glEnd();
-
-  glDisable(GL_TEXTURE_2D);
-  glEnable(GL_LIGHTING);
-
-
-
-
-}
-
-void display() {
-  static int frame=0;
-  static int lasttime=0;
-  char buff[40];
-  
-  int time = glutGet(GLUT_ELAPSED_TIME);
-
-
-  
-  ++frame;
-
-  if (time - lasttime > 1000){
-    fps = frame*1000.0/(time-lasttime);
-    lasttime = time;
-    frame = 0;
-  }
-
-
-
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
- 
-
-  glMatrixMode(GL_MODELVIEW);
-
-
-
-  glPushMatrix();
-  
-
-
-
-  setOrthoProjection();
-  glPushMatrix();
-	glLoadIdentity();
-  
-
-	/* BEGIN HUD */
+void displayHud(){
+	char buff[40];
+		/* BEGIN HUD */
 	glDisable(GL_LIGHTING);
 	//materials(Red);
 	glColor3f(1.0, 0.0, 0.0);
@@ -945,10 +883,108 @@ void display() {
   resetPerspectiveProjection();
 glEnable(GL_LIGHTING);
       /* END HUD */
+}
+
+void drawTiles(){
+  glDisable(GL_LIGHTING);
+  glColor3f(1, 1, 1);
+
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D, textures[2]);
+
+  glBegin(GL_QUADS);
+
+  glTexCoord2f (0.0, 0.0);
+  glVertex3f(-MAP_SIZE, 0, MAP_SIZE);
+  glTexCoord2f (MAP_SIZE, 0.0);
+  glVertex3f(-MAP_SIZE, 0, -MAP_SIZE);
+  glTexCoord2f (MAP_SIZE, MAP_SIZE);
+  glVertex3f(MAP_SIZE, 0, -MAP_SIZE);
+  glTexCoord2f (0.0, MAP_SIZE);
+  glVertex3f(MAP_SIZE, 0, MAP_SIZE);
+  glEnd();
+
+  glDisable(GL_TEXTURE_2D);
+  glEnable(GL_LIGHTING);
+
+
+
+
+}
+
+
+void drawWater() {
+
+	glBegin(GL_QUADS);
+	  //glTexCoord2f (0.0, 0.0);
+	  glVertex3f(-MAP_SIZE, 0, MAP_SIZE);
+	  //glTexCoord2f (MAP_SIZE, 0.0);
+	  glVertex3f(-MAP_SIZE, 0, -MAP_SIZE);
+	  //glTexCoord2f (MAP_SIZE, MAP_SIZE);
+	  glVertex3f(MAP_SIZE, 0, -MAP_SIZE);
+	  //glTexCoord2f (0.0, MAP_SIZE);
+	  glVertex3f(MAP_SIZE, 0, MAP_SIZE);
+	  glEnd();
+}
+
+
+void display() {
+  static int frame=0;
+  static int lasttime=0;
+  
+  
+  int time = glutGet(GLUT_ELAPSED_TIME);
+
+
+  
+  ++frame;
+
+  if (time - lasttime > 1000){
+    fps = frame*1000.0/(time-lasttime);
+    lasttime = time;
+    frame = 0;
+  }
+
+
+
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+ 
+
+  glMatrixMode(GL_MODELVIEW);
 
 
 
   glPushMatrix();
+  
+
+
+
+  setOrthoProjection();
+  glPushMatrix();
+	glLoadIdentity();
+  
+
+  displayHud();
+
+
+
+  glPushMatrix();
+
+	//player constraints
+    if (player->_pos.x()>MAP_SIZE) {
+		player->_pos.x() = MAP_SIZE;
+    }
+    if (player->_pos.x()<-MAP_SIZE) {
+		player->_pos.x() = -MAP_SIZE;
+    }
+    if (player->_pos.y()>MAP_SIZE) {
+		player->_pos.y() = MAP_SIZE;
+    }
+    if (player->_pos.y()<-MAP_SIZE) {
+		player->_pos.y() = -MAP_SIZE;
+    }
 
   //set up the camera
     gluLookAt(eyex + player->_pos.x(), eyey, eyez - player->_pos.y(), LAx + player->_pos.x(), LAy, LAz - player->_pos.y(), 0, 0, -1);
@@ -960,6 +996,9 @@ glEnable(GL_LIGHTING);
 
 
       glPushMatrix();
+
+
+
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
         glRotatef(angle, 0, 1, 0);
 		if(!(player->_hp == 0)) {
