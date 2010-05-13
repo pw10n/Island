@@ -37,7 +37,8 @@ using namespace std;
 #define WORLD_TIME_RESOLUTION 30
 #define HIT_CRATE 1
 #define HIT_PLAYER 2
-#define MAP_SIZE 50
+#define MAP_SIZE 50 //(set as 50)Equivalent to 100x100 this is the number of sand tiles
+#define TOP_VIEW 0 //Set to 1 to see birds eye view of island
 
 uint32_t worldtime=0;
 
@@ -529,8 +530,13 @@ void reshape(int w, int h) {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
-  if (h!=0){
-      gluPerspective(80, w/h, .5, 24);
+  if(TOP_VIEW == 1) {
+	  gluPerspective(80, w/h, .5, 76);
+  }
+  else {
+	  if (h!=0){
+		  gluPerspective(80, w/h, .5, 24);
+	  }
   }
 
   glMatrixMode(GL_MODELVIEW);
@@ -895,6 +901,7 @@ void drawTiles(){
 
   glBegin(GL_QUADS);
 
+
   glTexCoord2f (0.0, 0.0);
   glVertex3f(-MAP_SIZE, 0, MAP_SIZE);
   glTexCoord2f (MAP_SIZE, 0.0);
@@ -913,20 +920,116 @@ void drawTiles(){
 
 }
 
+void waterTile() {
+
+  glDisable(GL_LIGHTING);
+  glColor3f(0, 0, 1);
+  glBegin(GL_QUADS);
+
+
+  //glTexCoord2f (0.0, 0.0);
+  glVertex3f(-1, .1, 1);
+  //glTexCoord2f (1, 0.0);
+  glVertex3f(-1, .1, -1);
+  //glTexCoord2f (1, 1);
+  glVertex3f(1, .1, -1);
+  //glTexCoord2f (0.0, 1);
+  glVertex3f(1, .1, 1);
+  glEnd();
+
+
+  glEnable(GL_LIGHTING);
+}
+
+void drawWaterTiles(float x, float y) {
+	glPushMatrix();
+	  glTranslatef(-MAP_SIZE+x, 0, MAP_SIZE-y);
+	  waterTile();
+	glPopMatrix();
+}
+
 
 void drawWater() {
+	glDisable(GL_LIGHTING);
+	glColor3f(0, 0, 1);
 
+	//Left body of water
 	glBegin(GL_QUADS);
 	  //glTexCoord2f (0.0, 0.0);
-	  glVertex3f(-MAP_SIZE, 0, MAP_SIZE);
+	  glVertex3f(-MAP_SIZE-20, 0, MAP_SIZE);
 	  //glTexCoord2f (MAP_SIZE, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, -MAP_SIZE);
+	  //glTexCoord2f (MAP_SIZE, MAP_SIZE);
 	  glVertex3f(-MAP_SIZE, 0, -MAP_SIZE);
+	  //glTexCoord2f (0.0, MAP_SIZE);
+	  glVertex3f(-MAP_SIZE, 0, MAP_SIZE);
+	glEnd();
+
+	//Right body of water
+	glBegin(GL_QUADS);
+	  //glTexCoord2f (0.0, 0.0);
+	  glVertex3f(MAP_SIZE+20, 0, MAP_SIZE);
+	  //glTexCoord2f (MAP_SIZE, 0.0);
+	  glVertex3f(MAP_SIZE+20, 0, -MAP_SIZE);
 	  //glTexCoord2f (MAP_SIZE, MAP_SIZE);
 	  glVertex3f(MAP_SIZE, 0, -MAP_SIZE);
 	  //glTexCoord2f (0.0, MAP_SIZE);
 	  glVertex3f(MAP_SIZE, 0, MAP_SIZE);
-	  glEnd();
+	glEnd();
+
+	//Top body of water
+	glBegin(GL_QUADS);
+	  //glTexCoord2f (0.0, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, -MAP_SIZE);
+	  //glTexCoord2f (MAP_SIZE, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, -MAP_SIZE-20);
+	  //glTexCoord2f (MAP_SIZE, MAP_SIZE);
+	  glVertex3f(MAP_SIZE+20, 0, -MAP_SIZE-20);
+	  //glTexCoord2f (0.0, MAP_SIZE);
+	  glVertex3f(MAP_SIZE+20, 0, -MAP_SIZE);
+	glEnd();
+
+	//Bottom body of water
+	glBegin(GL_QUADS);
+	  //glTexCoord2f (0.0, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, MAP_SIZE);
+	  //glTexCoord2f (MAP_SIZE, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, MAP_SIZE+20);
+	  //glTexCoord2f (MAP_SIZE, MAP_SIZE);
+	  glVertex3f(MAP_SIZE+20, 0, MAP_SIZE+20);
+	  //glTexCoord2f (0.0, MAP_SIZE);
+	  glVertex3f(MAP_SIZE+20, 0, MAP_SIZE);
+	glEnd();
+
+	/*for (int i=0; i<5; i+=2) {
+	  for (int j=0; j<5; j+=2) {
+	    drawWaterTiles(i, j);
+		drawWaterTiles(j, i);
+	  }
+
+	}*/
+
+	drawWaterTiles(1, 1);
+	drawWaterTiles(3, 1);
+	drawWaterTiles(1, 3);
+	drawWaterTiles(3, 3);
+	
+	drawWaterTiles(5, 1);
+	drawWaterTiles(1, 5);
+	drawWaterTiles(3, 5);
+	drawWaterTiles(5, 3);
+
+
+
+	drawWaterTiles(7, 1);
+	drawWaterTiles(1, 7);
+	
+
+
+
+	glEnable(GL_LIGHTING);
 }
+
 
 
 void display() {
@@ -966,11 +1069,11 @@ void display() {
 	glLoadIdentity();
   
 
-  displayHud();
+    displayHud();
 
 
 
-  glPushMatrix();
+    glPushMatrix();
 
 	//player constraints
     if (player->_pos.x()>MAP_SIZE) {
@@ -987,15 +1090,17 @@ void display() {
     }
 
   //set up the camera
+
     gluLookAt(eyex + player->_pos.x(), eyey, eyez - player->_pos.y(), LAx + player->_pos.x(), LAy, LAz - player->_pos.y(), 0, 0, -1);
     glPushMatrix();
 
 
 
 	drawTiles();
+	drawWater();
 
 
-      glPushMatrix();
+    glPushMatrix();
 
 
 
@@ -1349,9 +1454,17 @@ int main( int argc, char** argv ) {
   myZ = 0;
   angle = 0;
   theta = 0;
-  eyex = 0;
-  eyey = 5;//4.33;
-  eyez = 3.5;//5;
+
+  if(TOP_VIEW == 1) {
+	  eyex=0;
+      eyey=75;
+      eyez=0;
+  }
+  else {
+    eyex = 0;
+    eyey = 5;//4.33;
+    eyez = 3.5;//5;
+  }
   LAx = 0;
   LAy = 0;
   LAz = 0;
