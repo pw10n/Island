@@ -47,8 +47,6 @@ public:
 
 	void setGameObj(gamestate_t* gObj) {_gObj = gObj;};
 
-
-
 	void change_velocity(double nVx, double nVy);
 	void change_velocity(coord2d_t nV);
 
@@ -66,14 +64,13 @@ public:
 		sendBuf(buf,sizeof(pkt_header)+sizeof(psSync_data));
 	}
 
-
-
 	int sendBuf(char*, int);
 	int recvBuf(char*, int);
 };
 
 #define SERVER_DISCONNECT 0
 #define SERVER_ACTIVE 1
+#define SERVER_W4PLAYERS 2
 
 class server: public connection{
 	WSADATA _wsaData;
@@ -94,6 +91,10 @@ public:
 
 	void setup(char* listen_port);
 	void setGameObj(gamestate_t* gObj) {_gObj = gObj;};
+	void setState(int state) {_state = state;};
+	void startGame();
+
+	int getState(){return _state;};
 
 	int sendBuf(char*, int);
 

@@ -184,6 +184,10 @@ void server::setup(char* listen_port){
 	}
 }
 
+void server::startGame(){
+	_state = SERVER_ACTIVE;
+}
+
 void server::acceptClient(){
 
 	cInfo client_info;

@@ -13,15 +13,21 @@ extern "C"{
 
 using namespace std;
 
+int previous_gSrvState = SERVER_DISCONNECT;
 server gSrv;
 gamestate_t gObj(0, "default.map");
 
 
-void referesh(){
+void refresh(int i){
 	glutPostRedisplay();
 	glutTimerFunc(1000,&refresh,0);
 }
 void tick(int i){
+	if (gSrv.getState() != previous_gSrvState){
+		previous_gSrvState = gSrv.getState();
+		cerr << "DEBUG: Serverstate changed to " << previous_gSrvState << endl;
+	}
+
 	gSrv.tickSnd();
 	gSrv.tickRcv();
 		
@@ -34,6 +40,13 @@ void display(){
 	glutSwapBuffers();
 }
 
+void keyboard(unsigned char key, int x, int y){
+	switch (key){
+		case 's': case 'S':
+			gSrv.startGame(); break;
+	}
+}
+
 int main( int argc, char* argv[]){
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -41,14 +54,16 @@ int main( int argc, char* argv[]){
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("Server Console");
 
-
 	cerr << "INFO: setting up server" << endl;
 	gSrv.setGameObj(&gObj); 
 	gSrv.setup("13370");
+	gSrv.setState(SERVER_W4PLAYERS);
 
 	cerr << "INFO: initializing callbacks" << endl;
 	glutTimerFunc(30,&tick,0);
 	glutTimerFunc(1000,&refresh,0);
+
+	glutKeyboardFunc(&keyboard);
 
 	glutDisplayFunc(&display);
 
