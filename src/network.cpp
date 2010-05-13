@@ -78,6 +78,7 @@ void client::connectTo(char* addr, char* port){
 
 int client::sendBuf(char * buf, int len){
 	int retval;
+	cerr << "DEBUG: sending..." << endl;
 	if(SOCKET_ERROR == 
 		(retval = send(_cSocket, buf, len, 0))){
 		closesocket(_cSocket);
@@ -270,6 +271,7 @@ void server::tickSnd(){
 }
 
 void server::tickRcv(){
+	cerr << "DEBUG: tickRcv()..." << endl;
 	struct timeval timeout;
 	fd_set socks;
 	int readsocks;
@@ -294,6 +296,7 @@ void server::tickRcv(){
 		++it){
 		if ((*it).state != CLIENT_DISCONNECT && FD_ISSET((*it).cSocket, &socks)){
 			//got data
+			cerr << "DEBUG: got data" << endl;
 			int result=0;
 			char buf[MAX_PKTSZ];
 			
@@ -309,18 +312,21 @@ void server::tickRcv(){
 			else {
 				//check then process
 				if( ((pkt_header*)(buf))->start != '#' ){
+					cerr << "DEBUG: bad packet, nacking" << endl;
 					char ackbuf[1024];
 					int acksz = 0;
 					acksz = make_ack(ackbuf, 1024, NET_NACK,SEQ_INVALID_PKT);
 					send((*it).cSocket, ackbuf, acksz, 0);
 				}
 				else if( !verify_checksum(buf, result) ){
+					cerr << "DEBUG: checksum failed, nacking" << endl;
 					char ackbuf[1024];
 					int acksz = 0;
 					acksz = make_ack(ackbuf, 1024, NET_NACK,((pkt_header*)(buf))->seq);
 					send((*it).cSocket, ackbuf, acksz, 0);
 				}
 				else{
+					cerr << "DEBUG: checks passed, processing..." << endl;
 					//TODO process(buf); //process packet
 					playerChangeMove_data* mvPtr;
 					psSync_data* psSyncPtr;
@@ -328,6 +334,7 @@ void server::tickRcv(){
 					switch(((pkt_header*)(buf))->type){
 
 						case PKT_PLAYER_MOVE:
+							cerr << "DEBUG: got PKT_PLAYER_MOVE" << endl;
 							mvPtr = (playerChangeMove_data*)(buf+sizeof(pkt_header));
 							found = false;
 							for(vector<playerstate_t*>::iterator it = _gObj->_players.begin();
@@ -345,6 +352,7 @@ void server::tickRcv(){
 							break; //TODO
 
 						case PKT_SYNC_PLAYERSTATE:
+							cerr << "DEBUG: got PKT_SYNC_PLAYERSTATE" << endl;
 							psSyncPtr = (psSync_data*)(buf+sizeof(pkt_header));
 							found = false;
 							// find player in player list
