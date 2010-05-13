@@ -226,6 +226,9 @@ bool verify_checksum(const char* buf, int size){
 
 		free(temp);
 	}
+	else
+		cerr << "DEBUG: packet too small" << endl;
+
 	return retval;
 }
 
@@ -234,5 +237,7 @@ uint8_t calcAddSum(const char* buf, int size){
 
 	while(size-- > 0)
 		sum += *(buf++);
+
+	cerr << "DEBUG: checksum is " << ~sum << endl;
 	return (~sum);
 }

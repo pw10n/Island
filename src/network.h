@@ -61,6 +61,7 @@ public:
 		((pkt_header*)(buf))->length = 0;
 		((pkt_header*)(buf))->seq = 0; //TODO
 		player->serialize_delta(buf+sizeof(pkt_header),1024-sizeof(pkt_header));
+		((pkt_header*)(buf))->checksum = calcAddSum(buf, sizeof(pkt_header)+sizeof(psSync_data));
 		sendBuf(buf,sizeof(pkt_header)+sizeof(psSync_data));
 	}
 
