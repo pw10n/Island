@@ -638,8 +638,10 @@ int main( int argc, char** argv ) {
   fbtim = -1;
   explo = false;
 
+  cerr << "Connecting to gameserver... ";
   try{
 	gClient.connectTo("127.0.0.1","13370");
+	cerr << " OK" << endl;
   }
   catch (gException e){
 	cerr << e.what() << endl;

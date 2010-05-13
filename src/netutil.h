@@ -39,11 +39,12 @@ class gamestate_t: public netobj{
       uint8_t _state;
       char _map[GS_MAX_MAP_NAME_LEN];
 
-      vector<playerstate_t> _players;
-      vector<objectstate_t> _objects;
-      vector<wepfirestate_t> _wepfire;
+      vector<playerstate_t*> _players;
+      vector<objectstate_t*> _objects;
+      vector<wepfirestate_t*> _wepfire;
 
       gamestate_t(uint32_t time, char* map);
+	  ~gamestate_t();
 
       void tick(uint32_t time);
 
@@ -98,8 +99,8 @@ class playerstate_t: public netobj{
 	  void change_velocity(double nVx, double nVy);
 
 	  //network functions:
-      int serialize_delta(char* buf, int sz);
-	  int serialize_sync(char* buf, int sz) {return 0;};
+      int serialize_delta(char* buf, int sz){cerr << "TODO" << endl; return 0;};
+	  int serialize_sync(char* buf, int sz) ;
       int sync(char* buf, int sz) {return 0;};
 };
 

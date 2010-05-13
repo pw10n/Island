@@ -16,6 +16,11 @@ using namespace std;
 server gSrv;
 gamestate_t gObj(0, "default.map");
 
+
+void referesh(){
+	glutPostRedisplay();
+	glutTimerFunc(1000,&refresh,0);
+}
 void tick(int i){
 	gSrv.tickSnd();
 	gSrv.tickRcv();
@@ -25,6 +30,7 @@ void tick(int i){
 
 void display(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	glutSwapBuffers();
 }
 
@@ -42,6 +48,7 @@ int main( int argc, char* argv[]){
 
 	cerr << "INFO: initializing callbacks" << endl;
 	glutTimerFunc(30,&tick,0);
+	glutTimerFunc(1000,&refresh,0);
 
 	glutDisplayFunc(&display);
 

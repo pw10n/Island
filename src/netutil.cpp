@@ -20,6 +20,21 @@ gamestate_t::gamestate_t(uint32_t time, char *map)
 	strcpy(_map, map);
 }
 
+gamestate_t::~gamestate_t(){
+	for(vector<playerstate_t*>::iterator it = _players.begin();
+		it != _players.end(); it++){
+			delete (*it);
+	}
+	for(vector<objectstate_t*>::iterator it = _objects.begin();
+		it != _objects.end(); it++){
+			delete (*it);
+	}
+	for(vector<wepfirestate_t*>::iterator it = _wepfire.begin();
+		it != _wepfire.end(); it++){
+			delete (*it);
+	}
+}
+
 void gamestate_t::tick(uint32_t time){
 	// TODO: implement method	
 }
@@ -85,9 +100,19 @@ playerstate_t::playerstate_t(const playerstate_t &player){
 }
 
 playerstate_t::playerstate_t(psSync_data* data){
-	//TODO
-	cerr << "**TODO**";
-	exit(1);
+	_tick = data->_tick;
+	_id = data->_id;
+	_hp = data->_hp;
+	_mp = data->_mp;
+	for(int i=0; i<PLAYERSTATE_MAXABILITY; ++i)
+		 _ability[i] = data->_ability[i];
+	_weapon = data->_weapon;
+	_pos.x() = data->_pos_x;
+	_pos.y() = data->_pos_y;
+	_vel.x() = data->_vel_x;
+	_vel.y() = data->_vel_y;
+	_state = data->_state;
+	_score = data->_score;
 }
 
 void playerstate_t::tick(uint32_t time){
@@ -116,7 +141,7 @@ void playerstate_t::change_velocity(double nVx, double nVy){
 }
 
 //<<<<<<< HEAD:src/netutil.cpp
-int playerstate_t::serialize_delta(char* buf, int sz) {
+int playerstate_t::serialize_sync(char* buf, int sz) {
 	psSync_data* ptr = (psSync_data*) (buf);
 	ptr->_tick = _tick;
 	ptr->_id = _id;

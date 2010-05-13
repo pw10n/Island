@@ -195,6 +195,7 @@ void server::acceptClient(){
 
 	if( INVALID_SOCKET == 
 		( client_info.cSocket = accept(_lSocket, NULL, NULL))) {
+			cerr << "INFO: New connection failed." << endl;
 		gException("accept failed");
 		//TBD: is _lSocket still valid here or do I
 		//     have to shutdown the server?
@@ -287,7 +288,7 @@ void server::tickRcv(){
 	for(vector<cInfo>::iterator it = _clients.begin();
 		it < _clients.end();
 		++it){
-		if (FD_ISSET((*it).cSocket, &socks)){
+		if ((*it).state != CLIENT_DISCONNECT && FD_ISSET((*it).cSocket, &socks)){
 			//got data
 			int result=0;
 			char buf[MAX_PKTSZ];
@@ -296,76 +297,78 @@ void server::tickRcv(){
 			if(SOCKET_ERROR ==
 				(result = recv((*it).cSocket, buf, MAX_PKTSZ, 0))){
 				closesocket((*it).cSocket);
-				WSACleanup();
+				//WSACleanup();
 				(*it).state = CLIENT_DISCONNECT;
 				(*it).cSocket = INVALID_SOCKET;
-				throw gException("recv failed.");
+				//throw gException("recv failed.");
 			}
-			
-			//check then process
-			if( ((pkt_header*)(buf))->start != '#' ){
-				char ackbuf[1024];
-				int acksz = 0;
-				acksz = make_ack(ackbuf, 1024, NET_NACK,SEQ_INVALID_PKT);
-				send((*it).cSocket, ackbuf, acksz, 0);
-			}
-			else if( !verify_checksum(buf, result) ){
-				char ackbuf[1024];
-				int acksz = 0;
-				acksz = make_ack(ackbuf, 1024, NET_NACK,((pkt_header*)(buf))->seq);
-				send((*it).cSocket, ackbuf, acksz, 0);
-			}
-			else{
-				//TODO process(buf); //process packet
-				playerChangeMove_data* mvPtr;
-				psSync_data* psSyncPtr;
-				bool found = false;
-				switch(((pkt_header*)(buf))->type){
+			else {
+				//check then process
+				if( ((pkt_header*)(buf))->start != '#' ){
+					char ackbuf[1024];
+					int acksz = 0;
+					acksz = make_ack(ackbuf, 1024, NET_NACK,SEQ_INVALID_PKT);
+					send((*it).cSocket, ackbuf, acksz, 0);
+				}
+				else if( !verify_checksum(buf, result) ){
+					char ackbuf[1024];
+					int acksz = 0;
+					acksz = make_ack(ackbuf, 1024, NET_NACK,((pkt_header*)(buf))->seq);
+					send((*it).cSocket, ackbuf, acksz, 0);
+				}
+				else{
+					//TODO process(buf); //process packet
+					playerChangeMove_data* mvPtr;
+					psSync_data* psSyncPtr;
+					bool found = false;
+					switch(((pkt_header*)(buf))->type){
 
-					case PKT_PLAYER_MOVE:
-						mvPtr = (playerChangeMove_data*)(buf+sizeof(pkt_header));
-						found = false;
-						for(vector<playerstate_t>::iterator it = _gObj->_players.begin();
+						case PKT_PLAYER_MOVE:
+							mvPtr = (playerChangeMove_data*)(buf+sizeof(pkt_header));
+							found = false;
+							for(vector<playerstate_t*>::iterator it = _gObj->_players.begin();
+								it != _gObj->_players.end();
+								++it){
+									if ((*it)->_id == mvPtr->_id){
+										found=true;
+										(*it)->change_velocity(mvPtr->_vel_x, mvPtr->_vel_y);
+									}
+							}
+							cerr << "INFO: Got player move" << endl;
+							break;
+
+						case PKT_PLAYER_ATTACK:
+							break; //TODO
+
+						case PKT_SYNC_PLAYERSTATE:
+							psSyncPtr = (psSync_data*)(buf+sizeof(pkt_header));
+							found = false;
+							// find player in player list
+							for(vector<playerstate_t*>::iterator it = _gObj->_players.begin();
 							it != _gObj->_players.end();
 							++it){
-								if ((*it)._id == mvPtr->_id){
+								if ((*it)->_id == mvPtr->_id){
 									found=true;
-									(*it).change_velocity(mvPtr->_vel_x, mvPtr->_vel_y);
+									(*it)->sync((char*)psSyncPtr, sizeof(psSync_data));
+									break;
 								}
-						}
-						cerr << "INFO: Got player move" << endl;
-						break;
-
-					case PKT_PLAYER_ATTACK:
-						break; //TODO
-
-					case PKT_SYNC_PLAYERSTATE:
-						psSyncPtr = (psSync_data*)(buf+sizeof(pkt_header));
-						found = false;
-						// find player in player list
-						for(vector<playerstate_t>::iterator it = _gObj->_players.begin();
-						it != _gObj->_players.end();
-						++it){
-							if ((*it)._id == mvPtr->_id){
-								found=true;
-								(*it).sync((char*)psSyncPtr, sizeof(psSync_data));
-								break;
 							}
-						}
 
-						// if not found, add to end
-						if (!found){
-							playerstate_t nPlayer(psSyncPtr);
-							_gObj->_players.push_back(nPlayer);
-						}
+							// if not found, add to end
+							if (!found){
+								// TODO: need to check what type of player
+								playerstate_t* nPlayer = new playerstate_t(psSyncPtr);
+								_gObj->_players.push_back(nPlayer);
+							}
 
-						// TODO: forward this change to clients
+							// TODO: forward this change to clients
 
-						break;
+							break;
 
-					default:
-						break;
+						default:
+							break;
 
+					}
 				}
 			}
 		}
