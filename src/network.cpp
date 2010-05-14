@@ -370,6 +370,8 @@ void server::tickRcv(){
 							if (!found){
 								// TODO: need to check what type of player
 								playerstate_t* nPlayer = new playerstate_t(psSyncPtr);
+								cerr << "DEBUG: New playerstate... " << endl;
+								cerr << nPlayer->_id << " " << (int) nPlayer->_state << endl;
 								_gObj->_players.push_back(nPlayer);
 							}
 

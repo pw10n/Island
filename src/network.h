@@ -52,7 +52,8 @@ public:
 
 	void addPlayer(playerstate_t *player){
 		char buf[1024];
-		//psSync_data* ptr;
+		
+		psSync_data* ptr;
 		((pkt_header*)(buf))->start = '#';
 		((pkt_header*)(buf))->type = PKT_SYNC_PLAYERSTATE;
 		((pkt_header*)(buf))->clientid = 0;
@@ -60,7 +61,11 @@ public:
 		((pkt_header*)(buf))->checksum = 0;
 		((pkt_header*)(buf))->length = 0;
 		((pkt_header*)(buf))->seq = 0; //TODO
-		player->serialize_delta(buf+sizeof(pkt_header),1024-sizeof(pkt_header));
+		player->serialize_sync(buf+sizeof(pkt_header),1024-sizeof(pkt_header));
+
+		ptr = (psSync_data*) (buf+sizeof(pkt_header));
+		cerr << "DEBUG: sending " << ptr->_id << " " << (int) ptr->_state << endl;
+
 		((pkt_header*)(buf))->checksum = calcAddSum(buf, sizeof(pkt_header)+sizeof(psSync_data));
 		sendBuf(buf,sizeof(pkt_header)+sizeof(psSync_data));
 	}

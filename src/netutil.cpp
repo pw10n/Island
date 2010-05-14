@@ -208,7 +208,6 @@ int make_ack(char * buf, int bufsz,
 	((gAck_data*)(buf+sizeof(pkt_header)))->ack_value = value;
 
 	return sizeof(pkt_header)+sizeof(pkt_header);
-
 }
 
 bool verify_checksum(const char* buf, int size){
