@@ -1,6 +1,6 @@
-//#define _CRTDBG_MAPALLOC   //used to find memory leaks
-//#include <stdlib.h>
-//#include <crtdbg.h>
+#define _CRTDBG_MAPALLOC   //used to find memory leaks
+#include <stdlib.h>
+#include <crtdbg.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -15,6 +15,11 @@
 #include "netutil.h"
 #include "texture.h"
 #include "types.h"
+
+//#include "md5mesh.cpp"
+//#include "md5anim.cpp"
+#include "md5model.h"
+#include "mdmodel.h"
 
 //#include <cstdio>
 //#include <cstdlib>
@@ -156,6 +161,10 @@ beam * besrc;
 
 vector<unsigned int> textures;
 vector<objectstate_t*> crates;
+
+mdmodel fred;
+struct anim_info_t ani;
+
 
 float p2w_x(int x) {
   float x1;
@@ -939,6 +948,10 @@ void waterTile() {
 
 
   glEnable(GL_LIGHTING);
+  glPushMatrix();
+  glTranslatef(0,1.0,0);
+  fred.draw(ani);
+  glPopMatrix();
 }
 
 void drawWaterTiles(float x, float y) {
@@ -1257,7 +1270,7 @@ void keyboard(unsigned char key, int x, int y ){
 		for(uint32_t i=0;i<rfpar.size();i++){
 			delete rfpar[i];
 		}
-		fbpar.clear(); expar.clear(); rfpar.clear();
+		fbpar.clear(); expar.clear(); rfpar.clear(); fred.clear();
 		//delete fbsrc; delete exsrc;
       exit( EXIT_SUCCESS );
       break;
@@ -1416,6 +1429,8 @@ void tick(int state) {
 		it != crates.end();
 		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){
 	}
+
+   Animate(&fred.md5anim,&ani,WORLD_TIME_RESOLUTION);
 	glutPostRedisplay();
 
 	worldtime+=WORLD_TIME_RESOLUTION;
@@ -1423,9 +1438,22 @@ void tick(int state) {
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
 
+void initModel(){
+   unsigned int rupTexture; 
+  rupTexture = BindTextureBMP((char *)"rupee2.bmp", false);
+  //tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
+  textures.push_back(rupTexture);
+   fred = mdmodel("rupee.md5mesh","rupee_bob.md5anim",rupTexture);
+   ani.curr_frame = 0;
+   ani.next_frame = 1;
+   ani.last_time = 0;
+   ani.max_time = 1.0/fred.md5anim.frameRate;
+   cerr << "hello?" << endl;
+}
+
 int main( int argc, char** argv ) {
   
-	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
 	bool windo = true; //true - window; false - full screen. quicker than commenting/uncommenting
   //set up my window
@@ -1490,6 +1518,7 @@ int main( int argc, char** argv ) {
 
   init_lighting();
   init_ai();
+  initModel();
   glEnable(GL_LIGHTING);
 
 	// loading textures
@@ -1497,14 +1526,15 @@ int main( int argc, char** argv ) {
 	// Prentice says a vector is overkill for holding textures, but I'll do it for now
 	textures.clear();
 	unsigned int crateTexture;
-	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
-	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false);
+	crateTexture = BindTextureBMP((char *)"crate.bmp", false); //same file, different location -Seth
+	//crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false);
 	textures.push_back(crateTexture);
 	unsigned int partTexture = init_particletex();
 	textures.push_back(partTexture);
 
   unsigned int tileTexture; 
-  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
+  tileTexture = BindTextureBMP((char *)"images.bmp", true);
+  //tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
   textures.push_back(tileTexture);
 
   for(int i = 0; i < 10; i++){
