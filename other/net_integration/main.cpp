@@ -1,7 +1,3 @@
-
-
-
-
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
@@ -13,6 +9,9 @@
 #include "particle.h"
 #include "collision.h"
 #include "netutil.h"
+#include "network.h"
+#include "texture.h"
+
 #include "types.h"
 
 #define _USE_MATH_DEFINES
@@ -23,10 +22,13 @@
 #define __STDC_LIMIT_MACROS
 #include "stdint.h"
 
+
 //#include "types.h"
 //#include "gs_types.h"
 
 using namespace std;
+
+client gClient;
 
 #define WORLD_TIME_RESOLUTION 30
 
@@ -55,8 +57,17 @@ materialStruct Grey = {
   {0.3, 0.3, 0.3, 1.0},
   {0.3}
 };
+
+materialStruct Sand = {
+	{0.85, 0.79, 0.71, 1.0},
+	{0.85, 0.79, 0.71, 1.0},
+	{0.0, 0.0, 0.0, 1.0},
+	{0.0}
+};
 coord2d_t vel;
 playerstate_t* player;
+
+gamestate_t* gsObj;
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -97,10 +108,12 @@ fireball_s * fbsrc;
 vector<fireball_p *> fbpar;
 int fbtim;
 explosion_s * exsrc;
-vector<explosion_p *> expar;
+vector<particle *> expar;
 bool explo;
 vector<rapidfire *> rfpar;
 
+vector<unsigned int> textures;
+vector<objectstate_t> crates;
 
 float p2w_x(int x) {
   float x1;
@@ -131,15 +144,17 @@ void genTex(){
 	}
 }
 
-void init_tex() {
+unsigned int init_particletex() {
+	unsigned int texid;
 	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);									// Enable Blending
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
 	genTex();
 	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &texid);
 	//glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, texid);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 16, 16, 0, GL_ALPHA, GL_UNSIGNED_BYTE, alpha);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -148,24 +163,28 @@ void init_tex() {
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glDisable(GL_TEXTURE_2D);
 
+	return texid;
 }
 
 void init_particle(){
 	glNewList(PARTLIST,GL_COMPILE);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0.1f,0.1f,0);
 	glTexCoord2d(0,1); glVertex3f(-0.1f,0.1f,0);
 	glTexCoord2d(1,0); glVertex3f(0.1f,-0.1f,0);
 	glTexCoord2d(0,0); glVertex3f(-0.1f,-0.1f,0);
 	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0.1f,0,0.1f);
 	glTexCoord2d(0,1); glVertex3f(-0.1f,0,0.1f);
 	glTexCoord2d(1,0); glVertex3f(0.1f,0,-0.1f);
 	glTexCoord2d(0,0); glVertex3f(-0.1f,0,-0.1f);
 	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0,0.1f,0.1f);
 	glTexCoord2d(0,1); glVertex3f(0,-0.1f,0.1f);
@@ -198,25 +217,32 @@ void pos_light() {
 void spawnFireball(){
 	float fbx = -sin(theta);
 	float fbz = -cos(theta);
-
 	fbsrc = new fireball_s(player->_pos.x(),-player->_pos.y(),fbx/5.0f,fbz/5.0f);
-
-	//fbsrc = new fireball_s(player->_pos.x(),-player->_pos.y(),fbx/5.0f,fbz/5.0f);
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
 }
 
-void detonate(fireball_s * fbs){
+void detonate(fireball_s * fbs, bool splin){
 	exsrc = new explosion_s(fbs->x,fbs->z);
-	for(int i=0;i<400;i++){
-		expar.push_back(new explosion_p(exsrc));
+	if(!splin){
+		for(int i=0;i<400;i++){
+			expar.push_back(new explosion_p(exsrc));
+		}
+	}
+	else{
+		for(int i=0;i<200;i++){
+			expar.push_back(new explosion_p(exsrc));
+		}
+		for(int i=0;i<200;i++){
+			expar.push_back(new splinter(exsrc));
+		}
 	}
 }
 
 void rapid(){
 	if(rfpar.size()<100)
-		rfpar.push_back(new rapidfire(myX/10.0f,-myZ/10.0f,theta,angle));
+		rfpar.push_back(new rapidfire(player->_pos.x(),-player->_pos.y(),theta,angle));
 }
 
 void reshape(int w, int h) {
@@ -257,7 +283,13 @@ void drawGrid() {
       glVertex3f(i, 0, rows);
     }
   glEnd();
-
+  glBegin(GL_POLYGON);
+	materials(Sand);
+	glVertex3f(columns,-0.01,rows);
+	glVertex3f(columns,-0.01,-rows);
+	glVertex3f(-columns,-0.01,-rows);
+	glVertex3f(-columns,-0.01,rows);
+  glEnd();
 }
 
 
@@ -291,6 +323,61 @@ void drawRapid() {
 	}
 }
 
+void drawCrate(){
+	objectstate_t crate;
+	crate.setType(OBJECTSTATE_CRATE);
+
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	// it'll be 2x2x2 for now
+	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	// "front"
+	glBegin(GL_QUADS);
+	glTexCoord2f (0.0, 0.0);
+	glVertex3f (-0.5, 0.0, 1.0);
+	glTexCoord2f (1.0, 0.0);
+	glVertex3f (1.0, 0.0, 1.0);
+	glTexCoord2f (1.0, 1.0);
+	glVertex3f (1.0, 1.0, 1.0);
+	glTexCoord2f (0.0, 1.0);
+	glVertex3f (0.0, 1.0, 1.0);
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	glBegin(GL_QUADS);
+	glTexCoord2f (0.0, 0.0);
+	glVertex3f (1.0, 0.0, 0.0);
+	glTexCoord2f (1.0, 0.0);
+	glVertex3f (1.0, 0.0, 1.0);
+	glTexCoord2f (1.0, 1.0);
+	glVertex3f (1.0, 1.0, 1.0);
+	glTexCoord2f (0.0, 1.0);
+	glVertex3f (1.0, 1.0, 0.0);
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	glBegin(GL_QUADS);
+	glTexCoord2f (0.0, 0.0);
+	glVertex3f (0.0, 1.0, 0.0);
+	glTexCoord2f (1.0, 0.0);
+	glVertex3f (1.0, 1.0, 0.0);
+	glTexCoord2f (1.0, 1.0);
+	glVertex3f (1.0, 1.0, 1.0);
+	glTexCoord2f (0.0, 1.0);
+	glVertex3f (0.0, 1.0, 1.0);
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	glBegin(GL_QUADS);
+	glTexCoord2f (0.0, 0.0);
+	glVertex3f (0.0, 0.0, 1.0);
+	glTexCoord2f (1.0, 0.0);
+	glVertex3f (0.0, 0.0, 0.0);
+	glTexCoord2f (1.0, 1.0);
+	glVertex3f (0.0, 1.0, 0.0);
+	glTexCoord2f (0.0, 1.0);
+	glVertex3f (0.0, 1.0, 1.0);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+}
+
 void display() {
 
   
@@ -300,22 +387,22 @@ void display() {
     
   glPushMatrix();
   //set up the camera
-    gluLookAt(eyex + (myX/10.0), eyey, eyez - (myZ/10.0), LAx + (myX/10.0), LAy, LAz - (myZ/10.0), 0, 0, -1);
+    gluLookAt(eyex + player->_pos.x(), eyey, eyez - player->_pos.y(), LAx + player->_pos.x(), LAy, LAz - player->_pos.y(), 0, 0, -1);
     glPushMatrix();
 
       glPushMatrix();
-	  if (flag){
-	  }
-		glTranslatef((player->_pos.x()), 0, (player->_pos.y()));
+		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
         glRotatef(angle, 0, 1, 0);
+
         drawPlayer();
       glPopMatrix();
 
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
         drawGrid();
-		glTranslatef(1.0,0,1.0);
-		glutSolidSphere(1.0,10,10);
+		glTranslatef(-1.0,0,-1.0);
+		drawCrate();
+		//glutSolidSphere(1.0,10,10);
       glPopMatrix();
 	  if(fbtim>-1) drawFireball();
 	  if(explo) drawExplosion();
@@ -333,9 +420,11 @@ void mouse(int button, int state, int x, int y) {
   if (button == GLUT_RIGHT_BUTTON) {
     if (state == GLUT_DOWN) { 
 		flag = true;
+		vel.y() = 0.005;
     }
 	else {
 		flag = false;
+		vel.y() = 0.000;
 	}
   }
 	if(button == GLUT_LEFT_BUTTON) {
@@ -344,6 +433,8 @@ void mouse(int button, int state, int x, int y) {
 			else if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		}
 	}
+
+	gClient.setPlayerMove(vel);
 }
 
 void processMousePassiveMotion(int x, int y) {
@@ -351,6 +442,7 @@ void processMousePassiveMotion(int x, int y) {
 
 	//float theta = 0;
 	x -= GW/2;
+	x *= .5;
 	y -= GH/2;
 	
 	//        0  dir
@@ -375,9 +467,8 @@ void processMousePassiveMotion(int x, int y) {
 		theta = atan((float)x/(float)y)+M_PI;
 		
 	angle=theta*(180.0f / M_PI);
-	player->_vel.x() = theta;
-	player->_vel.y() = 0.00;
-	
+	vel.x() = theta;
+	gClient.setPlayerMove(vel);
 	
   glutPostRedisplay();
 
@@ -387,6 +478,7 @@ void processMouseActiveMotion(int x, int y) {
 	
 	//float theta = 0;
 	x -= GW/2;
+	x *= .5;
 	y -= GH/2;
 	
 	//        0  dir
@@ -410,12 +502,14 @@ void processMouseActiveMotion(int x, int y) {
 	else if (y>0 && x>0)
 		theta = atan((float)x/(float)y)+M_PI;
 		
+
 	angle=theta*(180.0f / M_PI);
 	//myX += -sin(theta);
 	//myZ += cos(theta);
-	//if(rfire) { rapid(); }
-	player->_vel.x() = theta;
-	player->_vel.y() = 0.0050;
+
+	vel.x() = theta;
+	gClient.setPlayerMove(vel);
+
   glutPostRedisplay();
 
 }
@@ -432,10 +526,13 @@ void keyboard(unsigned char key, int x, int y ){
 }
 
 void tick(int state) {
-
+	player->change_velocity(vel);
+	player->tick(worldtime);
 	if (flag){
-		myX += -sin(theta);
-		myZ += cos(theta);
+
+		//myX += -sin(theta);
+		///myZ += cos(theta);
+
 	}
 	if (fbtim>-1){
 		fbtim++;
@@ -447,11 +544,18 @@ void tick(int state) {
 			}
 		}
 	}
-	if(fbtim>50||(fbtim>-1&&fbsrc->collide(1.0,1.0,1.0))){
+	if(fbtim>50){
 		fbtim=-1;
 		fbsrc->active = false;
 		fbpar.clear();
-		detonate(fbsrc);
+		detonate(fbsrc,false);
+		explo = true;
+	}
+	else if(fbtim>-1&&fbsrc->collide(1.0,1.0,1.0)){
+		fbtim=-1;
+		fbsrc->active = false;
+		fbpar.clear();
+		detonate(fbsrc,true); //if fbtim less than 50, fb must have collided with something
 		explo = true;
 	}
 	if (explo){
@@ -477,9 +581,19 @@ void tick(int state) {
 		}
 	}
 	glutPostRedisplay();
+
 	worldtime+=WORLD_TIME_RESOLUTION;
-	player->tick(worldtime);
+
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
+}
+
+void net_rxtx(int i){
+	gClient.tickRcv();
+	glutTimerFunc(WORLD_TIME_RESOLUTION,&net_rxtx,0);
+}
+
+void net_fast(int i){
+	glutTimerFunc(5,&net_fast,0);
 }
 
 int main( int argc, char** argv ) {
@@ -488,18 +602,18 @@ int main( int argc, char** argv ) {
   //set up my window
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  //glutInitWindowSize(800, 600); 
+  glutInitWindowSize(800, 600); 
   GW = 800;
   GH = 600;
-  //glutInitWindowPosition(0, 0);
-  //glutCreateWindow("Mesh display");
-  glutGameModeString("800x600:32");
+  glutInitWindowPosition(0, 0);
+  glutCreateWindow("Island");
+  /*glutGameModeString("800x600:32");
   if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 	glutEnterGameMode();
   }
   else{
 	  exit(1);
-  }
+  }*/
   //glClearColor(0.0, 0.0, 0.0, 1.0);
   glClearColor(1.0, 1.0, 1.0, 1.0);
 
@@ -516,11 +630,30 @@ int main( int argc, char** argv ) {
   LAz = 0;
 
   player = new playerstate_t(worldtime);
+  gsObj = new gamestate_t(worldtime, "default.map");
+
+  
+
+
+
   fbtim = -1;
   explo = false;
 
+  cerr << "Connecting to gameserver... ";
+  try{
+	gClient.connectTo("127.0.0.1","13370");
+	gClient.setGameObj(gsObj);
+	cerr << " OK" << endl;
+  }
+  catch (gException e){
+	cerr << e.what() << endl;
+	exit(1);
+  }
 
-  
+  gsObj->addPlayer(player);
+  gClient.addPlayer(player);
+
+  //
   //register glut callback functions
   glutDisplayFunc( display );
   glutReshapeFunc( reshape );
@@ -529,11 +662,22 @@ int main( int argc, char** argv ) {
   glutPassiveMotionFunc(processMousePassiveMotion);
   glutMotionFunc(processMouseActiveMotion);
   glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
+  glutTimerFunc(WORLD_TIME_RESOLUTION,&net_rxtx,0);
+  glutTimerFunc(5,&net_fast,0);
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();
   glEnable(GL_LIGHTING);
-	init_tex();
+
+	// loading textures
+	// clearing the vector
+	// Prentice says a vector is overkill for holding textures, but I'll do it for now
+	textures.clear();
+	unsigned int crateTexture;
+	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp");
+	textures.push_back(crateTexture);
+	unsigned int partTexture = init_particletex();
+	textures.push_back(partTexture);
 	init_particle();
   
   glutMainLoop();
