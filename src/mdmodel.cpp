@@ -162,6 +162,7 @@ void mdmodel::PrepareMesh (const struct md5_mesh_t *mesh,
 
 void mdmodel::draw(struct anim_info_t animInfo)
 {
+	glPushMatrix();
   int i;
   float sca = .15f;
   glScalef(sca,sca,sca);
@@ -215,6 +216,7 @@ void mdmodel::draw(struct anim_info_t animInfo)
 
   //glutSwapBuffers ();
   //glutPostRedisplay ();
+  glPopMatrix();
 }
 
 /**

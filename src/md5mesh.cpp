@@ -632,12 +632,12 @@ notmain (int argc, char *argv[])
 //    }
 //}
 
-void initAnimInfo(struct anim_info_t ait, int anim){
-   ait.curr_frame = 0;
-	  ait.next_frame = 1;
+void initAnimInfo(struct anim_info_t *ait, int anim){
+   ait->curr_frame = 0;
+	  ait->next_frame = 1;
 
-	  ait.last_time = 0;
-	  ait.animind = anim;
+	  ait->last_time = 0;
+	  ait->animind = anim;
 }
 
 void genNormal(const vec3_t a, const vec3_t b, const vec3_t c, vec3_t out){

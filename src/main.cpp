@@ -1333,7 +1333,7 @@ void processMouseActiveMotion(int x, int y) {
 	vel.x() = theta;
 
 
-	vel.y() = (flag)?.005:0;
+	vel.y() = (flag)?.005:0; //.005
 	if(bflag) beatim = 5;
 
   glutPostRedisplay();
@@ -1620,20 +1620,20 @@ int main( int argc, char** argv ) {
 	// Prentice says a vector is overkill for holding textures, but I'll do it for now
 	textures.clear();
 	unsigned int crateTexture;
-	//crateTexture = BindTextureBMP((char *)"crate.bmp", false); //same file, different location -Seth
-	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false);
+	crateTexture = BindTextureBMP((char *)"crate.bmp", false); //same file, different location -Seth
+	//crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false);
 	textures.push_back(crateTexture);
 	unsigned int partTexture = init_particletex();
 	textures.push_back(partTexture);
 
   unsigned int tileTexture; 
-  //tileTexture = BindTextureBMP((char *)"images.bmp", true);
-  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
+  tileTexture = BindTextureBMP((char *)"images.bmp", true);
+  //tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
   textures.push_back(tileTexture);
 
   unsigned int waterTexture;
-  waterTexture = BindTextureBMP((char *)"../../../resources/textures/water.bmp", true);
-  //waterTexture = BindTextureBMP((char *)"water.bmp", true);
+  //waterTexture = BindTextureBMP((char *)"../../../resources/textures/water.bmp", true);
+  waterTexture = BindTextureBMP((char *)"water.bmp", true);
   textures.push_back(waterTexture);
 
   unsigned int fireTexture;

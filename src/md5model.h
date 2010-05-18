@@ -151,7 +151,7 @@ void FreeModel (struct md5_model_t *mdl);
 //void FreeVertexArrays ();
 void DrawSkeleton (const struct md5_joint_t *skeleton, int num_joints);
 //void fillTextureArray ();
-void initAnimInfo(struct anim_info_t, int);
+void initAnimInfo(struct anim_info_t*, int);
 void genNormal(const vec3_t, const vec3_t, const vec3_t, vec3_t);
 
 /**
