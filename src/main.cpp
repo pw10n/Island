@@ -16,6 +16,11 @@
 #include "texture.h"
 #include "types.h"
 
+//#include "md5mesh.cpp"
+//#include "md5anim.cpp"
+#include "md5model.h"
+#include "mdmodel.h"
+
 //#include <cstdio>
 //#include <cstdlib>
 #include <ctime>
@@ -89,10 +94,10 @@ materialStruct Grey = {
   {0.3}
 };
 
-materialStruct Gray = {
-  {0.3, 0.3, 0.3, 0.1},
-  {0.3, 0.3, 0.3, 0.1},
-  {0.3, 0.3, 0.3, 0.1},
+materialStruct ModeMat = {
+  {0.6, 0.6, 0.6, 1.0},
+  {0.3, 0.3, 0.3, 1.0},
+  {0.0, 0.0, 0.0, 0.0},
   {0.0}
 };
 
@@ -120,7 +125,7 @@ void rapid(playerstate_t&);
 int light;
 //globals for lighting - use a white light and apply materials
 //light position
-GLfloat light_pos[4] = {1.0, 5.0, 1.5, 1.0};
+GLfloat light_pos[4] = {1.0, 5.0, 1.5, 1.0}; //1.0,5.0,1.5,1.0
 //light color (ambiant, diffuse and specular)
 GLfloat light_amb[4] = {0.6, 0.6, 0.6, 1.0};
 GLfloat light_diff[4] = {0.6, 0.6, 0.6, 1.0};
@@ -157,6 +162,10 @@ beam * besrc;
 
 vector<unsigned int> textures;
 vector<objectstate_t*> crates;
+
+mdmodel* fred;
+struct anim_info_t idlAnim, walAnim;
+
 
 float p2w_x(int x) {
   float x1;
@@ -464,6 +473,8 @@ void init_particle(){
 void init_lighting() {
   //turn on light0
   glEnable(GL_LIGHT0);
+  glEnable(GL_NORMALIZE);
+  glShadeModel(GL_FLAT);
   //set up the diffuse, ambient and specular components for the light
   glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diff);
   glLightfv(GL_LIGHT0, GL_AMBIENT, light_amb);
@@ -600,6 +611,13 @@ void drawPlayer() {
     glTranslatef(0.0, 0.0, -0.5);
     gluCylinder(gluNewQuadric(), .05, .2, 1, 12, 36);
   glPopMatrix();
+}
+
+void drawAniPlayer(bool walk){
+   glPushMatrix();
+   materials(ModeMat);
+   fred->draw((walk)?walAnim:idlAnim);
+   glPopMatrix();
 }
 
 void drawFireball() {
@@ -1319,8 +1337,10 @@ void display() {
 
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
         glRotatef(angle, 0, 1, 0);
+        glRotatef(180,0,1,0);
 		if(!(player->_hp == 0)) {
-			drawPlayer();
+			//drawPlayer();
+         drawAniPlayer((player->_vel.y()==.005));
 		}
 
       glPopMatrix();
@@ -1470,7 +1490,7 @@ void keyboard(unsigned char key, int x, int y ){
 		for(uint32_t i=0;i<rfpar.size();i++){
 			delete rfpar[i];
 		}
-		fbpar.clear(); expar.clear(); rfpar.clear();
+		fbpar.clear(); expar.clear(); rfpar.clear(); //fred->clear();
 		//delete fbsrc; delete exsrc;
       exit( EXIT_SUCCESS );
       break;
@@ -1629,11 +1649,34 @@ void tick(int state) {
 		it != crates.end();
 		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){
 	}
+
+   Animate(&fred->md5anim[0],&idlAnim,WORLD_TIME_RESOLUTION);
+   Animate(&fred->md5anim[1],&walAnim,WORLD_TIME_RESOLUTION);
 	glutPostRedisplay();
 
 	worldtime+=WORLD_TIME_RESOLUTION;
 
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
+}
+
+void initModel(){
+   unsigned int rupTexture; 
+  rupTexture = BindTextureBMP((char *)"rupee2.bmp", false);
+  //tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
+  textures.push_back(rupTexture);
+   //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
+   fred = new mdmodel("hero.md5mesh","hero_idle.md5anim",rupTexture);
+   initAnimInfo(idlAnim,0);
+   idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
+   if(fred->loadAnim("hero_walk.md5anim")!=-1){
+      initAnimInfo(walAnim,1);
+      if(walAnim.animind==0) {
+         cerr << "hello, computer?" << endl;
+         walAnim.animind = 1;
+      }
+      walAnim.max_time = 1.0/fred->md5anim[1].frameRate;
+   }
+   cerr << "hello?" << endl;
 }
 
 int main( int argc, char** argv ) {
@@ -1704,6 +1747,7 @@ int main( int argc, char** argv ) {
 
   init_lighting();
   init_ai();
+  initModel();
   glEnable(GL_LIGHTING);
 
 	// loading textures
@@ -1711,6 +1755,7 @@ int main( int argc, char** argv ) {
 	// Prentice says a vector is overkill for holding textures, but I'll do it for now
 	textures.clear();
 	unsigned int crateTexture;
+
 	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
 	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false); //0
 	textures.push_back(crateTexture);
