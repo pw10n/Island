@@ -1551,11 +1551,11 @@ void keyboard(unsigned char key, int x, int y ){
 		break;
 	case 'd': case 'D' :
 		if (player->_mp>=25) {
-			crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
+			crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
 			
 			crates.push_back(temp);
 			double px = crates[crates.size()-1]->_pos.x();
-			double pz = crates[crates.size()-1]->_pos.y();
+			double pz = -(crates[crates.size()-1]->_pos.y());
 			crates[crates.size()-1]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
 			player->_mp -= 25;
 		}
