@@ -38,7 +38,7 @@ using namespace std;
 #define HIT_CRATE 1
 #define HIT_PLAYER 2
 #define MAP_SIZE 50 //(set as 50)Equivalent to 100x100 this is the number of sand tiles
-#define TILE_HEIGHT .01 //used for how high water tiles above 0 level
+#define TILE_HEIGHT .0001 //used for how high water tiles above 0 level .0001 for 0 top view, .01 for 1 top view
 #define TOP_VIEW 0 //Set to 1 to see birds eye view of island
 
 uint32_t worldtime=0;
@@ -730,27 +730,149 @@ void drawCrates(){
 }
 
 
-void drawBox() {
-    glBegin(GL_QUADS);
-    glVertex2f(-25, -25);
-    glVertex2f(-25, 25); 
-    glVertex2f(25, 25); 
-    glVertex2f(25, -25);
-    glEnd();
+void drawBox(unsigned int texture) {
+	if (texture == 0) {
+	
+		glColor3f(.7, .7, .7);
+		glBegin(GL_QUADS);
+		glVertex2f(-25, -25);
+		glVertex2f(-25, 25); 
+		glVertex2f(25, 25); 
+		glVertex2f(25, -25);
+		glEnd();
+
+	}
+	else {
+	  glColor3f(1, 1, 1);
+
+	  glEnable(GL_TEXTURE_2D);
+	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
+
+	  glBegin(GL_QUADS);
+	  glTexCoord2f (0.0, 0.0);
+	  glVertex2f(-25, -25);
+	  glTexCoord2f (1, 0.0);
+	  glVertex2f(-25, 25); 
+	  glTexCoord2f (1, 1);
+	  glVertex2f(25, 25); 
+	  glTexCoord2f (0.0, 1);
+	  glVertex2f(25, -25);
+	  glEnd();
+	  glDisable(GL_TEXTURE_2D);
+
+	}
 }
 
 void drawBar() {
+
     glBegin(GL_QUADS);
-    glVertex2f(-30, -100);
-    glVertex2f(-30, 100); 
-    glVertex2f(30, 100); 
-    glVertex2f(30, -100);
+    glVertex2f(-15, -100);
+    glVertex2f(-15, 100); 
+    glVertex2f(15, 100); 
+    glVertex2f(15, -100);
+    glEnd();
+}
+
+void drawUIBar(int texture) {
+
+	if (texture == 0) {
+	
+		glColor3f(.7, .7, .7);
+		glBegin(GL_QUADS);
+		glVertex2f(-40, -180);
+		glVertex2f(-40, 180); 
+		glVertex2f(40, 180); 
+		glVertex2f(40, -180);
+		glEnd();
+
+	}
+	else {
+	  glColor3f(1, 1, 1);
+
+	  glEnable(GL_TEXTURE_2D);
+	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
+
+	  glBegin(GL_QUADS);
+	  glTexCoord2f (0.0, 0.0);
+	  glVertex2f(-40, -180);
+	  glTexCoord2f (1, 0.0);
+	  glVertex2f(-40, 180); 
+	  glTexCoord2f (1, 1);
+	  glVertex2f(40, 180); 
+	  glTexCoord2f (0.0, 1);
+	  glVertex2f(40, -180);
+	  glEnd();
+	  glDisable(GL_TEXTURE_2D);
+
+
+	}
+
+
+}
+
+void drawUIHBar(int texture) {
+	if (texture == 0) {
+	
+		glColor3f(.7, .7, .7);
+		glBegin(GL_QUADS);
+		glVertex2f(-100, -120);
+		glVertex2f(-100, 120); 
+		glVertex2f(100, 120); 
+		glVertex2f(100, -120);
+		glEnd();
+
+	}
+	else {
+	  glColor3f(1, 1, 1);
+
+	  glEnable(GL_TEXTURE_2D);
+	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
+
+	  glBegin(GL_QUADS);
+	  glTexCoord2f (0.0, 0.0);
+	  glVertex2f(-50, -120);
+	  glTexCoord2f (1, 0.0);
+	  glVertex2f(-50, 120); 
+	  glTexCoord2f (1, 1);
+	  glVertex2f(50, 120); 
+	  glTexCoord2f (0.0, 1);
+	  glVertex2f(50, -120);
+	  glEnd();
+	  glDisable(GL_TEXTURE_2D);
+
+	}
+
+}
+
+
+void draw_circle2() {
+    //Code from wikipedia.
+    int i;
+    int sections = 30; 
+    GLfloat radius = 70.0f;
+    GLfloat twoPi = 2.0f * 3.14159f;
+
+
+    glBegin(GL_TRIANGLE_FAN);
+        //glColor3f(0.5, 0.2, 0.8); 
+
+        glVertex2f(0, 0);
+          //glVertex2f(.5, .5);
+        for(i = 0; i <= sections;i++) {
+          glVertex3f((radius * cos(i *  twoPi / sections)) + 0, 
+          (radius* sin(i * twoPi / sections)) + 0, -.001);
+        }
+    
     glEnd();
 }
 
 void draw_circle() {
     //Code from wikipedia.
-    int i;
+    /*int i;
     int sections = 30; 
     GLfloat radius = 50.0f;
     GLfloat twoPi = 2.0f * 3.14159f;
@@ -766,7 +888,26 @@ void draw_circle() {
           (radius* sin(i * twoPi / sections)) + 0);
         }
     
-    glEnd();
+    glEnd();*/
+    glColor3f(1, 1, 1);
+
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, textures[7]);
+
+    glBegin(GL_QUADS);
+	glTexCoord2f (0.0, 0.0);
+	glVertex2f(-40, -40);
+	glTexCoord2f (1, 0.0);
+	glVertex2f(-40, 40); 
+	glTexCoord2f (1, 1);
+	glVertex2f(40, 40); 
+	glTexCoord2f (0.0, 1);
+	glVertex2f(40, -40);
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
+
+
 
 
 }
@@ -783,99 +924,120 @@ void displayHud(){
 	}
 
 	//materials(Black);
-	glColor3f(0.0, 0.0, 0.0);
-	sprintf(buff, "Rapid");
+	glColor3f(1, 1, 1);
+	/*sprintf(buff, "Rapid");
 	renderBitmapString((GW/3.0)-15, GH-112,GLUT_BITMAP_HELVETICA_12,buff);
 	sprintf(buff, "Fire");
-	renderBitmapString((GW/3.0)-10, GH-100,GLUT_BITMAP_HELVETICA_12,buff);
-	sprintf(buff, "a");
-	renderBitmapString((GW/3.0), GH-80,GLUT_BITMAP_HELVETICA_12,buff);
-	sprintf(buff, "FireBall");
-	renderBitmapString((GW/3.0)+30, GH-110,GLUT_BITMAP_HELVETICA_12,buff);
-	sprintf(buff, "s");
-	renderBitmapString((GW/3.0)+45, GH-80,GLUT_BITMAP_HELVETICA_12,buff);
-	sprintf(buff, "Crate");
-	renderBitmapString((GW/3.0)+80, GH-110,GLUT_BITMAP_HELVETICA_12,buff);
-	sprintf(buff, "d");
-	renderBitmapString((GW/3.0)+95, GH-80,GLUT_BITMAP_HELVETICA_12,buff);
-	sprintf(buff, "Melee");
-	renderBitmapString((GW/5.0)-30, GH-65,GLUT_BITMAP_TIMES_ROMAN_24 ,buff);
-	sprintf(buff, "Left Click");
-	renderBitmapString((GW/5.0)-28, GH-40,GLUT_BITMAP_HELVETICA_12,buff);
+	renderBitmapString((GW/3.0)-10, GH-100,GLUT_BITMAP_HELVETICA_12,buff);*/
+	sprintf(buff, "(a)");
+	renderBitmapString(50, GH-240,GLUT_BITMAP_HELVETICA_12,buff);
+	/*sprintf(buff, "FireBall");
+	renderBitmapString((GW/3.0)+30, GH-110,GLUT_BITMAP_HELVETICA_12,buff);*/
+	sprintf(buff, "(s)");
+	renderBitmapString(50, GH-300,GLUT_BITMAP_HELVETICA_12,buff);
+	/*sprintf(buff, "Crate");
+	renderBitmapString((GW/3.0)+80, GH-110,GLUT_BITMAP_HELVETICA_12,buff);*/
+	sprintf(buff, "(d)");
+	renderBitmapString(50, GH-360,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "(f)");
+	renderBitmapString(50, GH-420,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "(g)");
+	renderBitmapString(50, GH-480,GLUT_BITMAP_HELVETICA_12,buff);
+	/*sprintf(buff, "Melee");
+	renderBitmapString((GW/5.0)-30, GH-65,GLUT_BITMAP_TIMES_ROMAN_24 ,buff);*/
+	glColor3f(0, 0, 0);
+	sprintf(buff, "(Left Click)");
+	renderBitmapString(10, GH-110,GLUT_BITMAP_HELVETICA_12,buff);
+
+
+    /*glColor3f(0.7, 0.7, 0.7);    //maybe used for later
+	glPushMatrix();
+	glTranslatef(GW/5.0, GH-150, 0);
+	draw_circle2();
+	glPopMatrix();*/
 
 	//materials(Gray);
-	glColor3f(0.7, 0.7, 0.7);
+	glColor3f(0.7, 0.7, 0.7); //fist
 	glPushMatrix();
-	glTranslatef(GW/5.0, GH-75, 0);
+	glTranslatef(40, GH-40, 0);
+	draw_circle2();
 	draw_circle();
 	glPopMatrix();
 
-	//materials(Black);
-	glColor3f(0.0, 0.0, 0.0);
+	/*glColor3f(0.7, 0.7, 0.7);
 	glPushMatrix();
-    glBegin(GL_LINES);
-    glVertex2f((GW/3.0) + 25, GH-75);
-    glVertex2f((GW/3.0) + 25, GH-125);
-    glEnd();
-	glPopMatrix();
+	glTranslatef(GW/5.0, GH-150, 0);
+	draw_circle2();
+	glPopMatrix();*/
 
-	glPushMatrix();
-    glBegin(GL_LINES);
-    glVertex2f((GW/3.0) + 75, GH-75);
-    glVertex2f((GW/3.0) + 75, GH-125);
-    glEnd();
-	glPopMatrix();
+
+	//materials(Black);
 
     glLoadIdentity();
-	//materials(Gray);
+
 	glColor3f(0.7, 0.7, 0.7);
-	glPushMatrix();
-	glTranslatef(GW/3.0, GH-100, 0);
-	drawBox();
+
+
+	glPushMatrix();  //UI bar that covers icons
+	glTranslatef(40, GH-360, -.01);
+	drawUIBar(8);
 	glPopMatrix();
 
-	//materials(Red);
-	glColor3f(1.0, 0.0, 0.0);
-	glPushMatrix();
-
-
-	glTranslatef(GW-160, GH + 100 + (200*(-player->_hp/100.0)), 0);
-	drawBar();
-
+	glPushMatrix();  //UI bar that Health bars
+	glTranslatef(GW-60, GH-95, -.01);
+	drawUIHBar(9);
 	glPopMatrix();
 
-	//materials(Blue);
-	glColor3f(0.0, 0.0, 1.0);
+	glColor3f(.5, 0.0, 0.0);
 	glPushMatrix();
-	glTranslatef(GW-80, GH + 100 + (200*(-player->_mp/100.0)), 0);
-	drawBar();
-	glPopMatrix();
-
-    //materials(Gray);
-	glColor3f(0.7, 0.7, 0.7);
-	glPushMatrix();
-	glTranslatef(GW-160, GH-100, 0);
+	glTranslatef(GW-80, GH + 100 + (200*(-player->_hp/100.0)), 0); //red health bar
 	drawBar();
 	glPopMatrix();
 
 
+	glColor3f(0.0, 0.0, .5);
 	glPushMatrix();
-	glTranslatef(GW-80, GH-100, 0);
+	glTranslatef(GW-40, GH + 100 + (200*(-player->_mp/100.0)), 0); // blue mana bar
+	drawBar();
+	glPopMatrix();
+
+	glColor3f(0, 0, 0);
+	glPushMatrix();
+	glTranslatef(GW-40, GH-100, 0);  //gray behind red health bar
 	drawBar();
 	glPopMatrix();
 
 
-
-    glPushMatrix();
-	glTranslatef((GW/3.0) + 50, GH-100, 0);
-	drawBox();
-	glPopMatrix();
-
 	glPushMatrix();
-	glTranslatef((GW/3.0) + 100, GH-100, 0);
-	drawBox();
+	glTranslatef(GW-80, GH-100, 0);  //gray behind blue mana bar
+	drawBar();
 	glPopMatrix();
 
+
+	glPushMatrix();  //rapid fire (a)
+	glTranslatef(25, GH-240, 0);
+	drawBox(5);
+	glPopMatrix();
+
+    glPushMatrix();  //fireball (s)
+	glTranslatef(25, GH-300, 0);
+	drawBox(4);
+	glPopMatrix();
+
+	glPushMatrix();  //crate (d)
+	glTranslatef(25, GH-360, 0);
+	drawBox(6);
+	glPopMatrix();
+
+	glPushMatrix(); //(f)
+	glTranslatef(25, GH-420, 0);
+	drawBox(0);
+	glPopMatrix();
+
+	glPushMatrix(); //(g) 
+	glTranslatef(25, GH-480, 0);
+	drawBox(0);
+	glPopMatrix();
 
 
 	//materials(Black);
@@ -1522,6 +1684,7 @@ int main( int argc, char** argv ) {
 
   player = new playerstate_t(worldtime);
   player->_hp = 100;
+  player->_mp = 100;
   fbtim = -1;
   explo = false;
 
@@ -1549,22 +1712,42 @@ int main( int argc, char** argv ) {
 	textures.clear();
 	unsigned int crateTexture;
 	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
-	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false);
+	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false); //0
 	textures.push_back(crateTexture);
-	unsigned int partTexture = init_particletex();
+	unsigned int partTexture = init_particletex(); //1
 	textures.push_back(partTexture);
 
   unsigned int tileTexture; 
-  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
+  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true); //2
   textures.push_back(tileTexture);
 
   unsigned int waterTexture;
-  waterTexture = BindTextureBMP((char *)"../../../resources/textures/water.bmp", true);
+  waterTexture = BindTextureBMP((char *)"../../../resources/textures/water.bmp", true); //3
   textures.push_back(waterTexture);
 
   unsigned int fireTexture;
-  waterTexture = BindTextureBMP((char *)"../../../resources/textures/fireball.bmp", true);
+  fireTexture = BindTextureBMP((char *)"../../../resources/textures/fireball.bmp", true); //4
   textures.push_back(fireTexture);
+
+  unsigned int rapidTexture;
+  rapidTexture = BindTextureBMP((char *)"../../../resources/textures/rapid1.bmp", true); //5
+  textures.push_back(rapidTexture);
+
+  unsigned int crate1Texture;
+  crate1Texture = BindTextureBMP((char *)"../../../resources/textures/crate1.bmp", true); //6
+  textures.push_back(crate1Texture);
+
+  unsigned int fistTexture;
+  fistTexture = BindTextureBMP((char *)"../../../resources/textures/fist.bmp", true); //7
+  textures.push_back(fistTexture);
+
+  unsigned int noxTexture;
+  noxTexture = BindTextureBMP((char *)"../../../resources/textures/wood3.bmp", true); //8
+  textures.push_back(noxTexture);
+
+  unsigned int patternTexture;
+  patternTexture = BindTextureBMP((char *)"../../../resources/textures/palm.bmp", true); //9
+  textures.push_back(patternTexture);
 
   for(int i = 0; i < 10; i++){
 	  crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
