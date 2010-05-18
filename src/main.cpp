@@ -220,9 +220,10 @@ forward in the last direction it was facing.
 void init_ai(){
 	for(int i=0; i<10; ++i){
 		playerstate_t temp(0);
+		temp._id = 1;
 		temp._tick = 0;
 		temp._hp = 10;
-		temp._mp = 0;
+		temp._mp = 200;
 		temp._weapon = 0;
 		temp._state = PSTATE_AI_SEARCHING;
 		temp._score = 0;
@@ -495,6 +496,10 @@ void pos_light() {
 }
 
 void spawnFireball(){
+	if (player->_mp<10) {
+		return;
+	}
+	fbtim = 0;
 	double fbx = -sin(theta);
 	double fbz = -cos(theta);
 	coord2d_t dummy;
@@ -503,6 +508,12 @@ void spawnFireball(){
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
+	if (player->_mp>=10) {
+		player->_mp -= 10;
+		
+	}
+
+
 }
 
 void detonate(source * ws, bool splin){
@@ -531,13 +542,21 @@ void detonate(source * ws, bool splin){
 }
 
 void rapid(playerstate_t& player){
+	if (player._mp<5){
+		return;
+	}
 	if(rfpar.size()<100&&rfire==0){
 		coord2d_t dummy;
 		dummy = player.calcHotSpot(dummy,.6);
 		double vx = -sin(player._vel.x())*.6;
 		double vz = -cos(player._vel.x())*.6;
 		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
+		if (player._mp>=5 && player._id == 0) {
+			player._mp -= 5;
+			
+		}
 	}
+
 }
 
 void reshape(int w, int h) {
@@ -875,6 +894,7 @@ void displayHud(){
 	glColor3f(0.0, 0.0, 1.0);
 	glPushMatrix();
 	glTranslatef(GW-80, GH + 100 + (200*(-player->_mp/100.0)), 0);
+	//glTranslatef(GW-40, GH + 100 + (200*(-player->_mp/200.0)), 0); // blue mana bar
 	drawBar();
 	glPopMatrix();
 
@@ -1361,7 +1381,7 @@ void keyboard(unsigned char key, int x, int y ){
 		rapid(*player);
 		break;
 	case 's': case 'S' :
-		if(fbtim<0) {spawnFireball(); fbtim = 0;}
+		if(fbtim<0) {spawnFireball();}
 		break;
 	case 'f': case 'F' :
 		beatim = 5;
@@ -1386,13 +1406,15 @@ void keyboard(unsigned char key, int x, int y ){
 		printf("sizeof exsrc: %d\n", sizeof(*exsrc));
 		break;
 	case 'd': case 'D' :
-
-		crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
-		
-		crates.push_back(temp);
-		double px = crates[crates.size()-1]->_pos.x();
-		double pz = crates[crates.size()-1]->_pos.y();
-		crates[crates.size()-1]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+		if (player->_mp>=25) {
+			crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
+			
+			crates.push_back(temp);
+			double px = crates[crates.size()-1]->_pos.x();
+			double pz = crates[crates.size()-1]->_pos.y();
+			crates[crates.size()-1]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+			player->_mp -= 25;
+		}
 		break;
 
   }
@@ -1527,24 +1549,35 @@ void tick(int state) {
 
 void initModel(){
    unsigned int rupTexture; 
-  rupTexture = BindTextureBMP((char *)"rupee2.bmp", false);
+  rupTexture = BindTextureBMP((char *)"textures/rupee2.bmp", false);
   //tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
-   fred = new mdmodel("hero.md5mesh","hero_idle.md5anim",rupTexture);
-   enemy = new mdmodel("characterModel.md5mesh",NULL,rupTexture);
+   fred = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
    initAnimInfo(&idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
-   if(fred->loadAnim("hero_walk.md5anim")!=-1){
+   if(fred->loadAnim("model/hero_walk.md5anim")!=-1){
       initAnimInfo(&walAnim,1);
       walAnim.max_time = 1.0/fred->md5anim[1].frameRate;
    }
+   enemy = new mdmodel("model/characterModel.md5mesh",NULL,rupTexture);
    initAnimInfo(&eneAnim,0);
+   cerr << "animated = " << fred->animated << endl;
 
 }
 
+void mana(int pass) {
+	if (player->_mp<=195) {
+		player->_mp+=5;
+	}
+	else {
+		player->_mp = 200;
+	}
+	glutTimerFunc(1000, mana,0);
+}
+
 int main( int argc, char** argv ) {
-  
+    
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
 	bool windo = true; //true - window; false - full screen. quicker than commenting/uncommenting
@@ -1593,6 +1626,7 @@ int main( int argc, char** argv ) {
 
   player = new playerstate_t(worldtime);
   player->_hp = 100;
+  player->_mp = 200;
   fbtim = -1;
   explo = false;
 
@@ -1608,6 +1642,7 @@ int main( int argc, char** argv ) {
   glutPassiveMotionFunc(processMousePassiveMotion);
   glutMotionFunc(processMouseActiveMotion);
   glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
+  glutTimerFunc(1000, mana,0);
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();
@@ -1620,25 +1655,43 @@ int main( int argc, char** argv ) {
 	// Prentice says a vector is overkill for holding textures, but I'll do it for now
 	textures.clear();
 	unsigned int crateTexture;
-	crateTexture = BindTextureBMP((char *)"crate.bmp", false); //same file, different location -Seth
-	//crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false);
+	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
+	crateTexture = BindTextureBMP((char *)"textures/crate.bmp", false); //0
 	textures.push_back(crateTexture);
 	unsigned int partTexture = init_particletex();
 	textures.push_back(partTexture);
 
-  unsigned int tileTexture; 
-  tileTexture = BindTextureBMP((char *)"images.bmp", true);
-  //tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
+	unsigned int tileTexture;
+  tileTexture = BindTextureBMP((char *)"textures/images.bmp", true); //2
   textures.push_back(tileTexture);
 
   unsigned int waterTexture;
-  //waterTexture = BindTextureBMP((char *)"../../../resources/textures/water.bmp", true);
-  waterTexture = BindTextureBMP((char *)"water.bmp", true);
+  waterTexture = BindTextureBMP((char *)"textures/water.bmp", true); //3
   textures.push_back(waterTexture);
 
   unsigned int fireTexture;
-  fireTexture = BindTextureBMP((char *)"../../../resources/textures/fireball.bmp", true);
+  fireTexture = BindTextureBMP((char *)"textures/fireball.bmp", true); //4
   textures.push_back(fireTexture);
+
+  unsigned int rapidTexture;
+  rapidTexture = BindTextureBMP((char *)"textures/rapid1.bmp", true); //5
+  textures.push_back(rapidTexture);
+
+  unsigned int crate1Texture;
+  crate1Texture = BindTextureBMP((char *)"textures/crate1.bmp", true); //6
+  textures.push_back(crate1Texture);
+
+  unsigned int fistTexture;
+  fistTexture = BindTextureBMP((char *)"textures/fist.bmp", true); //7
+  textures.push_back(fistTexture);
+
+  unsigned int noxTexture;
+  noxTexture = BindTextureBMP((char *)"textures/wood3.bmp", true); //8
+  textures.push_back(noxTexture);
+
+  unsigned int patternTexture;
+  patternTexture = BindTextureBMP((char *)"textures/palm.bmp", true); //9
+  textures.push_back(patternTexture);
 
   for(int i = 0; i < 10; i++){
 	  crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
