@@ -4,6 +4,8 @@
 #define PARTICLE_FIREBALL 0
 #define PARTICLE_RAPID 1
 #define PARTICLE_BEAM 2
+#define PARTICLE_EXPLOSION 3
+#define PARTICLE_SMITE 4
 #include "collision.h"
 #include "netutil.h"
 
@@ -102,6 +104,24 @@ public:
 	double ang;
 
 	beam(playerstate_t *);
+	void move(void);
+	void draw(void);
+};
+
+class smite_s : public source
+{
+public:
+	smite_s(double,double, uint16_t);
+	void move(void);
+	void draw(void);
+};
+
+class smite_p : public particle
+{
+public:
+	smite_s *src; //Origin point for the effect
+
+	smite_p(smite_s *);
 	void move(void);
 	void draw(void);
 };

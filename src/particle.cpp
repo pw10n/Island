@@ -157,6 +157,7 @@ explosion_s::explosion_s(double ix, double iz)
 	r = g = a = 1.0f; b = 0.0f;
 	active = true;
 	body = bbody(_pos,(double)life,BB_CIRC);
+	_type = PARTICLE_EXPLOSION;
 }
 
 void explosion_s::move(void)
@@ -368,5 +369,69 @@ void beam::draw(void)
 	glTranslatef(0,0,.1f); glCallList(PARTLIST);
 	glTranslatef(0,0,.1f); glCallList(PARTLIST);
 	glTranslatef(0,0,.1f); glCallList(PARTLIST);
+	glPopMatrix();
+}
+
+smite_s::smite_s(double ix, double iz, uint16_t id)
+{
+	pid = id;
+	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t();
+	life = 2.0f;
+	fade = .5f;
+	b = a = 1.0f; r = g = 0.5f;
+	active = true;
+	body = bbody(_pos,.25,BB_CIRC);
+	_type = PARTICLE_SMITE;
+}
+
+void smite_s::move(void)
+{
+	if(!active) return;
+	life -= fade;
+}
+
+void smite_s::draw(void)
+{
+	glColor4f(1,1,1,1);
+	glPushMatrix();
+	glTranslatef(_pos.x(),.1,_pos.z());
+	float sca = 4.0f;
+	glScalef(sca,3.0f*sca,sca);
+	glCallList(PARTLIST);
+	glPopMatrix();
+}
+
+smite_p::smite_p(smite_s * sour)
+{
+	src = sour;
+	float t = (float)(rand()%360);
+	_pos = vec3d_t(src->_pos);
+	_pos.x() += .25*DSIN(t);
+	_pos.y() = -10.0 + (double)(rand()%40)/5.0;
+	_pos.z() += .25*DCOS(t);
+	_vel.y() = 1.0;
+	life = 1.0f;
+	fade = (float)(rand()%10+1)/20.0f;
+	b = a = 1.0f;
+	r = g = (float)(rand()%128)/128.0f;
+	active = true;
+}
+
+void smite_p::move(void)
+{
+	life -= fade;
+	_pos = _pos + _vel;
+	a = life/2.0f;
+
+}
+
+void smite_p::draw(void)
+{
+	glColor4f(r,g,b,a);
+	glPushMatrix();
+	glTranslatef(_pos.x(),_pos.y(),_pos.z());
+	float sca = 4.0f;
+	glScalef(1,sca,1);
+	glCallList(PARTLIST);
 	glPopMatrix();
 }

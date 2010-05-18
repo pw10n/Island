@@ -155,6 +155,9 @@ int fbtim;
 explosion_s * exsrc;
 vector<particle *> expar;
 bool explo;
+smite_s * smsrc;
+vector<smite_p *> smpar;
+bool smit;
 vector<rapidfire *> rfpar;
 int beatim;
 bool bflag;
@@ -513,6 +516,61 @@ void spawnFireball(){
 
 }
 
+//void smiteEm(int x, int y){
+//	if (player->_mp<50) {
+//		return;
+//	}
+//	player->_mp -= 50;
+//	//first calc target position
+//	double rx = ((double)x-GW/2.0)/2.0;
+//	double lx = ((double)x-GW/2.0-71.0)/2.0;
+//	double by = (double)y-GH/2.0;
+//	double ty = (double)y-GH/2.0-50.0;
+//	//double bth = atan2(by,rx); //one unit near from player
+//	//double cth = atan2(ty,rx); //position of player
+//	//double lth = atan2(ty,lx); //one unit left from player
+//	double mb = by/rx;
+//	double mc = ty/rx;
+//	double ml = ty/lx;
+//	coord2d_t targ;
+//	if(rx==0.0&&ty==0.0) //this is where the player is.
+//		targ = player->_pos;
+//	else if(ml!=mc){
+//		targ.x() = 1.0/(mb-mc) + player->_pos.x();
+//		targ.y() = -mc/(mb-mc) + player->_pos.y() -1.0;
+//	}
+//	else{
+//		targ.x() = ml/(mc-ml) + player->_pos.x();
+//		targ.y() = mc*ml/(mc-ml) + player->_pos.y();
+//	}
+//
+//	smit = true;
+//	smsrc = new smite_s(targ.x(),-targ.y(),player->_id);
+//	for(int i=0;i<400;i++){
+//		smpar.push_back(new smite_p(smsrc));
+//	}
+//}
+
+void smiteEm(int x, int y){
+	if (player->_mp<50) {
+		return;
+	}
+	player->_mp -= 50;
+	//first calc target position
+	double dx = ((double)x-GW/2.0)/1.7;
+	double dy = (double)y-GH/2.0 + .5;
+	double dz = log((double)y*2.0/GH)/-.159;
+	coord2d_t targ;
+	targ.x() = player->_pos.x() - dz*dx/dy;
+	targ.y() = player->_pos.y() + dz - 1.0;
+
+	smit = true;
+	smsrc = new smite_s(targ.x(),-targ.y(),player->_id);
+	for(int i=0;i<400;i++){
+		smpar.push_back(new smite_p(smsrc));
+	}
+}
+
 void detonate(source * ws, bool splin){
 	explo = true;
 	exsrc = new explosion_s(ws->_pos.x(),ws->_pos.z());
@@ -653,6 +711,13 @@ void drawExplosion() {
 	//exsrc->draw();
 	for(uint32_t i=0;i<expar.size();i++){
 		expar[i]->draw();
+	}
+}
+
+void drawSmite() {
+	smsrc->draw();
+	for(uint32_t i=0;i<smpar.size();i++){
+		smpar[i]->draw();
 	}
 }
 
@@ -1077,7 +1142,7 @@ void displayHud(){
 
 	glPushMatrix(); //(g) 
 	glTranslatef(25, GH-480, 0);
-	drawBox(0);
+	drawBox(10);
 	glPopMatrix();
 
 
@@ -1385,7 +1450,7 @@ void display() {
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
 		    //materials(Sand);
-       // drawGrid();
+        drawGrid();
 		    //glTranslatef(-1.0,0,-1.0);
 		    drawCrates();
 		//glutSolidSphere(1.0,10,10);
@@ -1393,6 +1458,7 @@ void display() {
       glPopMatrix();
 	  if(fbtim>-1) drawFireball();
 	  if(explo) drawExplosion();
+	  if(smit) drawSmite();
 	  drawRapid();
     glPopMatrix();
   glPopMatrix();
@@ -1520,7 +1586,10 @@ void keyboard(unsigned char key, int x, int y ){
 		for(uint32_t i=0;i<rfpar.size();i++){
 			delete rfpar[i];
 		}
-		fbpar.clear(); expar.clear(); rfpar.clear(); //fred->clear();
+		for(uint32_t i=0;i<smpar.size();i++){
+			delete smpar[i];
+		}
+		fbpar.clear(); expar.clear(); rfpar.clear(); smpar.clear();
 		//delete fbsrc; delete exsrc;
       exit( EXIT_SUCCESS );
       break;
@@ -1533,10 +1602,16 @@ void keyboard(unsigned char key, int x, int y ){
 	case 'f': case 'F' :
 		beatim = 5;
 		break;
+	case 'g': case 'G' :
+		if(!smit) smiteEm(x,y);
+		break;
+	case 'c': player->_mp = 200;
+		break;
 	case '0': hit_damage = 0;
 		break;
 	case '-': hit_damage = 10;
 		break;
+	case 'r': printf("coordinates: %d, %d\n",x,y); break;
 
 	case 't':
 		printf("showing hps\n");
@@ -1577,6 +1652,12 @@ int checkPaCollision(source * src){
 				damage(&crates[i]->_hp,1);
 				//continue;
 			}
+			else if (src->_type == PARTICLE_EXPLOSION){ //splash damage anyone?
+				damage(&crates[i]->_hp,1);
+			}
+			else if (src->_type == PARTICLE_SMITE){
+				damage(&crates[i]->_hp,50);
+			}
 			// this is wrong - hacked way of having the splinter effect on dead crate
 			if (crates[i]->_hp == 0){
 			}
@@ -1590,8 +1671,16 @@ int checkPaCollision(source * src){
 	}
 	for(unsigned int i=0;i<others.size();i++){
 		if(collide(src->body,others[i].body)&&!others[i].checkID(src->pid)) {
-			damage(&others[i]._hp,5);
-			//if(src->_type == PARTICLE_BEAM) continue;
+			//damage(&others[i]._hp,5);
+			if (src->_type == PARTICLE_FIREBALL){
+				damage(&others[i]._hp,10);
+			}
+			else if (src->_type == PARTICLE_SMITE){
+				damage(&others[i]._hp,50);
+			}
+			else {
+				damage(&others[i]._hp,5);
+			}
 			return HIT_PLAYER;
 		}
 	}
@@ -1656,9 +1745,25 @@ void tick(int state) {
 				expar.erase(expar.begin()+i);
 			}
 		}
+		checkPaCollision(exsrc);
 		if(expar.empty()){
 			explo = false;
 			delete exsrc;
+		}
+	}
+	if (smit){
+		smsrc->move();
+		for(int i=smpar.size()-1;i>-1;i--){
+			smpar[i]->move();
+			if(smpar[i]->life<0.0f){
+				delete smpar[i];
+				smpar.erase(smpar.begin()+i);
+			}
+		}
+		checkPaCollision(smsrc);
+		if(smpar.empty()){
+			smit = false;
+			delete smsrc;
 		}
 	}
 	for(int i=rfpar.size()-1;i>-1;i--){
@@ -1772,6 +1877,7 @@ int main( int argc, char** argv ) {
   player->_mp = 200;
   fbtim = -1;
   explo = false;
+  smit = false;
 
   srand(time(NULL));
 
@@ -1836,6 +1942,10 @@ int main( int argc, char** argv ) {
   unsigned int patternTexture;
   patternTexture = BindTextureBMP((char *)"textures/palm.bmp", true); //9
   textures.push_back(patternTexture);
+
+  unsigned int blastTexture;
+  blastTexture = BindTextureBMP((char *)"textures/smite.bmp", true); //10
+  textures.push_back(blastTexture);
 
   for(int i = 0; i < 10; i++){
 	  crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
