@@ -43,7 +43,7 @@ using namespace std;
 #define HIT_CRATE 1
 #define HIT_PLAYER 2
 #define MAP_SIZE 50 //(set as 50)Equivalent to 100x100 this is the number of sand tiles
-#define TILE_HEIGHT .0001 //used for how high water tiles above 0 level .0001 for 0 top view, .01 for 1 top view
+#define TILE_HEIGHT .01 //used for how high water tiles above 0 level
 #define TOP_VIEW 0 //Set to 1 to see birds eye view of island
 
 uint32_t worldtime=0;
@@ -148,6 +148,7 @@ bool flag = false;
 int rfire = 0;
 GLubyte * alpha;
 float fps;
+float ran = 1.0f;
 
 fireball_s * fbsrc;
 vector<fireball_p *> fbpar;
@@ -164,7 +165,8 @@ vector<unsigned int> textures;
 vector<objectstate_t*> crates;
 
 mdmodel* fred;
-struct anim_info_t idlAnim, walAnim;
+mdmodel* enemy;
+struct anim_info_t idlAnim, walAnim, eneAnim;
 
 
 float p2w_x(int x) {
@@ -190,6 +192,8 @@ void damage(uint8_t *target, int dam){
 }
 
 void drawCharacter();
+
+bool cull(const coord2d_t);
 
 ////// dummy ai functions for 25% /////////
 /*
@@ -280,6 +284,8 @@ void drawAi(){
 		it != others.end();
 		++it)
 	{
+		if(cull((*it)._pos)) continue;
+		
 		glPushMatrix();
 		//translate
 		glTranslatef((*it)._pos.x(), 0.2, -(*it)._pos.y());
@@ -598,7 +604,8 @@ void drawCharacter(){
 
 	glTranslatef(0.0, 0.25, 0.0);
 
-	glutSolidCone(0.3,1.0,20,20);
+	//glutSolidCone(0.3,1.0,20,20);
+	enemy->draw(eneAnim);
 
 	glPopMatrix();
 }
@@ -617,6 +624,7 @@ void drawAniPlayer(bool walk){
    glPushMatrix();
    materials(ModeMat);
    fred->draw((walk)?walAnim:idlAnim);
+   //drawRangeFinder();
    glPopMatrix();
 }
 
@@ -685,8 +693,9 @@ void drawCrates(){
 	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
 	// "front"
 	for(unsigned int i = 0; i < crates.size(); i++){
+		if(cull(crates[i]->_pos)) continue;
 		glPushMatrix();
-		glTranslatef(crates[i]->_pos.x(),0,crates[i]->_pos.y());
+		glTranslatef(crates[i]->_pos.x(),0,-crates[i]->_pos.y());
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
 		glVertex3f (-.5, 0.0, 0.5);
@@ -748,149 +757,27 @@ void drawCrates(){
 }
 
 
-void drawBox(unsigned int texture) {
-	if (texture == 0) {
-	
-		glColor3f(.7, .7, .7);
-		glBegin(GL_QUADS);
-		glVertex2f(-25, -25);
-		glVertex2f(-25, 25); 
-		glVertex2f(25, 25); 
-		glVertex2f(25, -25);
-		glEnd();
-
-	}
-	else {
-	  glColor3f(1, 1, 1);
-
-	  glEnable(GL_TEXTURE_2D);
-	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
-
-	  glBegin(GL_QUADS);
-	  glTexCoord2f (0.0, 0.0);
-	  glVertex2f(-25, -25);
-	  glTexCoord2f (1, 0.0);
-	  glVertex2f(-25, 25); 
-	  glTexCoord2f (1, 1);
-	  glVertex2f(25, 25); 
-	  glTexCoord2f (0.0, 1);
-	  glVertex2f(25, -25);
-	  glEnd();
-	  glDisable(GL_TEXTURE_2D);
-
-	}
-}
-
-void drawBar() {
-
+void drawBox() {
     glBegin(GL_QUADS);
-    glVertex2f(-15, -100);
-    glVertex2f(-15, 100); 
-    glVertex2f(15, 100); 
-    glVertex2f(15, -100);
+    glVertex2f(-25, -25);
+    glVertex2f(-25, 25); 
+    glVertex2f(25, 25); 
+    glVertex2f(25, -25);
     glEnd();
 }
 
-void drawUIBar(int texture) {
-
-	if (texture == 0) {
-	
-		glColor3f(.7, .7, .7);
-		glBegin(GL_QUADS);
-		glVertex2f(-40, -180);
-		glVertex2f(-40, 180); 
-		glVertex2f(40, 180); 
-		glVertex2f(40, -180);
-		glEnd();
-
-	}
-	else {
-	  glColor3f(1, 1, 1);
-
-	  glEnable(GL_TEXTURE_2D);
-	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
-
-	  glBegin(GL_QUADS);
-	  glTexCoord2f (0.0, 0.0);
-	  glVertex2f(-40, -180);
-	  glTexCoord2f (1, 0.0);
-	  glVertex2f(-40, 180); 
-	  glTexCoord2f (1, 1);
-	  glVertex2f(40, 180); 
-	  glTexCoord2f (0.0, 1);
-	  glVertex2f(40, -180);
-	  glEnd();
-	  glDisable(GL_TEXTURE_2D);
-
-
-	}
-
-
-}
-
-void drawUIHBar(int texture) {
-	if (texture == 0) {
-	
-		glColor3f(.7, .7, .7);
-		glBegin(GL_QUADS);
-		glVertex2f(-100, -120);
-		glVertex2f(-100, 120); 
-		glVertex2f(100, 120); 
-		glVertex2f(100, -120);
-		glEnd();
-
-	}
-	else {
-	  glColor3f(1, 1, 1);
-
-	  glEnable(GL_TEXTURE_2D);
-	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
-
-	  glBegin(GL_QUADS);
-	  glTexCoord2f (0.0, 0.0);
-	  glVertex2f(-50, -120);
-	  glTexCoord2f (1, 0.0);
-	  glVertex2f(-50, 120); 
-	  glTexCoord2f (1, 1);
-	  glVertex2f(50, 120); 
-	  glTexCoord2f (0.0, 1);
-	  glVertex2f(50, -120);
-	  glEnd();
-	  glDisable(GL_TEXTURE_2D);
-
-	}
-
-}
-
-
-void draw_circle2() {
-    //Code from wikipedia.
-    int i;
-    int sections = 30; 
-    GLfloat radius = 70.0f;
-    GLfloat twoPi = 2.0f * 3.14159f;
-
-
-    glBegin(GL_TRIANGLE_FAN);
-        //glColor3f(0.5, 0.2, 0.8); 
-
-        glVertex2f(0, 0);
-          //glVertex2f(.5, .5);
-        for(i = 0; i <= sections;i++) {
-          glVertex3f((radius * cos(i *  twoPi / sections)) + 0, 
-          (radius* sin(i * twoPi / sections)) + 0, -.001);
-        }
-    
+void drawBar() {
+    glBegin(GL_QUADS);
+    glVertex2f(-30, -100);
+    glVertex2f(-30, 100); 
+    glVertex2f(30, 100); 
+    glVertex2f(30, -100);
     glEnd();
 }
 
 void draw_circle() {
     //Code from wikipedia.
-    /*int i;
+    int i;
     int sections = 30; 
     GLfloat radius = 50.0f;
     GLfloat twoPi = 2.0f * 3.14159f;
@@ -906,26 +793,7 @@ void draw_circle() {
           (radius* sin(i * twoPi / sections)) + 0);
         }
     
-    glEnd();*/
-    glColor3f(1, 1, 1);
-
-	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, textures[7]);
-
-    glBegin(GL_QUADS);
-	glTexCoord2f (0.0, 0.0);
-	glVertex2f(-40, -40);
-	glTexCoord2f (1, 0.0);
-	glVertex2f(-40, 40); 
-	glTexCoord2f (1, 1);
-	glVertex2f(40, 40); 
-	glTexCoord2f (0.0, 1);
-	glVertex2f(40, -40);
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
-
-
+    glEnd();
 
 
 }
@@ -942,120 +810,99 @@ void displayHud(){
 	}
 
 	//materials(Black);
-	glColor3f(1, 1, 1);
-	/*sprintf(buff, "Rapid");
+	glColor3f(0.0, 0.0, 0.0);
+	sprintf(buff, "Rapid");
 	renderBitmapString((GW/3.0)-15, GH-112,GLUT_BITMAP_HELVETICA_12,buff);
 	sprintf(buff, "Fire");
-	renderBitmapString((GW/3.0)-10, GH-100,GLUT_BITMAP_HELVETICA_12,buff);*/
-	sprintf(buff, "(a)");
-	renderBitmapString(50, GH-240,GLUT_BITMAP_HELVETICA_12,buff);
-	/*sprintf(buff, "FireBall");
-	renderBitmapString((GW/3.0)+30, GH-110,GLUT_BITMAP_HELVETICA_12,buff);*/
-	sprintf(buff, "(s)");
-	renderBitmapString(50, GH-300,GLUT_BITMAP_HELVETICA_12,buff);
-	/*sprintf(buff, "Crate");
-	renderBitmapString((GW/3.0)+80, GH-110,GLUT_BITMAP_HELVETICA_12,buff);*/
-	sprintf(buff, "(d)");
-	renderBitmapString(50, GH-360,GLUT_BITMAP_HELVETICA_12,buff);
-	sprintf(buff, "(f)");
-	renderBitmapString(50, GH-420,GLUT_BITMAP_HELVETICA_12,buff);
-	sprintf(buff, "(g)");
-	renderBitmapString(50, GH-480,GLUT_BITMAP_HELVETICA_12,buff);
-	/*sprintf(buff, "Melee");
-	renderBitmapString((GW/5.0)-30, GH-65,GLUT_BITMAP_TIMES_ROMAN_24 ,buff);*/
-	glColor3f(0, 0, 0);
-	sprintf(buff, "(Left Click)");
-	renderBitmapString(10, GH-110,GLUT_BITMAP_HELVETICA_12,buff);
-
-
-    /*glColor3f(0.7, 0.7, 0.7);    //maybe used for later
-	glPushMatrix();
-	glTranslatef(GW/5.0, GH-150, 0);
-	draw_circle2();
-	glPopMatrix();*/
+	renderBitmapString((GW/3.0)-10, GH-100,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "a");
+	renderBitmapString((GW/3.0), GH-80,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "FireBall");
+	renderBitmapString((GW/3.0)+30, GH-110,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "s");
+	renderBitmapString((GW/3.0)+45, GH-80,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "Crate");
+	renderBitmapString((GW/3.0)+80, GH-110,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "d");
+	renderBitmapString((GW/3.0)+95, GH-80,GLUT_BITMAP_HELVETICA_12,buff);
+	sprintf(buff, "Melee");
+	renderBitmapString((GW/5.0)-30, GH-65,GLUT_BITMAP_TIMES_ROMAN_24 ,buff);
+	sprintf(buff, "Left Click");
+	renderBitmapString((GW/5.0)-28, GH-40,GLUT_BITMAP_HELVETICA_12,buff);
 
 	//materials(Gray);
-	glColor3f(0.7, 0.7, 0.7); //fist
+	glColor3f(0.7, 0.7, 0.7);
 	glPushMatrix();
-	glTranslatef(40, GH-40, 0);
-	draw_circle2();
+	glTranslatef(GW/5.0, GH-75, 0);
 	draw_circle();
 	glPopMatrix();
 
-	/*glColor3f(0.7, 0.7, 0.7);
-	glPushMatrix();
-	glTranslatef(GW/5.0, GH-150, 0);
-	draw_circle2();
-	glPopMatrix();*/
-
-
 	//materials(Black);
+	glColor3f(0.0, 0.0, 0.0);
+	glPushMatrix();
+    glBegin(GL_LINES);
+    glVertex2f((GW/3.0) + 25, GH-75);
+    glVertex2f((GW/3.0) + 25, GH-125);
+    glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+    glBegin(GL_LINES);
+    glVertex2f((GW/3.0) + 75, GH-75);
+    glVertex2f((GW/3.0) + 75, GH-125);
+    glEnd();
+	glPopMatrix();
 
     glLoadIdentity();
-
+	//materials(Gray);
 	glColor3f(0.7, 0.7, 0.7);
-
-
-	glPushMatrix();  //UI bar that covers icons
-	glTranslatef(40, GH-360, -.01);
-	drawUIBar(8);
-	glPopMatrix();
-
-	glPushMatrix();  //UI bar that Health bars
-	glTranslatef(GW-60, GH-95, -.01);
-	drawUIHBar(9);
-	glPopMatrix();
-
-	glColor3f(.5, 0.0, 0.0);
 	glPushMatrix();
-	glTranslatef(GW-80, GH + 100 + (200*(-player->_hp/100.0)), 0); //red health bar
+	glTranslatef(GW/3.0, GH-100, 0);
+	drawBox();
+	glPopMatrix();
+
+	//materials(Red);
+	glColor3f(1.0, 0.0, 0.0);
+	glPushMatrix();
+
+
+	glTranslatef(GW-160, GH + 100 + (200*(-player->_hp/100.0)), 0);
+	drawBar();
+
+	glPopMatrix();
+
+	//materials(Blue);
+	glColor3f(0.0, 0.0, 1.0);
+	glPushMatrix();
+	glTranslatef(GW-80, GH + 100 + (200*(-player->_mp/100.0)), 0);
 	drawBar();
 	glPopMatrix();
 
-
-	glColor3f(0.0, 0.0, .5);
+    //materials(Gray);
+	glColor3f(0.7, 0.7, 0.7);
 	glPushMatrix();
-	glTranslatef(GW-40, GH + 100 + (200*(-player->_mp/100.0)), 0); // blue mana bar
-	drawBar();
-	glPopMatrix();
-
-	glColor3f(0, 0, 0);
-	glPushMatrix();
-	glTranslatef(GW-40, GH-100, 0);  //gray behind red health bar
+	glTranslatef(GW-160, GH-100, 0);
 	drawBar();
 	glPopMatrix();
 
 
 	glPushMatrix();
-	glTranslatef(GW-80, GH-100, 0);  //gray behind blue mana bar
+	glTranslatef(GW-80, GH-100, 0);
 	drawBar();
 	glPopMatrix();
 
 
-	glPushMatrix();  //rapid fire (a)
-	glTranslatef(25, GH-240, 0);
-	drawBox(5);
+
+    glPushMatrix();
+	glTranslatef((GW/3.0) + 50, GH-100, 0);
+	drawBox();
 	glPopMatrix();
 
-    glPushMatrix();  //fireball (s)
-	glTranslatef(25, GH-300, 0);
-	drawBox(4);
+	glPushMatrix();
+	glTranslatef((GW/3.0) + 100, GH-100, 0);
+	drawBox();
 	glPopMatrix();
 
-	glPushMatrix();  //crate (d)
-	glTranslatef(25, GH-360, 0);
-	drawBox(6);
-	glPopMatrix();
-
-	glPushMatrix(); //(f)
-	glTranslatef(25, GH-420, 0);
-	drawBox(0);
-	glPopMatrix();
-
-	glPushMatrix(); //(g) 
-	glTranslatef(25, GH-480, 0);
-	drawBox(0);
-	glPopMatrix();
 
 
 	//materials(Black);
@@ -1070,6 +917,14 @@ void displayHud(){
   resetPerspectiveProjection();
 glEnable(GL_LIGHTING);
       /* END HUD */
+}
+
+void drawRangeFinder(){
+	glPushMatrix();
+	glTranslatef(0,.2,0);
+	glRotatef(90,1,0,0);
+	gluCylinder(gluNewQuadric(), ran, ran, .2, 12, 36);
+	glPopMatrix();
 }
 
 void drawTiles(){
@@ -1128,6 +983,8 @@ void waterTile() {
 }
 
 void drawWaterTiles(float x, float y) {
+	coord2d_t pos; pos.x() = x; pos.y() = -y;
+	if(cull(pos)) return;
 	glPushMatrix();
 	  glTranslatef(-MAP_SIZE+x, 0, MAP_SIZE-y);
 	  waterTile();
@@ -1261,7 +1118,12 @@ void drawWater() {
 	glEnable(GL_LIGHTING);
 }
 
-
+/*returns true if it needs be culled*/
+bool cull(coord2d_t pos){
+	//return false; 
+	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
+	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
+}
 
 void display() {
   static int frame=0;
@@ -1329,6 +1191,7 @@ void display() {
 
 	drawTiles();
 	drawWater();
+	//drawRangeFinder();
 
 
     glPushMatrix();
@@ -1399,7 +1262,7 @@ void processMousePassiveMotion(int x, int y) {
 	//float theta = 0;
 	x -= GW/2;
 	x *= .5;
-	y -= GH/2;
+	y -= GH/2 - 50;
 	
 	//        0  dir
 	//        | /
@@ -1435,7 +1298,7 @@ void processMouseActiveMotion(int x, int y) {
 	//float theta = 0;
 	x -= GW/2;
 	x *= .5;
-	y -= GH/2;
+	y -= GH/2 - 50;
 	
 	//        0  dir
 	//        | /
@@ -1507,6 +1370,9 @@ void keyboard(unsigned char key, int x, int y ){
 		break;
 	case '-': hit_damage = 10;
 		break;
+	case '[': ran -= 1.0f; if(ran<.1) ran = 1.0f; break;
+	case ']': ran += 1.0f; break;
+	case 'r': printf("range: %f\n",ran); printf("cursor at: %d %d\n",x,y);  break;
 
 	case 't':
 		printf("showing hps\n");
@@ -1666,17 +1532,15 @@ void initModel(){
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
    fred = new mdmodel("hero.md5mesh","hero_idle.md5anim",rupTexture);
-   initAnimInfo(idlAnim,0);
+   enemy = new mdmodel("characterModel.md5mesh",NULL,rupTexture);
+   initAnimInfo(&idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
    if(fred->loadAnim("hero_walk.md5anim")!=-1){
-      initAnimInfo(walAnim,1);
-      if(walAnim.animind==0) {
-         cerr << "hello, computer?" << endl;
-         walAnim.animind = 1;
-      }
+      initAnimInfo(&walAnim,1);
       walAnim.max_time = 1.0/fred->md5anim[1].frameRate;
    }
-   cerr << "hello?" << endl;
+   initAnimInfo(&eneAnim,0);
+
 }
 
 int main( int argc, char** argv ) {
@@ -1711,6 +1575,8 @@ int main( int argc, char** argv ) {
   angle = 0;
   theta = 0;
 
+  float shift = 1.0f;
+
   if(TOP_VIEW == 1) {
 	  eyex=0;
       eyey=75;
@@ -1719,15 +1585,14 @@ int main( int argc, char** argv ) {
   else {
     eyex = 0;
     eyey = 5;//4.33;
-    eyez = 3.5;//5;
+    eyez = 3.5+shift;//5;
   }
   LAx = 0;
   LAy = 0;
-  LAz = 0;
+  LAz = shift;
 
   player = new playerstate_t(worldtime);
   player->_hp = 100;
-  player->_mp = 100;
   fbtim = -1;
   explo = false;
 
@@ -1755,44 +1620,25 @@ int main( int argc, char** argv ) {
 	// Prentice says a vector is overkill for holding textures, but I'll do it for now
 	textures.clear();
 	unsigned int crateTexture;
-
-	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
-	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false); //0
+	//crateTexture = BindTextureBMP((char *)"crate.bmp", false); //same file, different location -Seth
+	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false);
 	textures.push_back(crateTexture);
-	unsigned int partTexture = init_particletex(); //1
+	unsigned int partTexture = init_particletex();
 	textures.push_back(partTexture);
 
   unsigned int tileTexture; 
-  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true); //2
+  //tileTexture = BindTextureBMP((char *)"images.bmp", true);
+  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
   textures.push_back(tileTexture);
 
   unsigned int waterTexture;
-  waterTexture = BindTextureBMP((char *)"../../../resources/textures/water.bmp", true); //3
+  waterTexture = BindTextureBMP((char *)"../../../resources/textures/water.bmp", true);
+  //waterTexture = BindTextureBMP((char *)"water.bmp", true);
   textures.push_back(waterTexture);
 
   unsigned int fireTexture;
-  fireTexture = BindTextureBMP((char *)"../../../resources/textures/fireball.bmp", true); //4
+  fireTexture = BindTextureBMP((char *)"../../../resources/textures/fireball.bmp", true);
   textures.push_back(fireTexture);
-
-  unsigned int rapidTexture;
-  rapidTexture = BindTextureBMP((char *)"../../../resources/textures/rapid1.bmp", true); //5
-  textures.push_back(rapidTexture);
-
-  unsigned int crate1Texture;
-  crate1Texture = BindTextureBMP((char *)"../../../resources/textures/crate1.bmp", true); //6
-  textures.push_back(crate1Texture);
-
-  unsigned int fistTexture;
-  fistTexture = BindTextureBMP((char *)"../../../resources/textures/fist.bmp", true); //7
-  textures.push_back(fistTexture);
-
-  unsigned int noxTexture;
-  noxTexture = BindTextureBMP((char *)"../../../resources/textures/wood3.bmp", true); //8
-  textures.push_back(noxTexture);
-
-  unsigned int patternTexture;
-  patternTexture = BindTextureBMP((char *)"../../../resources/textures/palm.bmp", true); //9
-  textures.push_back(patternTexture);
 
   for(int i = 0; i < 10; i++){
 	  crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
@@ -1800,7 +1646,7 @@ int main( int argc, char** argv ) {
   }
   for(int i=0;i<10;i++) {
 	  double px = crates[i]->_pos.x();
-	  double pz = crates[i]->_pos.y();
+	  double pz = -(crates[i]->_pos.y());
 	  crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
   }
 
