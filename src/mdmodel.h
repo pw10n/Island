@@ -1,5 +1,5 @@
 #pragma once
-#include <GL/glut.h>
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +7,7 @@
 #include <math.h>
 #include "md5model.h"
 #include "texture.h"
-
+#include <GL/glut.h>
 #define MAX_ANIMS 2
 
 class mdmodel

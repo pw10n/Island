@@ -218,7 +218,7 @@ void init_ai(){
 		playerstate_t temp(0);
 		temp._tick = 0;
 		temp._hp = 10;
-		temp._mp = 0;
+		temp._mp = 200;
 		temp._weapon = 0;
 		temp._state = PSTATE_AI_SEARCHING;
 		temp._score = 0;
@@ -489,6 +489,10 @@ void pos_light() {
 }
 
 void spawnFireball(){
+	if (player->_mp<10) {
+		return;
+	}
+	fbtim = 0;
 	double fbx = -sin(theta);
 	double fbz = -cos(theta);
 	coord2d_t dummy;
@@ -497,6 +501,12 @@ void spawnFireball(){
 	for(int i=0;i<200;i++){
 		fbpar.push_back(new fireball_p(fbsrc));
 	}
+	if (player->_mp>=10) {
+		player->_mp -= 10;
+		
+	}
+
+
 }
 
 void detonate(source * ws, bool splin){
@@ -525,13 +535,21 @@ void detonate(source * ws, bool splin){
 }
 
 void rapid(playerstate_t& player){
+	if (player._mp<5){
+		return;
+	}
 	if(rfpar.size()<100&&rfire==0){
 		coord2d_t dummy;
 		dummy = player.calcHotSpot(dummy,.6);
 		double vx = -sin(player._vel.x())*.6;
 		double vz = -cos(player._vel.x())*.6;
 		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
+		if (player._mp>=5) {
+			player._mp -= 5;
+			
+		}
 	}
+
 }
 
 void reshape(int w, int h) {
@@ -1015,7 +1033,7 @@ void displayHud(){
 
 	glColor3f(0.0, 0.0, .5);
 	glPushMatrix();
-	glTranslatef(GW-40, GH + 100 + (200*(-player->_mp/100.0)), 0); // blue mana bar
+	glTranslatef(GW-40, GH + 100 + (200*(-player->_mp/200.0)), 0); // blue mana bar
 	drawBar();
 	glPopMatrix();
 
@@ -1498,7 +1516,7 @@ void keyboard(unsigned char key, int x, int y ){
 		rapid(*player);
 		break;
 	case 's': case 'S' :
-		if(fbtim<0) {spawnFireball(); fbtim = 0;}
+		if(fbtim<0) {spawnFireball();}
 		break;
 	case 'f': case 'F' :
 		beatim = 5;
@@ -1520,13 +1538,15 @@ void keyboard(unsigned char key, int x, int y ){
 		printf("sizeof exsrc: %d\n", sizeof(*exsrc));
 		break;
 	case 'd': case 'D' :
-
-		crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
-		
-		crates.push_back(temp);
-		double px = crates[crates.size()-1]->_pos.x();
-		double pz = crates[crates.size()-1]->_pos.y();
-		crates[crates.size()-1]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+		if (player->_mp>=25) {
+			crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),-(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
+			
+			crates.push_back(temp);
+			double px = crates[crates.size()-1]->_pos.x();
+			double pz = crates[crates.size()-1]->_pos.y();
+			crates[crates.size()-1]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+			player->_mp -= 25;
+		}
 		break;
 
   }
@@ -1661,14 +1681,14 @@ void tick(int state) {
 
 void initModel(){
    unsigned int rupTexture; 
-  rupTexture = BindTextureBMP((char *)"rupee2.bmp", false);
+  rupTexture = BindTextureBMP((char *)"../../../resources/textures/rupee2.bmp", false);
   //tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
-   fred = new mdmodel("hero.md5mesh","hero_idle.md5anim",rupTexture);
+   fred = new mdmodel("../../../resources/model/hero.md5mesh","../../../resources/model/hero_idle.md5anim",rupTexture);
    initAnimInfo(idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
-   if(fred->loadAnim("hero_walk.md5anim")!=-1){
+   if(fred->loadAnim("../../../resources/model/hero_walk.md5anim")!=-1){
       initAnimInfo(walAnim,1);
       if(walAnim.animind==0) {
          cerr << "hello, computer?" << endl;
@@ -1677,6 +1697,16 @@ void initModel(){
       walAnim.max_time = 1.0/fred->md5anim[1].frameRate;
    }
    cerr << "hello?" << endl;
+}
+
+void mana(int pass) {
+	if (player->_mp<=195) {
+		player->_mp+=5;
+	}
+	else {
+		player->_mp = 200;
+	}
+	glutTimerFunc(1000, mana,0);
 }
 
 int main( int argc, char** argv ) {
@@ -1727,7 +1757,7 @@ int main( int argc, char** argv ) {
 
   player = new playerstate_t(worldtime);
   player->_hp = 100;
-  player->_mp = 100;
+  player->_mp = 200;
   fbtim = -1;
   explo = false;
 
@@ -1743,6 +1773,7 @@ int main( int argc, char** argv ) {
   glutPassiveMotionFunc(processMousePassiveMotion);
   glutMotionFunc(processMouseActiveMotion);
   glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
+  glutTimerFunc(1000, mana,0);
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();
