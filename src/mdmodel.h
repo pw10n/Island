@@ -8,7 +8,7 @@
 #include <GL/glut.h>
 #include "md5model.h"
 #include "texture.h"
-
+#include <GL/glut.h>
 #define MAX_ANIMS 2
 
 class mdmodel

@@ -37,6 +37,7 @@
 #include <math.h>
 #include <GL/glut.h>
 
+#include <GL/glut.h>
 #include "md5model.h"
 
 #include "texture.h"
