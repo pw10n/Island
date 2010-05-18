@@ -1661,14 +1661,14 @@ void tick(int state) {
 
 void initModel(){
    unsigned int rupTexture; 
-  rupTexture = BindTextureBMP((char *)"rupee2.bmp", false);
+  rupTexture = BindTextureBMP((char *)"textures/rupee2.bmp", false);
   //tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
-   fred = new mdmodel("hero.md5mesh","hero_idle.md5anim",rupTexture);
+   fred = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
    initAnimInfo(idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
-   if(fred->loadAnim("hero_walk.md5anim")!=-1){
+   if(fred->loadAnim("model/hero_walk.md5anim")!=-1){
       initAnimInfo(walAnim,1);
       if(walAnim.animind==0) {
          cerr << "hello, computer?" << endl;
@@ -1679,8 +1679,9 @@ void initModel(){
    cerr << "hello?" << endl;
 }
 
+
 int main( int argc, char** argv ) {
-  
+    
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
 	bool windo = true; //true - window; false - full screen. quicker than commenting/uncommenting
@@ -1757,41 +1758,41 @@ int main( int argc, char** argv ) {
 	unsigned int crateTexture;
 
 	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
-	crateTexture = BindTextureBMP((char *)"../../../resources/textures/crate.bmp", false); //0
+	crateTexture = BindTextureBMP((char *)"textures/crate.bmp", false); //0
 	textures.push_back(crateTexture);
 	unsigned int partTexture = init_particletex(); //1
 	textures.push_back(partTexture);
 
   unsigned int tileTexture; 
-  tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true); //2
+  tileTexture = BindTextureBMP((char *)"textures/images.bmp", true); //2
   textures.push_back(tileTexture);
 
   unsigned int waterTexture;
-  waterTexture = BindTextureBMP((char *)"../../../resources/textures/water.bmp", true); //3
+  waterTexture = BindTextureBMP((char *)"textures/water.bmp", true); //3
   textures.push_back(waterTexture);
 
   unsigned int fireTexture;
-  fireTexture = BindTextureBMP((char *)"../../../resources/textures/fireball.bmp", true); //4
+  fireTexture = BindTextureBMP((char *)"textures/fireball.bmp", true); //4
   textures.push_back(fireTexture);
 
   unsigned int rapidTexture;
-  rapidTexture = BindTextureBMP((char *)"../../../resources/textures/rapid1.bmp", true); //5
+  rapidTexture = BindTextureBMP((char *)"textures/rapid1.bmp", true); //5
   textures.push_back(rapidTexture);
 
   unsigned int crate1Texture;
-  crate1Texture = BindTextureBMP((char *)"../../../resources/textures/crate1.bmp", true); //6
+  crate1Texture = BindTextureBMP((char *)"textures/crate1.bmp", true); //6
   textures.push_back(crate1Texture);
 
   unsigned int fistTexture;
-  fistTexture = BindTextureBMP((char *)"../../../resources/textures/fist.bmp", true); //7
+  fistTexture = BindTextureBMP((char *)"textures/fist.bmp", true); //7
   textures.push_back(fistTexture);
 
   unsigned int noxTexture;
-  noxTexture = BindTextureBMP((char *)"../../../resources/textures/wood3.bmp", true); //8
+  noxTexture = BindTextureBMP((char *)"textures/wood3.bmp", true); //8
   textures.push_back(noxTexture);
 
   unsigned int patternTexture;
-  patternTexture = BindTextureBMP((char *)"../../../resources/textures/palm.bmp", true); //9
+  patternTexture = BindTextureBMP((char *)"textures/palm.bmp", true); //9
   textures.push_back(patternTexture);
 
   for(int i = 0; i < 10; i++){

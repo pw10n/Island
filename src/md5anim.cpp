@@ -30,12 +30,13 @@
  * gcc -Wall -ansi -lGL -lGLU -lglut md5anim.c md5anim.c -o md5model
  */
 
-#include <GL/glut.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <GL/glut.h>
 
 #include "md5model.h"
 
