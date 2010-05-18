@@ -38,6 +38,7 @@ using namespace std;
 #define HIT_CRATE 1
 #define HIT_PLAYER 2
 #define MAP_SIZE 50 //(set as 50)Equivalent to 100x100 this is the number of sand tiles
+#define TILE_HEIGHT .01 //used for how high water tiles above 0 level
 #define TOP_VIEW 0 //Set to 1 to see birds eye view of island
 
 uint32_t worldtime=0;
@@ -923,21 +924,26 @@ void drawTiles(){
 void waterTile() {
 
   glDisable(GL_LIGHTING);
-  glColor3f(0, 0, 1);
+  glColor3f(1, 1, 1);
+
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D, textures[3]);
   glBegin(GL_QUADS);
 
 
-  //glTexCoord2f (0.0, 0.0);
-  glVertex3f(-1, .1, 1);
-  //glTexCoord2f (1, 0.0);
-  glVertex3f(-1, .1, -1);
-  //glTexCoord2f (1, 1);
-  glVertex3f(1, .1, -1);
-  //glTexCoord2f (0.0, 1);
-  glVertex3f(1, .1, 1);
+  glTexCoord2f (0.0, 0.0);
+  glVertex3f(-1, TILE_HEIGHT, 1);
+  glTexCoord2f (1, 0.0);
+  glVertex3f(-1, TILE_HEIGHT, -1);
+  glTexCoord2f (1, 1);
+  glVertex3f(1, TILE_HEIGHT, -1);
+  glTexCoord2f (0.0, 1);
+  glVertex3f(1, TILE_HEIGHT, 1);
   glEnd();
 
 
+  glDisable(GL_TEXTURE_2D);
   glEnable(GL_LIGHTING);
 }
 
@@ -948,67 +954,9 @@ void drawWaterTiles(float x, float y) {
 	glPopMatrix();
 }
 
-
-void drawWater() {
-	glDisable(GL_LIGHTING);
-	glColor3f(0, 0, 1);
-
-	//Left body of water
-	glBegin(GL_QUADS);
-	  //glTexCoord2f (0.0, 0.0);
-	  glVertex3f(-MAP_SIZE-20, 0, MAP_SIZE);
-	  //glTexCoord2f (MAP_SIZE, 0.0);
-	  glVertex3f(-MAP_SIZE-20, 0, -MAP_SIZE);
-	  //glTexCoord2f (MAP_SIZE, MAP_SIZE);
-	  glVertex3f(-MAP_SIZE, 0, -MAP_SIZE);
-	  //glTexCoord2f (0.0, MAP_SIZE);
-	  glVertex3f(-MAP_SIZE, 0, MAP_SIZE);
-	glEnd();
-
-	//Right body of water
-	glBegin(GL_QUADS);
-	  //glTexCoord2f (0.0, 0.0);
-	  glVertex3f(MAP_SIZE+20, 0, MAP_SIZE);
-	  //glTexCoord2f (MAP_SIZE, 0.0);
-	  glVertex3f(MAP_SIZE+20, 0, -MAP_SIZE);
-	  //glTexCoord2f (MAP_SIZE, MAP_SIZE);
-	  glVertex3f(MAP_SIZE, 0, -MAP_SIZE);
-	  //glTexCoord2f (0.0, MAP_SIZE);
-	  glVertex3f(MAP_SIZE, 0, MAP_SIZE);
-	glEnd();
-
-	//Top body of water
-	glBegin(GL_QUADS);
-	  //glTexCoord2f (0.0, 0.0);
-	  glVertex3f(-MAP_SIZE-20, 0, -MAP_SIZE);
-	  //glTexCoord2f (MAP_SIZE, 0.0);
-	  glVertex3f(-MAP_SIZE-20, 0, -MAP_SIZE-20);
-	  //glTexCoord2f (MAP_SIZE, MAP_SIZE);
-	  glVertex3f(MAP_SIZE+20, 0, -MAP_SIZE-20);
-	  //glTexCoord2f (0.0, MAP_SIZE);
-	  glVertex3f(MAP_SIZE+20, 0, -MAP_SIZE);
-	glEnd();
-
-	//Bottom body of water
-	glBegin(GL_QUADS);
-	  //glTexCoord2f (0.0, 0.0);
-	  glVertex3f(-MAP_SIZE-20, 0, MAP_SIZE);
-	  //glTexCoord2f (MAP_SIZE, 0.0);
-	  glVertex3f(-MAP_SIZE-20, 0, MAP_SIZE+20);
-	  //glTexCoord2f (MAP_SIZE, MAP_SIZE);
-	  glVertex3f(MAP_SIZE+20, 0, MAP_SIZE+20);
-	  //glTexCoord2f (0.0, MAP_SIZE);
-	  glVertex3f(MAP_SIZE+20, 0, MAP_SIZE);
-	glEnd();
-
-	/*for (int i=0; i<5; i+=2) {
-	  for (int j=0; j<5; j+=2) {
-	    drawWaterTiles(i, j);
-		drawWaterTiles(j, i);
-	  }
-
-	}*/
-
+void waterBlock(int angle) {
+	glPushMatrix();
+	glRotatef(angle, 0, 1, 0);
 	drawWaterTiles(1, 1);
 	drawWaterTiles(3, 1);
 	drawWaterTiles(1, 3);
@@ -1019,10 +967,113 @@ void drawWater() {
 	drawWaterTiles(3, 5);
 	drawWaterTiles(5, 3);
 
-
-
 	drawWaterTiles(7, 1);
 	drawWaterTiles(1, 7);
+	drawWaterTiles(5, 5);
+	drawWaterTiles(3, 7);
+	drawWaterTiles(7, 3);
+	drawWaterTiles(9, 1);
+	drawWaterTiles(1, 9);
+
+	drawWaterTiles(11, 1);
+	drawWaterTiles(1, 11);
+	drawWaterTiles(3, 9);
+	drawWaterTiles(9, 3);
+	drawWaterTiles(5, 7);
+	drawWaterTiles(7, 5);
+
+	drawWaterTiles(13, 1);
+	drawWaterTiles(1, 13);
+	drawWaterTiles(11, 3);
+	drawWaterTiles(3, 11);
+	drawWaterTiles(5, 9);
+	drawWaterTiles(9, 5);
+	drawWaterTiles(7, 7);
+	drawWaterTiles(7, 7);
+
+	glPopMatrix();
+}
+
+void drawWater() {
+	glDisable(GL_LIGHTING);
+	glColor3f(1, 1, 1);
+
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D, textures[3]);
+
+
+	glBegin(GL_QUADS);
+	  glTexCoord2f (0.0, 0.0);
+	  glVertex3f(-MAP_SIZE-20, -0.1, MAP_SIZE+20);
+	  glTexCoord2f (MAP_SIZE, 0.0);
+	  glVertex3f(-MAP_SIZE-20, -0.1, -MAP_SIZE-20);
+	  glTexCoord2f (MAP_SIZE, MAP_SIZE);
+	  glVertex3f(MAP_SIZE+20, -0.1, -MAP_SIZE-20);
+	  glTexCoord2f (0.0, MAP_SIZE);
+	  glVertex3f(MAP_SIZE+20, -0.1, MAP_SIZE+20);
+	glEnd();
+	/*//Left body of water
+	glBegin(GL_QUADS);
+	  glTexCoord2f (0.0, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, MAP_SIZE);
+	  glTexCoord2f (20, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, -MAP_SIZE);
+	  glTexCoord2f (20, 20);
+	  glVertex3f(-MAP_SIZE, 0, -MAP_SIZE);
+	  glTexCoord2f (0.0, 20);
+	  glVertex3f(-MAP_SIZE, 0, MAP_SIZE);
+	glEnd();
+
+	//Right body of water
+	glBegin(GL_QUADS);
+	  glTexCoord2f (0.0, 0.0);
+	  glVertex3f(MAP_SIZE+20, 0, MAP_SIZE);
+	  glTexCoord2f (20, 0.0);
+	  glVertex3f(MAP_SIZE+20, 0, -MAP_SIZE);
+	  glTexCoord2f (20, 20);
+	  glVertex3f(MAP_SIZE, 0, -MAP_SIZE);
+	  glTexCoord2f (0.0, 20);
+	  glVertex3f(MAP_SIZE, 0, MAP_SIZE);
+	glEnd();
+
+	//Top body of water
+	glBegin(GL_QUADS);
+	  glTexCoord2f (0.0, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, -MAP_SIZE);
+	  glTexCoord2f (20, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, -MAP_SIZE-20);
+	  glTexCoord2f (20, 20);
+	  glVertex3f(MAP_SIZE+20, 0, -MAP_SIZE-20);
+	  glTexCoord2f (0.0, 20);
+	  glVertex3f(MAP_SIZE+20, 0, -MAP_SIZE);
+	glEnd();
+
+	//Bottom body of water
+	glBegin(GL_QUADS);
+	  glTexCoord2f (0.0, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, MAP_SIZE);
+	  glTexCoord2f (20, 0.0);
+	  glVertex3f(-MAP_SIZE-20, 0, MAP_SIZE+20);
+	  glTexCoord2f (20, 20);
+	  glVertex3f(MAP_SIZE+20, 0, MAP_SIZE+20);
+	  glTexCoord2f (0.0, 20);
+	  glVertex3f(MAP_SIZE+20, 0, MAP_SIZE);
+	glEnd();*/
+
+	/*for (int i=0; i<5; i+=2) {
+	  for (int j=0; j<5; j+=2) {
+	    drawWaterTiles(i, j);
+		drawWaterTiles(j, i);
+	  }
+
+	}*/
+	glDisable(GL_TEXTURE_2D);
+
+	waterBlock(0);
+	waterBlock(90);
+	waterBlock(180);
+	waterBlock(270);
 	
 
 
@@ -1506,6 +1557,14 @@ int main( int argc, char** argv ) {
   unsigned int tileTexture; 
   tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
   textures.push_back(tileTexture);
+
+  unsigned int waterTexture;
+  waterTexture = BindTextureBMP((char *)"../../../resources/textures/water.bmp", true);
+  textures.push_back(waterTexture);
+
+  unsigned int fireTexture;
+  waterTexture = BindTextureBMP((char *)"../../../resources/textures/fireball.bmp", true);
+  textures.push_back(fireTexture);
 
   for(int i = 0; i < 10; i++){
 	  crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
