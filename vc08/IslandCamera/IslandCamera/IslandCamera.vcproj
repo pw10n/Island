@@ -25,6 +25,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="xcopy /S ..\..\..\resources ."
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -86,7 +87,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy /S /Y ..\..\..\resources $(OutDir)\ "
+				CommandLine="xcopy /S /Y ..\..\..\resources $(OutDir)\"
 			/>
 		</Configuration>
 		<Configuration
@@ -181,6 +182,18 @@
 				>
 			</File>
 			<File
+				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\md5anim.cpp"
+				>
+			</File>
+			<File
+				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\md5mesh.cpp"
+				>
+			</File>
+			<File
+				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\mdmodel.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\netutil.cpp"
 				>
 			</File>
@@ -208,6 +221,14 @@
 			>
 			<File
 				RelativePath="..\..\..\src\collision.h"
+				>
+			</File>
+			<File
+				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\md5model.h"
+				>
+			</File>
+			<File
+				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\mdmodel.h"
 				>
 			</File>
 			<File
@@ -244,10 +265,6 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
-			<File
-				RelativePath=".\IslandCamera.rc"
-				>
-			</File>
 		</Filter>
 		<File
 			RelativePath="..\..\..\deps\glut32.lib"
