@@ -13,6 +13,9 @@ class objectstate_t;
 class wepfirestate_t;
 
 struct gDelta_data;
+
+#define SYNCTYPE_SYNC 1
+#define SYNCTYPE_DELTA 2
 struct psSync_data;
 
 #define GSSTATE_INACTIVE 0
@@ -101,7 +104,7 @@ class playerstate_t: public netobj{
 	  //network functions:
       int serialize_delta(char* buf, int sz){cerr << "TODO" << endl; return 0;};
 	  int serialize_sync(char* buf, int sz) ;
-      int sync(char* buf, int sz) {return 0;};
+      int sync(char* buf, int sz);
 };
 
 #define OBJECTSTATE_CRATE 0
@@ -261,7 +264,8 @@ struct gsSync_data{
 #define PLAYERSTATE_MAXABILITY 5
 #endif
 
-struct psSync_data{ //33
+struct psSync_data{ //34
+	uint8_t _synctype; //=SYNC 1
 	uint32_t _tick; //4
 	uint16_t _id; //2
 	uint8_t _hp; //1

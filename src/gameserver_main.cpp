@@ -34,6 +34,13 @@ void tick(int i){
 	glutTimerFunc(30,&tick,0);
 }
 
+//for network sync (1s)
+void sync_timer(int time){
+	
+
+	glutTimerFunc(1000,&sync_timer,0);
+}
+
 void display(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -62,6 +69,7 @@ int main( int argc, char* argv[]){
 	cerr << "INFO: initializing callbacks" << endl;
 	glutTimerFunc(30,&tick,0);
 	glutTimerFunc(1000,&refresh,0);
+	glutTimerFunc(1000,&sync_timer,0);
 
 	glutKeyboardFunc(&keyboard);
 

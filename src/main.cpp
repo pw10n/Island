@@ -584,6 +584,7 @@ void tick(int state) {
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
 
+
 int main( int argc, char** argv ) {
   
 

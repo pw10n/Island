@@ -143,6 +143,7 @@ void playerstate_t::change_velocity(double nVx, double nVy){
 //<<<<<<< HEAD:src/netutil.cpp
 int playerstate_t::serialize_sync(char* buf, int sz) {
 	psSync_data* ptr = (psSync_data*) (buf);
+	ptr->_synctype = SYNCTYPE_SYNC;
 	ptr->_tick = _tick;
 	ptr->_id = _id;
 	ptr->_hp = _hp;
@@ -168,6 +169,28 @@ int playerstate_t::serialize_sync(char* buf, int sz) {
 	return 0;
 };
 //=======
+
+int playerstate_t::sync(char* buf, int sz){
+	if((*(uint8_t*)(buf)) == SYNCTYPE_SYNC){
+		cerr << "DEBUG: syncing playerstate." << endl;
+		psSync_data* data = (psSync_data *) buf;
+		_tick = data->_tick;
+		_id = data->_id;
+		_hp = data->_hp;
+		_mp = data->_mp;
+		for(int i=0; i<PLAYERSTATE_MAXABILITY; ++i)
+			 _ability[i] = data->_ability[i];
+		_weapon = data->_weapon;
+		_pos.x() = data->_pos_x;
+		_pos.y() = data->_pos_y;
+		_vel.x() = data->_vel_x;
+		_vel.y() = data->_vel_y;
+		_state = data->_state;
+		_score = data->_score;
+	}
+	return 0;
+}
+
 void objectstate_t::setType(uint8_t type){
 	_type = type;
 }
