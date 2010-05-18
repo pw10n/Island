@@ -433,6 +433,8 @@ void mouse(int button, int state, int x, int y) {
 			else if(fbtim<0) {spawnFireball(); fbtim = 0;}
 		}
 	}
+
+	gClient.setPlayerMove(vel);
 }
 
 void processMousePassiveMotion(int x, int y) {
@@ -466,7 +468,7 @@ void processMousePassiveMotion(int x, int y) {
 		
 	angle=theta*(180.0f / M_PI);
 	vel.x() = theta;
-	
+	gClient.setPlayerMove(vel);
 	
   glutPostRedisplay();
 
@@ -506,6 +508,7 @@ void processMouseActiveMotion(int x, int y) {
 	//myZ += cos(theta);
 
 	vel.x() = theta;
+	gClient.setPlayerMove(vel);
 
   glutPostRedisplay();
 
@@ -584,6 +587,14 @@ void tick(int state) {
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
 
+void net_rxtx(int i){
+	gClient.tickRcv();
+	glutTimerFunc(WORLD_TIME_RESOLUTION,&net_rxtx,0);
+}
+
+void net_fast(int i){
+	glutTimerFunc(5,&net_fast,0);
+}
 
 int main( int argc, char** argv ) {
   
@@ -651,6 +662,8 @@ int main( int argc, char** argv ) {
   glutPassiveMotionFunc(processMousePassiveMotion);
   glutMotionFunc(processMouseActiveMotion);
   glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
+  glutTimerFunc(WORLD_TIME_RESOLUTION,&net_rxtx,0);
+  glutTimerFunc(5,&net_fast,0);
   glEnable(GL_DEPTH_TEST);
 
   init_lighting();

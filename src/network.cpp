@@ -17,7 +17,7 @@
 
 using namespace std;
 
-client::client(): _state(CLIENT_DISCONNECT), _cSocket(INVALID_SOCKET){}
+client::client(): _state(CLIENT_DISCONNECT), _cSocket(INVALID_SOCKET), _me(0), _flagMoved(false){}
 
 client::~client(){
 	if( _state != CLIENT_DISCONNECT){
@@ -100,6 +100,93 @@ int client::recvBuf(char * buf, int len){
 		throw gException("recv failed.");
 	}
 	return retval;
+}
+
+void client::tickRcv(){
+	cerr << "DEBUG: tickRcv()..." << endl;
+	struct timeval timeout;
+	fd_set socks;
+	int readsocks;
+	FD_ZERO(&socks);
+	FD_SET(_cSocket, &socks);
+
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	readsocks = select(0,&socks,NULL,NULL,&timeout);
+
+	if (FD_ISSET(_cSocket, &socks)){
+		cerr << "DEBUG: got data" << endl;
+		int result=0;
+		char buf[MAX_PKTSZ];
+		
+		//read
+		if(SOCKET_ERROR ==
+			(result = recv(_cSocket, buf, MAX_PKTSZ, 0))){
+			closesocket(_cSocket);
+			//WSACleanup();
+			_state = CLIENT_DISCONNECT;
+			_cSocket = INVALID_SOCKET;
+			//throw gException("recv failed.");
+		}
+		else {
+			//check then process
+			if( ((pkt_header*)(buf))->start != '#' ){
+				cerr << "DEBUG: bad packet, nacking" << endl;
+				char ackbuf[1024];
+				int acksz = 0;
+				acksz = make_ack(ackbuf, 1024, NET_NACK,SEQ_INVALID_PKT);
+				send(_cSocket, ackbuf, acksz, 0);
+			}
+			else if( !verify_checksum(buf, result) ){
+				cerr << "DEBUG: checksum failed, nacking" << endl;
+				char ackbuf[1024];
+				int acksz = 0;
+				acksz = make_ack(ackbuf, 1024, NET_NACK,((pkt_header*)(buf))->seq);
+				send(_cSocket, ackbuf, acksz, 0);
+			}
+			else{
+				cerr << "DEBUG: checks passed, processing..." << endl;
+				//TODO process(buf); //process packet
+				playerChangeMove_data* mvPtr;
+				psSync_data* psSyncPtr;
+				bool found = false;
+				switch(((pkt_header*)(buf))->type){
+					case PKT_SYNC_PLAYERSTATE:
+						cerr << "DEBUG: got PKT_SYNC_PLAYERSTATE" << endl;
+						psSyncPtr = (psSync_data*)(buf+sizeof(pkt_header));
+						found = false;
+						// find player in player list
+						for(vector<playerstate_t*>::iterator it = _gObj->_players.begin();
+						it != _gObj->_players.end();
+						++it){
+							if ((*it)->_id == mvPtr->_id){
+								found=true;
+								(*it)->sync((char*)psSyncPtr, sizeof(psSync_data));
+								break;
+							}
+						}
+
+						// if not found, add to end
+						if (!found){
+							// TODO: need to check what type of player
+							playerstate_t* nPlayer = new playerstate_t(psSyncPtr);
+							cerr << "DEBUG: New playerstate... " << endl;
+							cerr << nPlayer->_id << " " << (int) nPlayer->_state << endl;
+							_gObj->_players.push_back(nPlayer);
+						}
+
+						// TODO: forward this change to clients
+						//sendBuf(buf, result);
+						break;
+
+					default:
+						//cerr << "GOT: " << ((pkt_header*)(buf))->type << endl;
+						break;
+				}
+			}
+		}
+	}
+			
 }
 
 
@@ -281,7 +368,8 @@ void server::tickRcv(){
 	for(vector<cInfo>::iterator it = _clients.begin();
 		it != _clients.end();
 		++it){
-			FD_SET((*it).cSocket, &socks);
+			if((*it).state != CLIENT_DISCONNECT)
+				FD_SET((*it).cSocket, &socks);
 	}
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
@@ -316,14 +404,14 @@ void server::tickRcv(){
 					char ackbuf[1024];
 					int acksz = 0;
 					acksz = make_ack(ackbuf, 1024, NET_NACK,SEQ_INVALID_PKT);
-					send((*it).cSocket, ackbuf, acksz, 0);
+					//send((*it).cSocket, ackbuf, acksz, 0);
 				}
 				else if( !verify_checksum(buf, result) ){
 					cerr << "DEBUG: checksum failed, nacking" << endl;
 					char ackbuf[1024];
 					int acksz = 0;
 					acksz = make_ack(ackbuf, 1024, NET_NACK,((pkt_header*)(buf))->seq);
-					send((*it).cSocket, ackbuf, acksz, 0);
+					//send((*it).cSocket, ackbuf, acksz, 0);
 				}
 				else{
 					cerr << "DEBUG: checks passed, processing..." << endl;
@@ -376,7 +464,7 @@ void server::tickRcv(){
 							}
 
 							// TODO: forward this change to clients
-
+							sendBuf(buf, result);
 							break;
 
 						default:

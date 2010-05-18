@@ -38,6 +38,8 @@ class client: public connection{
 	SOCKET _cSocket;
 	int _state;
 	gamestate_t* _gObj;
+	int _me;
+	bool _flagMoved;
 
 public:
 	client();
@@ -50,7 +52,31 @@ public:
 	void change_velocity(double nVx, double nVy);
 	void change_velocity(coord2d_t nV);
 
-	void addPlayer(playerstate_t *player){
+	void flagPlayerMove(){
+		_flagMoved = true;
+	}
+
+	void setPlayerMove(coord2d_t v){
+		char buf[1024];
+		playerChangeMove_data* ptr;
+		((pkt_header*)(buf))->start = '#';
+		((pkt_header*)(buf))->type = PKT_PLAYER_MOVE;
+		((pkt_header*)(buf))->clientid = 0;
+		((pkt_header*)(buf))->serverid = 0; //TODO
+		((pkt_header*)(buf))->checksum = 0;
+		((pkt_header*)(buf))->length = sizeof(pkt_header)+sizeof(playerChangeMove_data);
+		((pkt_header*)(buf))->seq = 0; //TODO
+
+		ptr = (playerChangeMove_data*) (buf+sizeof(pkt_header));
+		ptr->_id = 0;
+		ptr->_vel_x = v.x();
+		ptr->_vel_y = v.y();
+
+		((pkt_header*)(buf))->checksum = calcAddSum(buf, sizeof(pkt_header)+sizeof(playerChangeMove_data));
+		sendBuf(buf,sizeof(pkt_header)+sizeof(playerChangeMove_data));
+	}
+
+	void addPlayer(playerstate_t *player, bool isMe=false){
 		char buf[1024];
 		
 		psSync_data* ptr;
@@ -59,7 +85,7 @@ public:
 		((pkt_header*)(buf))->clientid = 0;
 		((pkt_header*)(buf))->serverid = 0; //TODO
 		((pkt_header*)(buf))->checksum = 0;
-		((pkt_header*)(buf))->length = 0;
+		((pkt_header*)(buf))->length = sizeof(pkt_header)+sizeof(psSync_data);
 		((pkt_header*)(buf))->seq = 0; //TODO
 		player->serialize_sync(buf+sizeof(pkt_header),1024-sizeof(pkt_header));
 
@@ -68,7 +94,10 @@ public:
 
 		((pkt_header*)(buf))->checksum = calcAddSum(buf, sizeof(pkt_header)+sizeof(psSync_data));
 		sendBuf(buf,sizeof(pkt_header)+sizeof(psSync_data));
+		if (isMe) _me = player->_id;
 	}
+
+	void tickRcv();
 
 	int sendBuf(char*, int);
 	int recvBuf(char*, int);
