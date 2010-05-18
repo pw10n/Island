@@ -164,7 +164,8 @@ vector<unsigned int> textures;
 vector<objectstate_t*> crates;
 
 mdmodel* fred;
-struct anim_info_t idlAnim, walAnim;
+mdmodel* enemy;
+struct anim_info_t idlAnim, walAnim, eneAnim;
 
 
 float p2w_x(int x) {
@@ -190,6 +191,7 @@ void damage(uint8_t *target, int dam){
 }
 
 void drawCharacter();
+bool cull(const coord2d_t);
 
 ////// dummy ai functions for 25% /////////
 /*
@@ -281,6 +283,7 @@ void drawAi(){
 		it != others.end();
 		++it)
 	{
+		if(cull((*it)._pos)) continue;
 		glPushMatrix();
 		//translate
 		glTranslatef((*it)._pos.x(), 0.2, -(*it)._pos.y());
@@ -617,7 +620,7 @@ void drawCharacter(){
 
 	glTranslatef(0.0, 0.25, 0.0);
 
-	glutSolidCone(0.3,1.0,20,20);
+	enemy->draw(eneAnim);
 
 	glPopMatrix();
 }
@@ -704,8 +707,9 @@ void drawCrates(){
 	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
 	// "front"
 	for(unsigned int i = 0; i < crates.size(); i++){
+		if(cull(crates[i]->_pos)) continue;
 		glPushMatrix();
-		glTranslatef(crates[i]->_pos.x(),0,crates[i]->_pos.y());
+		glTranslatef(crates[i]->_pos.x(),0,-crates[i]->_pos.y());
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
 		glVertex3f (-.5, 0.0, 0.5);
@@ -1147,6 +1151,8 @@ void waterTile() {
 }
 
 void drawWaterTiles(float x, float y) {
+	coord2d_t pos; pos.x() = x; pos.y() = -y;
+	if(cull(pos)) return;
 	glPushMatrix();
 	  glTranslatef(-MAP_SIZE+x, 0, MAP_SIZE-y);
 	  waterTile();
@@ -1280,7 +1286,12 @@ void drawWater() {
 	glEnable(GL_LIGHTING);
 }
 
-
+/*returns true if it needs be culled*/
+bool cull(coord2d_t pos){
+	//return false; 
+	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
+	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
+}
 
 void display() {
   static int frame=0;
@@ -1418,7 +1429,7 @@ void processMousePassiveMotion(int x, int y) {
 	//float theta = 0;
 	x -= GW/2;
 	x *= .5;
-	y -= GH/2;
+	y -= GH/2 - 50;
 	
 	//        0  dir
 	//        | /
@@ -1454,7 +1465,7 @@ void processMouseActiveMotion(int x, int y) {
 	//float theta = 0;
 	x -= GW/2;
 	x *= .5;
-	y -= GH/2;
+	y -= GH/2 - 50;
 	
 	//        0  dir
 	//        | /
@@ -1683,20 +1694,18 @@ void tick(int state) {
 void initModel(){
    unsigned int rupTexture; 
   rupTexture = BindTextureBMP((char *)"textures/rupee2.bmp", false);
-  //tileTexture = BindTextureBMP((char *)"../../../resources/textures/images.bmp", true);
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
    fred = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
-   initAnimInfo(idlAnim,0);
+   initAnimInfo(&idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
    if(fred->loadAnim("model/hero_walk.md5anim")!=-1){
-      initAnimInfo(walAnim,1);
-      if(walAnim.animind==0) {
-         cerr << "hello, computer?" << endl;
-         walAnim.animind = 1;
-      }
+      initAnimInfo(&walAnim,1);
       walAnim.max_time = 1.0/fred->md5anim[1].frameRate;
    }
+   //enemy = new mdmodel("model/characterModel.md5mesh",NULL,rupTexture);
+   enemy = new mdmodel("model/rupee.md5mesh",NULL,rupTexture);
+   initAnimInfo(&eneAnim,0);
    cerr << "hello?" << endl;
 }
 
@@ -1742,6 +1751,8 @@ int main( int argc, char** argv ) {
   angle = 0;
   theta = 0;
 
+  float shift = 1.0f;
+
   if(TOP_VIEW == 1) {
 	  eyex=0;
       eyey=75;
@@ -1750,11 +1761,11 @@ int main( int argc, char** argv ) {
   else {
     eyex = 0;
     eyey = 5;//4.33;
-    eyez = 3.5;//5;
+    eyez = 3.5+shift;//5;
   }
   LAx = 0;
   LAy = 0;
-  LAz = 0;
+  LAz = shift;
 
   player = new playerstate_t(worldtime);
   player->_hp = 100;
@@ -1832,7 +1843,7 @@ int main( int argc, char** argv ) {
   }
   for(int i=0;i<10;i++) {
 	  double px = crates[i]->_pos.x();
-	  double pz = crates[i]->_pos.y();
+	  double pz = -(crates[i]->_pos.y());
 	  crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
   }
 
