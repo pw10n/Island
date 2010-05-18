@@ -216,6 +216,7 @@ forward in the last direction it was facing.
 void init_ai(){
 	for(int i=0; i<10; ++i){
 		playerstate_t temp(0);
+		temp._id = 1;
 		temp._tick = 0;
 		temp._hp = 10;
 		temp._mp = 200;
@@ -544,7 +545,7 @@ void rapid(playerstate_t& player){
 		double vx = -sin(player._vel.x())*.6;
 		double vz = -cos(player._vel.x())*.6;
 		rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
-		if (player._mp>=5) {
+		if (player._mp>=5 && player._id == 0) {
 			player._mp -= 5;
 			
 		}
