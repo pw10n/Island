@@ -50,8 +50,8 @@ uint32_t worldtime=0;
 
 int hit_damage = 10;
 
-#define MIN(x,y) (x>y)?y:x
-#define MAX(x,y) (x>y)?x:y
+#define MIN(x,y) ((x>y)?y:x)
+#define MAX(x,y) ((x>y)?x:y)
 
 typedef struct materialStruct {
   GLfloat ambient[4];
