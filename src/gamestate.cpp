@@ -31,6 +31,12 @@ void gamestate::draw(){
 		return;
 	_lastDrawn = _tick;
 
+	for(vector<objectstate*>::iterator it = _objects.begin();
+		it != _objects.end(); it++){
+			if(!cull((*it)->_pos))
+				(*it)->draw();
+	}
+
 	//TODO: do stuff
 }
 
