@@ -18,18 +18,23 @@ class objectstate;
 
 class gamestate{
 public:
-	gamestate(int time);
+	gamestate();
 	~gamestate();
-
+	
+	playerstate* player;
 	vector<playerstate*> _enemies;
 	vector<objectstate*> _objects;
 
 	uint32_t _tick;
 	uint8_t _state;
 
+	uint32_t _lastDrawn;
 
+	void start(int time);
 	void draw();
 	void tick(uint32_t time);
+
+	bool cull(coord2d_t pos);
 
 	void addEnemy(playerstate* e);
 	void addObject(objectstate* o);
@@ -76,4 +81,5 @@ public:
 	coord2d_t _pos;
 	bbody body; //used for collision detection
 
+	virtual void draw() = 0;
 };

@@ -21,6 +21,8 @@
 #include "md5model.h"
 #include "mdmodel.h"
 
+#include "gamestate.h"
+
 //#include <cstdio>
 //#include <cstdlib>
 #include <ctime>
@@ -111,7 +113,16 @@ materialStruct Sand = {
 coord2d_t vel;
 playerstate_t* player;
 vector<playerstate_t> others;
+
+gamestate* gs;
 //objectstate_t crates[5];
+
+
+bool cull(coord2d_t pos){
+	//return false; 
+	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
+	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
+}
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -1362,12 +1373,7 @@ void drawWater() {
 	glEnable(GL_LIGHTING);
 }
 
-/*returns true if it needs be culled*/
-bool cull(coord2d_t pos){
-	//return false; 
-	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
-	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
-}
+
 
 #if 0
 //vfog ext
@@ -1391,47 +1397,48 @@ int Extension_Init()
 }
 #endif
 
+void gsDisplay(){
+	if (!gs){
+		//TODO: uninit
+	}
+	else{
+		if(gs->_state != GSSTATE_ACTIVE){
+			gs->draw();
+		}
+		else{
+			//TODO: not active
+		}
+	}
+}
 
 void display() {
   static int frame=0;
   static int lasttime=0;
   
-  
   int time = glutGet(GLUT_ELAPSED_TIME);
-
-
   
   ++frame;
 
   if (time - lasttime > 1000){
-    fps = frame*1000.0/(time-lasttime);
+    fps = frame * 1000.0/((float)(time-lasttime));
     lasttime = time;
     frame = 0;
   }
 
-
-
-
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
- 
+
 
   glMatrixMode(GL_MODELVIEW);
 
 
-
-  glPushMatrix();
+  glPushMatrix();  
   
-
-
-
   setOrthoProjection();
   glPushMatrix();
 	glLoadIdentity();
   
 
     displayHud();
-
-
 
     glPushMatrix();
 
@@ -1477,6 +1484,9 @@ void display() {
     glPushMatrix();
 
 
+	glPushMatrix();
+	gsDisplay();
+	glPopMatrix();
 
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
         glRotatef(angle, 0, 1, 0);
@@ -1873,6 +1883,8 @@ void mana(int pass) {
 	glutTimerFunc(1000, mana,0);
 }
 
+
+
 int main( int argc, char** argv ) {
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
@@ -1955,6 +1967,9 @@ int main( int argc, char** argv ) {
   init_lighting();
   init_ai();
   initModel();
+
+  gs = new gamestate();
+
   glEnable(GL_LIGHTING);
 
 	// loading textures

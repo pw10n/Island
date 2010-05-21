@@ -1,8 +1,8 @@
 
 #include "gamestate.h"
 
-gamestate::gamestate(int time) :
-_tick(time), _state(GSSTATE_INACTIVE) {
+gamestate::gamestate() :
+_tick(0), _lastDrawn(0), _state(GSSTATE_INACTIVE) {
 
 }
 
@@ -18,11 +18,27 @@ gamestate::~gamestate(){
 	}
 }
 
+void gamestate::start(int time){
+	
+}
+
 void gamestate::draw(){
 	if(GSSTATE_ACTIVE != _state)
 		return;
 
+	// prevent redrawing when nothing has changed
+	if(_lastDrawn == _tick)
+		return;
+	_lastDrawn = _tick;
+
 	//TODO: do stuff
+}
+
+/*returns true if it needs be culled*/
+bool gamestate::cull(coord2d_t pos){
+	//return false; 
+	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
+	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
 }
 
 void gamestate::tick(uint32_t time){
