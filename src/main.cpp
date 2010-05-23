@@ -21,6 +21,8 @@
 #include "md5model.h"
 #include "mdmodel.h"
 
+#include "gamestate.h"
+
 //#include <cstdio>
 //#include <cstdlib>
 #include <ctime>
@@ -50,8 +52,8 @@ uint32_t worldtime=0;
 
 int hit_damage = 10;
 
-#define MIN(x,y) (x>y)?y:x
-#define MAX(x,y) (x>y)?x:y
+#define MIN(x,y) ((x>y)?y:x)
+#define MAX(x,y) ((x>y)?x:y)
 
 typedef struct materialStruct {
   GLfloat ambient[4];
@@ -111,7 +113,16 @@ materialStruct Sand = {
 coord2d_t vel;
 playerstate_t* player;
 vector<playerstate_t> others;
+
+gamestate* gs;
 //objectstate_t crates[5];
+
+
+bool cull(coord2d_t pos){
+	//return false; 
+	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
+	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
+}
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -170,6 +181,17 @@ mdmodel* fred;
 mdmodel* enemy;
 struct anim_info_t idlAnim, walAnim, eneAnim;
 
+#if 0
+// Variables Necessary For FogCoordfEXT
+#define GL_FOG_COORDINATE_SOURCE_EXT	0x8450					// Value Taken From GLEXT.H
+#define GL_FOG_COORDINATE_EXT		0x8451					// Value Taken From GLEXT.H
+
+typedef void (APIENTRY * PFNGLFOGCOORDFEXTPROC) (GLfloat coord);		// Declare Function Prototype
+
+PFNGLFOGCOORDFEXTPROC glFogCoordfEXT = NULL;					// Our glFogCoordfEXT Function
+GLfloat	fogColor[4] = {0.6f, 0.3f, 0.0f, 1.0f};					// Fog Colour 
+
+#endif
 
 float p2w_x(int x) {
   float x1;
@@ -679,7 +701,7 @@ void drawCharacter(){
 	glTranslatef(0.0, 0.25, 0.0);
 
 	enemy->draw(eneAnim);
-
+	
 	glPopMatrix();
 }
 
@@ -1351,53 +1373,72 @@ void drawWater() {
 	glEnable(GL_LIGHTING);
 }
 
-/*returns true if it needs be culled*/
-bool cull(coord2d_t pos){
-	//return false; 
-	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
-	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
+
+
+#if 0
+//vfog ext
+int Extension_Init()
+{
+	char Extension_Name[] = "EXT_fog_coord";
+
+	// Allocate Memory For Our Extension String
+	char* glextstring=(char *)malloc(strlen((char *)glGetString(GL_EXTENSIONS))+1);
+	strcpy (glextstring,(char *)glGetString(GL_EXTENSIONS));		// Grab The Extension List, Store In glextstring
+
+	if (!strstr(glextstring,Extension_Name))				// Check To See If The Extension Is Supported
+		return FALSE;							// If Not, Return FALSE
+
+	free(glextstring);	
+	// Free Allocated Memory
+	// Setup And Enable glFogCoordEXT
+	glFogCoordfEXT = (PFNGLFOGCOORDFEXTPROC) wglGetProcAddress("glFogCoordfEXT");
+
+	return true;
+}
+#endif
+
+void gsDisplay(){
+	if (!gs){
+		//TODO: uninit
+	}
+	else{
+		if(gs->_state != GSSTATE_ACTIVE){
+			gs->draw();
+		}
+		else{
+			//TODO: not active
+		}
+	}
 }
 
 void display() {
   static int frame=0;
   static int lasttime=0;
   
-  
   int time = glutGet(GLUT_ELAPSED_TIME);
-
-
   
   ++frame;
 
   if (time - lasttime > 1000){
-    fps = frame*1000.0/(time-lasttime);
+    fps = frame * 1000.0/((float)(time-lasttime));
     lasttime = time;
     frame = 0;
   }
 
-
-
-
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
- 
+
 
   glMatrixMode(GL_MODELVIEW);
 
 
-
-  glPushMatrix();
+  glPushMatrix();  
   
-
-
-
   setOrthoProjection();
   glPushMatrix();
 	glLoadIdentity();
   
 
     displayHud();
-
-
 
     glPushMatrix();
 
@@ -1425,10 +1466,27 @@ void display() {
 	drawTiles();
 	drawWater();
 
+#if 0
+	// volumetric fog
+
+	glPushMatrix();
+		glBegin(GL_QUADS);							// Back Wall
+	 		glFogCoordfEXT(1.0f); glTexCoord2f(0.0f, 0.0f); glVertex3f(-2.5f,-2.5f,-15.0f);
+			glFogCoordfEXT(1.0f); glTexCoord2f(1.0f, 0.0f); glVertex3f( 2.5f,-2.5f,-15.0f);
+			glFogCoordfEXT(1.0f); glTexCoord2f(1.0f, 1.0f); glVertex3f( 2.5f, 2.5f,-15.0f);
+			glFogCoordfEXT(1.0f); glTexCoord2f(0.0f, 1.0f); glVertex3f(-2.5f, 2.5f,-15.0f);
+		glEnd();
+
+
+	glPopMatrix(); // end v fog
+#endif
 
     glPushMatrix();
 
 
+	glPushMatrix();
+	gsDisplay();
+	glPopMatrix();
 
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
         glRotatef(angle, 0, 1, 0);
@@ -1802,14 +1860,15 @@ void initModel(){
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
    fred = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
+   enemy = new mdmodel("models/characterModel.md5mesh",NULL,rupTexture);
    initAnimInfo(&idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
    if(fred->loadAnim("model/hero_walk.md5anim")!=-1){
       initAnimInfo(&walAnim,1);
       walAnim.max_time = 1.0/fred->md5anim[1].frameRate;
    }
-   //enemy = new mdmodel("model/characterModel.md5mesh",NULL,rupTexture);
-   enemy = new mdmodel("model/rupee.md5mesh",NULL,rupTexture);
+   
+   //enemy = new mdmodel("model/rupee.md5mesh",NULL,rupTexture);
    initAnimInfo(&eneAnim,0);
    cerr << "hello?" << endl;
 }
@@ -1824,21 +1883,23 @@ void mana(int pass) {
 	glutTimerFunc(1000, mana,0);
 }
 
+
+
 int main( int argc, char** argv ) {
-    
+
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
 	bool windo = true; //true - window; false - full screen. quicker than commenting/uncommenting
-  //set up my window
-  glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-  GW = 800;
-  GH = 600;
-  if(windo){
+	//set up my window
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	GW = 800;
+	GH = 600;
+	if(windo){
 		glutInitWindowSize(800, 600); 
 		glutInitWindowPosition(0, 0);
 		glutCreateWindow("Island");
-  }else{
+	}else{
 	  glutGameModeString("800x600:32");
 	  if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 		glutEnterGameMode();
@@ -1846,57 +1907,69 @@ int main( int argc, char** argv ) {
 	  else{
 		  exit(1);
 	  }
-  }
-  //glClearColor(0.0, 0.0, 0.0, 1.0);
-  glClearColor(1.0, 1.0, 1.0, 1.0);
+	}
+	//glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(1.0, 1.0, 1.0, 1.0);
 
-  myX = 0;
-  myY = 0;
-  myZ = 0;
-  angle = 0;
-  theta = 0;
+	myX = 0;
+	myY = 0;
+	myZ = 0;
+	angle = 0;
+	theta = 0;
 
-  float shift = 1.0f;
+	float shift = 1.0f;
 
-  if(TOP_VIEW == 1) {
+	if(TOP_VIEW == 1) {
 	  eyex=0;
-      eyey=75;
-      eyez=0;
-  }
-  else {
-    eyex = 0;
-    eyey = 5;//4.33;
-    eyez = 3.5+shift;//5;
-  }
-  LAx = 0;
-  LAy = 0;
-  LAz = shift;
+	  eyey=75;
+	  eyez=0;
+	}
+	else {
+	eyex = 0;
+	eyey = 5;//4.33;
+	eyez = 3.5+shift;//5;
+	}
+	LAx = 0;
+	LAy = 0;
+	LAz = shift;
 
-  player = new playerstate_t(worldtime);
-  player->_hp = 100;
-  player->_mp = 200;
-  fbtim = -1;
-  explo = false;
-  smit = false;
+	player = new playerstate_t(worldtime);
+	player->_hp = 100;
+	player->_mp = 200;
+	fbtim = -1;
+	explo = false;
+	smit = false;
 
-  srand(time(NULL));
+	srand(time(NULL));
 
+	//register glut callback functions
+	glutDisplayFunc( display );
+	glutReshapeFunc( reshape );
+	glutMouseFunc(mouse);
+	glutKeyboardFunc( keyboard );
+	glutPassiveMotionFunc(processMousePassiveMotion);
+	glutMotionFunc(processMouseActiveMotion);
+	glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
+	glutTimerFunc(1000, mana,0);
+	glEnable(GL_DEPTH_TEST);
 
-  
-  //register glut callback functions
-  glutDisplayFunc( display );
-  glutReshapeFunc( reshape );
-  glutMouseFunc(mouse);
-  glutKeyboardFunc( keyboard );
-  glutPassiveMotionFunc(processMousePassiveMotion);
-  glutMotionFunc(processMouseActiveMotion);
-  glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
-  glutTimerFunc(1000, mana,0);
-  glEnable(GL_DEPTH_TEST);
+#if 0
+	// Set Up Fog 
+	glEnable(GL_FOG);							// Enable Fog
+	glFogi(GL_FOG_MODE, GL_LINEAR);						// Fog Fade Is Linear
+	glFogfv(GL_FOG_COLOR, fogColor);					// Set The Fog Color
+	glFogf(GL_FOG_START,  0.0f);						// Set The Fog Start (Least Dense)
+	glFogf(GL_FOG_END,    1.0f);						// Set The Fog End (Most Dense)
+	glHint(GL_FOG_HINT, GL_NICEST);						// Per-Pixel Fog Calculation
+	glFogi(GL_FOG_COORDINATE_SOURCE_EXT, GL_FOG_COORDINATE_EXT);		// Set Fog Based On Vertice Coordinates
+#endif 
 
   init_lighting();
   init_ai();
   initModel();
+
+  gs = new gamestate();
+
   glEnable(GL_LIGHTING);
 
 	// loading textures
