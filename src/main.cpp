@@ -20,6 +20,9 @@
 //#include "md5anim.cpp"
 #include "md5model.h"
 #include "mdmodel.h"
+#include "objloader.h"
+
+#include "gamestate.h"
 
 //#include <cstdio>
 //#include <cstdlib>
@@ -27,6 +30,7 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+
 
 #include <GL/glut.h>
 
@@ -36,6 +40,7 @@
 #include "gameobjects.h"
 //#include "types.h"
 //#include "gs_types.h"
+
 
 using namespace std;
 
@@ -50,8 +55,8 @@ uint32_t worldtime=0;
 
 int hit_damage = 10;
 
-#define MIN(x,y) (x>y)?y:x
-#define MAX(x,y) (x>y)?x:y
+#define MIN(x,y) ((x>y)?y:x)
+#define MAX(x,y) ((x>y)?x:y)
 
 typedef struct materialStruct {
   GLfloat ambient[4];
@@ -111,7 +116,17 @@ materialStruct Sand = {
 coord2d_t vel;
 playerstate_t* player;
 vector<playerstate_t> others;
+struct obj_model_t *mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+
+gamestate* gs;
 //objectstate_t crates[5];
+
+
+bool cull(coord2d_t pos){
+	//return false; 
+	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
+	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
+}
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -625,6 +640,8 @@ void rapid(playerstate_t& player){
 
 }
 
+
+
 void reshape(int w, int h) {
   GW = w;
   GH = h;
@@ -643,10 +660,12 @@ void reshape(int w, int h) {
   }
 
   glMatrixMode(GL_MODELVIEW);
+
   glViewport(0, 0, w, h);
   
   glutPostRedisplay();
 }
+
 
 
 
@@ -1362,12 +1381,7 @@ void drawWater() {
 	glEnable(GL_LIGHTING);
 }
 
-/*returns true if it needs be culled*/
-bool cull(coord2d_t pos){
-	//return false; 
-	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
-	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
-}
+
 
 #if 0
 //vfog ext
@@ -1391,47 +1405,64 @@ int Extension_Init()
 }
 #endif
 
+void gsDisplay(){
+	if (!gs){
+		//TODO: uninit
+	}
+	else{
+		if(gs->_state != GSSTATE_ACTIVE){
+			gs->draw();
+		}
+		else{
+			//TODO: not active
+		}
+	}
+}
+
+void drawTree(double x, double y, double z) {
+
+glDisable(GL_LIGHTING);
+glEnable(GL_TEXTURE_2D);
+glColor3f(1,1,1);
+glPushMatrix();
+    glTranslatef(x, y, z);
+    RenderOBJModel (mdl);
+glPopMatrix();
+glDisable(GL_TEXTURE_2D);
+glEnable(GL_LIGHTING);
+
+}
+
+
 
 void display() {
   static int frame=0;
   static int lasttime=0;
   
-  
   int time = glutGet(GLUT_ELAPSED_TIME);
-
-
   
   ++frame;
 
   if (time - lasttime > 1000){
-    fps = frame*1000.0/(time-lasttime);
+    fps = frame * 1000.0/((float)(time-lasttime));
     lasttime = time;
     frame = 0;
   }
 
-
-
-
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
- 
+
 
   glMatrixMode(GL_MODELVIEW);
 
 
-
-  glPushMatrix();
+  glPushMatrix();  
   
-
-
-
   setOrthoProjection();
   glPushMatrix();
 	glLoadIdentity();
   
 
     displayHud();
-
-
 
     glPushMatrix();
 
@@ -1455,7 +1486,7 @@ void display() {
     glPushMatrix();
 
 
-
+  
 	drawTiles();
 	drawWater();
 
@@ -1477,6 +1508,9 @@ void display() {
     glPushMatrix();
 
 
+	glPushMatrix();
+	gsDisplay();
+	glPopMatrix();
 
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
         glRotatef(angle, 0, 1, 0);
@@ -1500,6 +1534,7 @@ void display() {
 		    //materials(Sand);
         drawGrid();
 		    //glTranslatef(-1.0,0,-1.0);
+        drawTree(1, 0, -1);
 		    drawCrates();
 		//glutSolidSphere(1.0,10,10);
 		    if(beatim>-1) besrc->draw();
@@ -1514,6 +1549,7 @@ void display() {
   glutSwapBuffers();
     
 }
+
 
 
 
@@ -1873,6 +1909,8 @@ void mana(int pass) {
 	glutTimerFunc(1000, mana,0);
 }
 
+
+
 int main( int argc, char** argv ) {
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
@@ -1915,11 +1953,11 @@ int main( int argc, char** argv ) {
 	else {
 	eyex = 0;
 	eyey = 5;//4.33;
-	eyez = 3.5+shift;//5;
+	eyez = 3.5;//+shift;//5;
 	}
 	LAx = 0;
 	LAy = 0;
-	LAz = shift;
+	LAz = 0;//shift;
 
 	player = new playerstate_t(worldtime);
 	player->_hp = 100;
@@ -1955,6 +1993,9 @@ int main( int argc, char** argv ) {
   init_lighting();
   init_ai();
   initModel();
+
+  gs = new gamestate();
+
   glEnable(GL_LIGHTING);
 
 	// loading textures
@@ -2015,7 +2056,9 @@ int main( int argc, char** argv ) {
 	  crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
   }
 
+  init("model/palmTree.obj", mdl);
 	init_particle();
+//  atexit (cleanup(test));
   
 	besrc = new beam(player); //only need one beam right now, so might as well initialize it now
   glutMainLoop();
