@@ -19,6 +19,9 @@ struct gDelta_data;
 #define GSSTATE_ACTIVE 1
 #define GSSTATE_INVALID 99
 
+#define HIT_CRATE 1
+#define HIT_PLAYER 2
+
 #ifndef GS_MAX_MAP_NAME_LEN
 #define GS_MAX_MAP_NAME_LEN 50
 #endif
@@ -27,9 +30,23 @@ using namespace std;
 class netobj{
 
    public:
+	   bbody body;  //put up here for polymorphism
+	   uint16_t _id; //gamestate.h will need a similar superclass
+	   uint8_t _hp;
+	   coord2d_t _pos;
+
+	   netobj(): _id(0), _hp(0) {};
+	   netobj(uint16_t id, uint8_t hp, coord2d_t pos): _id(id), _hp(hp), _pos(pos) {};
+	  netobj(uint16_t id, uint8_t hp, double x, double y): _id(id), _hp(hp), _pos(x,y) {};
+	  netobj(const netobj& other): _id(other._id), _hp(other._hp), _pos(other._pos) {};
+	  ~netobj() {}
+
       virtual int serialize_delta(char* buf, int sz) = 0;
 	  virtual int serialize_sync(char* buf, int sz) = 0;
       virtual int sync(char* buf, int sz) =0;
+	  virtual int hitWhat(void) const {return 0;}; //returns the HIT_* value; overwritten by subclasses
+	
+	  bool operator==(const netobj& obj) {return (_id==obj._id);}
 };
 
 
@@ -63,6 +80,7 @@ class gamestate_t: public netobj{
       int serialize_delta(char* buf, int sz) {return 0;};
 	  int serialize_sync(char* buf, int sz) {return 0;};
       int sync(char* buf, int sz) {return 0;};
+	  int hitWhat(void) const {return 0;};
 };
 
 #define PSSTATE_INIT 0
@@ -75,21 +93,22 @@ class gamestate_t: public netobj{
 class playerstate_t: public netobj{
    public:
 	  uint32_t _tick; //4
-      uint16_t _id; //2
-      uint8_t _hp; //1
+      //uint16_t _id; //2
+      //uint8_t _hp; //1
       uint8_t _mp; //1
       uint8_t _ability[PLAYERSTATE_MAXABILITY]; //1*5
       uint8_t _weapon; //1
-      coord2d_t _pos; //8
+      //coord2d_t _pos; //8
       coord2d_t _vel; //8  Radians
       uint8_t _state; //1
       uint16_t _score; //2
-	  bbody body, front; //used for collision
+	  bbody front; //used for collision
 
 	  vector<gDelta_data> _deltas;
 
 	  playerstate_t(uint32_t time);
 	  playerstate_t(const playerstate_t &player);
+	  ~playerstate_t() {}
 
 	  void tick(uint32_t time);
 	  void draw() {};
@@ -104,6 +123,7 @@ class playerstate_t: public netobj{
       int serialize_delta(char* buf, int sz) {return 0;};
 	  int serialize_sync(char* buf, int sz) {return 0;};
       int sync(char* buf, int sz) {return 0;};
+	  int hitWhat(void) const {return HIT_PLAYER;};
 };
 
 #define OBJECTSTATE_CRATE 0
@@ -112,19 +132,18 @@ class playerstate_t: public netobj{
 class objectstate_t: public netobj{
    public:
 
-      uint16_t _id;
-      uint8_t _hp;
+      //uint16_t _id;
+      //uint8_t _hp;
       uint8_t _type;
-      coord2d_t _pos;
-	  bbody body; //used for collision detection
+      //coord2d_t _pos;
+	  //bbody body; //used for collision detection
 
 	  vector<gDelta_data> _deltas;
 
-	  objectstate_t(): _id(0), _hp(0), _type(0) {};
-	  objectstate_t(uint16_t id, uint8_t hp, uint8_t type, coord2d_t pos): _id(id), _hp(hp), _type(type), _pos(pos) {};
-	  objectstate_t(uint16_t id, uint8_t hp, uint8_t type, double x, double y): _id(id), _hp(hp), _type(type), _pos(x,y) {};
-	  objectstate_t(const objectstate_t& other): _id(other._id), _hp(other._hp),
-						_type(other._type), _pos(other._pos) {};
+	  objectstate_t() {};//: _id(0), _hp(0), _type(0) {};
+	  objectstate_t(uint16_t id, uint8_t hp, uint8_t type, coord2d_t pos): netobj(id,hp,pos), _type(type) {};
+	  objectstate_t(uint16_t id, uint8_t hp, uint8_t type, double x, double y): netobj(id,hp,x,y), _type(type){};
+	  objectstate_t(const objectstate_t& other): netobj(other), _type(other._type) {};
 	  void setType(uint8_t type);
 	  void setHP(uint8_t hp);
 
@@ -134,6 +153,8 @@ class objectstate_t: public netobj{
       int serialize_delta(char* buf, int sz) {return 0;};
 	  int serialize_sync(char* buf, int sz) {return 0;};
       int sync(char* buf, int sz) {return 0;};
+	  int hitWhat(void) const {return HIT_CRATE;};
+
 };
 
 class wepfirestate_t{

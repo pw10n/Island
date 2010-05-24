@@ -32,6 +32,7 @@ fireball_s::fireball_s(double ix,double iz,double ivx,double ivz,uint16_t id)
 	body = DONTCOLLIDE; //set to prevent collision when "charging"
 	_type = PARTICLE_FIREBALL; //there's no point in having a type argument
 		//it already knows _type is PARTICLE_FIREBALL because we called fireball_s
+	_damage = 10;
 }
 
 void fireball_s::move(void)
@@ -148,7 +149,7 @@ void fireball_p::draw(void)
 
 explosion_s::explosion_s(double ix, double iz)
 {
-	pid = 0;
+	pid = 65535;
 	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t();
 	life = 4.0f;
 	fade = .5f;
@@ -158,6 +159,7 @@ explosion_s::explosion_s(double ix, double iz)
 	active = true;
 	body = bbody(_pos,(double)life,BB_CIRC);
 	_type = PARTICLE_EXPLOSION;
+	_damage = 1;
 }
 
 void explosion_s::move(void)
@@ -234,6 +236,7 @@ rapidfire::rapidfire(double ix, double iz, double ivx, double ivz, uint16_t id)
 	active = true; boom = false;
 	body = bbody(_pos,.01,BB_CIRC);
 	_type = PARTICLE_RAPID;
+	_damage = 1;
 }
 
 void rapidfire::move(void)
@@ -345,6 +348,7 @@ beam::beam(playerstate_t *pla)
 	active = true;
 	body = bbody(_pos,_pos + _vel,BB_LINE);
 	_type = PARTICLE_BEAM; //LASER!!
+	_damage = 1;
 }
 
 void beam::move(void)
@@ -382,6 +386,7 @@ smite_s::smite_s(double ix, double iz, uint16_t id)
 	active = true;
 	body = bbody(_pos,.25,BB_CIRC);
 	_type = PARTICLE_SMITE;
+	_damage = 50;
 }
 
 void smite_s::move(void)

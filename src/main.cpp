@@ -1,6 +1,6 @@
-//#define _CRTDBG_MAPALLOC   //used to find memory leaks
-//#include <stdlib.h>
-//#include <crtdbg.h>
+#define _CRTDBG_MAPALLOC   //used to find memory leaks
+#include <stdlib.h>
+#include <crtdbg.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -15,6 +15,7 @@
 #include "netutil.h"
 #include "texture.h"
 #include "types.h"
+#include "Bin.h"
 
 //#include "md5mesh.cpp"
 //#include "md5anim.cpp"
@@ -42,15 +43,19 @@
 using namespace std;
 
 #define WORLD_TIME_RESOLUTION 30
-#define HIT_CRATE 1
-#define HIT_PLAYER 2
+//#define HIT_CRATE 1
+//#define HIT_PLAYER 2
 #define MAP_SIZE 50 //(set as 50)Equivalent to 100x100 this is the number of sand tiles
 #define TILE_HEIGHT .0001 //used for how high water tiles above 0 level .0001 for 0 top view, .01 for 1 top view
 #define TOP_VIEW 0 //Set to 1 to see birds eye view of island
+#define PLAYERID 0
+#define ENEMYID 100
+#define CRATEID 200
 
 uint32_t worldtime=0;
 
 int hit_damage = 10;
+int cid = 0;
 
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
@@ -113,6 +118,7 @@ materialStruct Sand = {
 coord2d_t vel;
 playerstate_t* player;
 vector<playerstate_t> others;
+Bin *bins[100][100];
 
 gamestate* gs;
 //objectstate_t crates[5];
@@ -242,15 +248,24 @@ forward in the last direction it was facing.
 
 void init_ai(){
 	for(int i=0; i<10; ++i){
-		playerstate_t temp(0);
-		temp._id = 1;
+		/*playerstate_t temp(0);
+		temp._id = ENEMYID+i;
 		temp._tick = 0;
 		temp._hp = 10;
 		temp._mp = 200;
 		temp._weapon = 0;
 		temp._state = PSTATE_AI_SEARCHING;
 		temp._score = 0;
+		others.push_back(temp);*/
+		playerstate_t temp(0);
 		others.push_back(temp);
+		others[i]._id = ENEMYID+i;
+		others[i]._tick = 0;
+		others[i]._hp = 10;
+		others[i]._mp = 200;
+		others[i]._weapon = 0;
+		others[i]._state = PSTATE_AI_SEARCHING;
+		others[i]._score = 0;
 	}
 	others[0]._pos.x() = 35.0;
 	others[0]._pos.y() = 3.0;
@@ -301,6 +316,10 @@ void init_ai(){
 	others[9]._pos.y() = 41.5;
 	others[9]._vel.x() = 30.0;
 	others[9]._vel.y() = 0.05;
+
+	for(int i=0; i<10; ++i){
+		others[i].body = bbody(others[i]._pos.x(),-others[i]._pos.y(),1.0,0,BB_CIRC);
+	}
 }
 
 void drawAi(){
@@ -329,15 +348,23 @@ void tickAi(uint32_t time){
 		it=((*it)._hp<=0)?others.erase(it):it+1)
 	{
 		if ((*it)._hp <= 0){
+			updatBinLists(&(*it),REMOV);
 			player->_score++;
+		}
+		if((*it)._id >200){
+			printf("corruption found\n");
 		}
 		switch((*it)._state){
 			case PSTATE_AI_SEARCHING:
 				// move forward
+				if(SmaPlCollision(&(*it))) {(*it)._vel.y() = 0; (*it)._vel.x() -= 1;}
+				else {(*it)._vel.y() = .05;}
 				(*it)._pos.x() += (-sin((*it)._vel.x()) * (*it)._vel.y());
 				(*it)._pos.y() += (cos((*it)._vel.x()) * (*it)._vel.y());
 				(*it).body = bbody((*it)._pos.x(),-(*it)._pos.y(),1.0,0,BB_CIRC);
 				(*it).front = bbody((*it).calcHotSpot(dummy,.6),.1,BB_CIRC);
+				//if((*it)._vel.y()>0.00) 
+				updatBinLists(&(*it),UPDAT);
 
 				// check bounds
 				if ((*it)._pos.x() > AI_BOUNDS_MAX){
@@ -633,7 +660,25 @@ void rapid(playerstate_t& player){
 			
 		}
 	}
+}
 
+void spread(playerstate_t& player){
+	if (player._mp<5){
+		return;
+	}
+	if(rfpar.size()<100&&rfire==0){
+		coord2d_t dummy;
+		dummy = player.calcHotSpot(dummy,.6);
+		for(double d=-.5;d<.6;d+=.1){
+			double vx = -sin(player._vel.x()+d)*.6;
+			double vz = -cos(player._vel.x()+d)*.6;
+			rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
+		}
+		if (player._mp>=5 && player._id == 0) {
+			player._mp -= 5;
+			
+		}
+	}
 }
 
 void reshape(int w, int h) {
@@ -1435,7 +1480,7 @@ void display() {
   
   setOrthoProjection();
   glPushMatrix();
-	glLoadIdentity();
+	//glLoadIdentity(); not needed
   
 
     displayHud();
@@ -1647,12 +1692,26 @@ void keyboard(unsigned char key, int x, int y ){
 		for(uint32_t i=0;i<smpar.size();i++){
 			delete smpar[i];
 		}
+		for(int i=0;i<100;i++){
+			for(int j=0;j<100;j++){
+				delete bins[i][j];
+			}
+		}
+		/*for(uint32_t i=0;i<others.size();i++){
+			delete others[i];
+		}*/
+		others.clear();
+		delete fred;
+		delete enemy;
 		fbpar.clear(); expar.clear(); rfpar.clear(); smpar.clear();
 		//delete fbsrc; delete exsrc;
       exit( EXIT_SUCCESS );
       break;
 	case 'a': case 'A' :
 		rapid(*player);
+		break;
+	case 'w': case 'W' :
+		spread(*player);
 		break;
 	case 's': case 'S' :
 		if(fbtim<0) {spawnFireball();}
@@ -1690,6 +1749,8 @@ void keyboard(unsigned char key, int x, int y ){
 			double px = crates[crates.size()-1]->_pos.x();
 			double pz = -(crates[crates.size()-1]->_pos.y());
 			crates[crates.size()-1]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+			crates[crates.size()-1]->_id = CRATEID + (cid++);
+			updatBinLists(crates[crates.size()-1],UPDAT);
 			player->_mp -= 25;
 		}
 		break;
@@ -1697,66 +1758,74 @@ void keyboard(unsigned char key, int x, int y ){
   }
 }
 
-int checkPaCollision(source * src){
-	for(unsigned int i = 0 ; i < crates.size(); i++){
-		if(collide(src->body,crates[i]->body)){
-			if (src->_type == PARTICLE_FIREBALL){
-				damage(&crates[i]->_hp,10);
-			}
-			else if (src->_type == PARTICLE_RAPID){
-				damage(&crates[i]->_hp,1);
-			}
-			else if (src->_type == PARTICLE_BEAM){
-				damage(&crates[i]->_hp,1);
-				//continue;
-			}
-			else if (src->_type == PARTICLE_EXPLOSION){ //splash damage anyone?
-				damage(&crates[i]->_hp,1);
-			}
-			else if (src->_type == PARTICLE_SMITE){
-				damage(&crates[i]->_hp,50);
-			}
-			// this is wrong - hacked way of having the splinter effect on dead crate
-			if (crates[i]->_hp == 0){
-			}
-			return HIT_CRATE;
-		}
-	}
-	if (collide(src->body,player->body)&&!player->checkID(src->pid)){
-		damage(&player->_hp,hit_damage);
-		if(src->_type == PARTICLE_FIREBALL) detonate(fbsrc,false);
-		return HIT_PLAYER;
-	}
-	for(unsigned int i=0;i<others.size();i++){
-		if(collide(src->body,others[i].body)&&!others[i].checkID(src->pid)) {
-			//damage(&others[i]._hp,5);
-			if (src->_type == PARTICLE_FIREBALL){
-				damage(&others[i]._hp,10);
-			}
-			else if (src->_type == PARTICLE_SMITE){
-				damage(&others[i]._hp,50);
-			}
-			else {
-				damage(&others[i]._hp,5);
-			}
-			return HIT_PLAYER;
-		}
-	}
-	return 0;
-}
+//int checkPaCollision(source * src){
+//	//if(LarPaCollision(src,0,100,0,100)) return HIT_PLAYER;
+//	if(SmaPaCollision(src)) return HIT_PLAYER;
+//	else return 0;
+//	for(unsigned int i = 0 ; i < crates.size(); i++){
+//		if(collide(src->body,crates[i]->body)){
+//			/*if (src->_type == PARTICLE_FIREBALL){
+//				damage(&crates[i]->_hp,10);
+//			}
+//			else if (src->_type == PARTICLE_RAPID){
+//				damage(&crates[i]->_hp,1);
+//			}
+//			else if (src->_type == PARTICLE_BEAM){
+//				damage(&crates[i]->_hp,1);
+//				//continue;
+//			}
+//			else if (src->_type == PARTICLE_EXPLOSION){ //splash damage anyone?
+//				damage(&crates[i]->_hp,1);
+//			}
+//			else if (src->_type == PARTICLE_SMITE){
+//				damage(&crates[i]->_hp,50);
+//			}*/
+//			// this is wrong - hacked way of having the splinter effect on dead crate
+//			damage(&crates[i]->_hp,src->_damage);
+//			if (crates[i]->_hp == 0){
+//			}
+//			return HIT_CRATE;
+//		}
+//	}
+//	if (collide(src->body,player->body)&&!player->checkID(src->pid)){
+//		//damage(&player->_hp,hit_damage);
+//		damage(&player->_hp,src->_damage);
+//		if(src->_type == PARTICLE_FIREBALL) detonate(fbsrc,false);
+//		return HIT_PLAYER;
+//	}
+//	for(unsigned int i=0;i<others.size();i++){
+//		if(collide(src->body,others[i].body)&&!others[i].checkID(src->pid)) {
+//			//damage(&others[i]._hp,5);
+//			/*if (src->_type == PARTICLE_FIREBALL){
+//				damage(&others[i]._hp,10);
+//			}
+//			else if (src->_type == PARTICLE_SMITE){
+//				damage(&others[i]._hp,50);
+//			}
+//			else {
+//				damage(&others[i]._hp,5);
+//			}*/
+//			damage(&crates[i]->_hp,src->_damage);
+//			return HIT_PLAYER;
+//		}
+//	}
+//	return 0;
+//}
 
-bool checkPlCollision(playerstate_t * pls){
-	for(unsigned int i=0; i < crates.size(); i++){
-		if(collide(pls->front,crates[i]->body)) return true;
-	}
-	return false;
-}
+//bool checkPlCollision(playerstate_t * pls){
+//	for(unsigned int i=0; i < crates.size(); i++){
+//		if(collide(pls->front,crates[i]->body)) return true;
+//	}
+//	return false;
+//}
 
 void tick(int state) {
 	int coll = 0;
-	if(checkPlCollision(player)) vel.y() = 0;
+	//if(checkPlCollision(player)) vel.y() = 0;
+	if(SmaPlCollision(player)) vel.y() = 0;
 	player->change_velocity(vel);
 	player->tick(worldtime);
+	updatBinLists(player,UPDAT);
 	tickAi(worldtime);
 	rfire = (rfire+1)%5;
 	if (fbtim>-1){
@@ -1785,7 +1854,7 @@ void tick(int state) {
 		delete fbsrc;
 		explo = true;
 	}
-	else if(fbtim>-1&&(coll = checkPaCollision(fbsrc))){
+	else if(fbtim>-1&&(coll = SmaPaCollision(fbsrc))){
 		fbtim=-1;
 		fbsrc->active = false;
 		for(uint32_t i=0;i<fbpar.size();i++) delete fbpar[i];
@@ -1803,7 +1872,7 @@ void tick(int state) {
 				expar.erase(expar.begin()+i);
 			}
 		}
-		checkPaCollision(exsrc);
+		LarPaCollision(exsrc,0,100,0,100);
 		if(expar.empty()){
 			explo = false;
 			delete exsrc;
@@ -1818,7 +1887,8 @@ void tick(int state) {
 				smpar.erase(smpar.begin()+i);
 			}
 		}
-		checkPaCollision(smsrc);
+		//SmaPaCollision(smsrc);
+		LarPaCollision(smsrc,0,100,0,100);
 		if(smpar.empty()){
 			smit = false;
 			delete smsrc;
@@ -1826,7 +1896,7 @@ void tick(int state) {
 	}
 	for(int i=rfpar.size()-1;i>-1;i--){
 		rfpar[i]->move();
-		if(!rfpar[i]->boom&&checkPaCollision(rfpar[i])){
+		if(!rfpar[i]->boom&&SmaPaCollision(rfpar[i])){
 			rfpar[i]->boom = true;
 			rfpar[i]->life = 0.0;
 		}
@@ -1838,11 +1908,12 @@ void tick(int state) {
 	if(beatim>-1){
 		beatim--;
 		besrc->move();
-		checkPaCollision(besrc);
+		LarPaCollision(besrc,0,100,0,100);
 	}
 	for(vector<objectstate_t*>::iterator it = crates.begin();
 		it != crates.end();
 		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){
+			if((*it)->_hp == 0) updatBinLists((*it),REMOV);
 	}
 
    Animate(&fred->md5anim[0],&idlAnim,WORLD_TIME_RESOLUTION);
@@ -1850,6 +1921,8 @@ void tick(int state) {
 	glutPostRedisplay();
 
 	worldtime+=WORLD_TIME_RESOLUTION;
+	int eger = worldtime/WORLD_TIME_RESOLUTION;
+	for(int i=0;i<100;i++) janitor(eger%100,i);
 
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
@@ -1860,7 +1933,7 @@ void initModel(){
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
    fred = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
-   enemy = new mdmodel("models/characterModel.md5mesh",NULL,rupTexture);
+   enemy = new mdmodel("model/characterModel.md5mesh",NULL,rupTexture);
    initAnimInfo(&idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
    if(fred->loadAnim("model/hero_walk.md5anim")!=-1){
@@ -1883,11 +1956,20 @@ void mana(int pass) {
 	glutTimerFunc(1000, mana,0);
 }
 
-
+void initBins() {
+	for(int i=0;i<100;i++){
+		for(int j=0;j<100;j++){
+			bins[i][j] = new Bin(bbody(b2p(i),b2p(j),b2p(i+1),b2p(j+1),BB_AABB));
+		}
+	}
+	for(int i=0;i<crates.size();i++) updatBinLists(crates[i],UPDAT);
+	for(int i=0;i<others.size();i++) updatBinLists(&others[i],UPDAT);
+	updatBinLists(player,UPDAT);
+}
 
 int main( int argc, char** argv ) {
 
-	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
 	bool windo = true; //true - window; false - full screen. quicker than commenting/uncommenting
 	//set up my window
@@ -2021,16 +2103,18 @@ int main( int argc, char** argv ) {
   textures.push_back(blastTexture);
 
   for(int i = 0; i < 10; i++){
-	  crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
+	  crate *temp = new crate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
 	  crates.push_back(temp);
   }
   for(int i=0;i<10;i++) {
 	  double px = crates[i]->_pos.x();
 	  double pz = -(crates[i]->_pos.y());
+	  crates[i]->_id = CRATEID + (cid++);
 	  crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
   }
 
 	init_particle();
+	initBins();
   
 	besrc = new beam(player); //only need one beam right now, so might as well initialize it now
   glutMainLoop();
