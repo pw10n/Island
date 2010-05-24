@@ -27,9 +27,9 @@ void gamestate::draw(){
 		return;
 
 	// prevent redrawing when nothing has changed
-	if(_lastDrawn == _tick)
+	/*if(_lastDrawn == _tick)
 		return;
-	_lastDrawn = _tick;
+	_lastDrawn = _tick;*/
 
 	for(vector<objectstate*>::iterator it = _objects.begin();
 		it != _objects.end(); it++){

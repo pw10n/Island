@@ -145,8 +145,6 @@ GLfloat light_spec[4] = {0.8, 0.8, 0.8, 1.0};
 int mat = 0;
 //set up some materials
 
-
-
 //other globals
 int GW;
 int GH;
@@ -1205,10 +1203,6 @@ void drawTiles(){
 
   glDisable(GL_TEXTURE_2D);
   glEnable(GL_LIGHTING);
-
-
-
-
 }
 
 void waterTile() {
@@ -1400,6 +1394,7 @@ int Extension_Init()
 void gsDisplay(){
 	if (!gs){
 		//TODO: uninit
+		cerr << "DEBUG: No init" << endl;
 	}
 	else{
 		if(gs->_state != GSSTATE_ACTIVE){
@@ -1407,6 +1402,7 @@ void gsDisplay(){
 		}
 		else{
 			//TODO: not active
+			cerr << "DEBUG: Not Active" << endl;
 		}
 	}
 }
@@ -1510,7 +1506,7 @@ void display() {
 		    //materials(Sand);
         drawGrid();
 		    //glTranslatef(-1.0,0,-1.0);
-		    drawCrates();
+		    //drawCrates();
 		//glutSolidSphere(1.0,10,10);
 		    if(beatim>-1) besrc->draw();
       glPopMatrix();
@@ -1969,6 +1965,7 @@ int main( int argc, char** argv ) {
   initModel();
 
   gs = new gamestate();
+  gs->start(0);
 
   glEnable(GL_LIGHTING);
 
