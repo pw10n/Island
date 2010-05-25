@@ -33,6 +33,7 @@ public:
 	bbody body;//use this for testing collision
 	uint16_t pid; //id of player who fired
 	unsigned int _type;
+	unsigned int _damage; //how much damage this attack does
 };
 
 //fireball source

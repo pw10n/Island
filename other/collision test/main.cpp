@@ -15,17 +15,10 @@
 #include "netutil.h"
 #include "texture.h"
 #include "types.h"
-#include "Bin.h"
-#include "crate.h"
 
-
-//#include "md5mesh.cpp"
-//#include "md5anim.cpp"
+#include "bvh.h"
 #include "md5model.h"
 #include "mdmodel.h"
-#include "objloader.h"
-
-#include "gamestate.h"
 
 //#include <cstdio>
 //#include <cstdlib>
@@ -33,7 +26,6 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
-
 
 #include <GL/glut.h>
 
@@ -44,34 +36,24 @@
 //#include "types.h"
 //#include "gs_types.h"
 
-
-
 using namespace std;
 
 #define WORLD_TIME_RESOLUTION 30
 #define HIT_CRATE 1
 #define HIT_PLAYER 2
-
-//#define HIT_CRATE 1
-//#define HIT_PLAYER 2
 #define MAP_SIZE 50 //(set as 50)Equivalent to 100x100 this is the number of sand tiles
 #define TILE_HEIGHT .0001 //used for how high water tiles above 0 level .0001 for 0 top view, .01 for 1 top view
 #define TOP_VIEW 0 //Set to 1 to see birds eye view of island
 
-#define PLAYERID 0
-#define ENEMYID 100
-#define CRATEID 200
-
+#define NUMENEMIES 250
+//#define BIN_DIM 32 //number of bins on a side (total number of bins equals BIN_DIM^2) must be power of 2
 
 uint32_t worldtime=0;
 
 int hit_damage = 10;
 
-
-int cid = 0;
-
-#define MIN(x,y) ((x>y)?y:x)
-#define MAX(x,y) ((x>y)?x:y)
+#define MIN(x,y) (x>y)?y:x
+#define MAX(x,y) (x>y)?x:y
 
 typedef struct materialStruct {
   GLfloat ambient[4];
@@ -131,18 +113,9 @@ materialStruct Sand = {
 coord2d_t vel;
 playerstate_t* player;
 vector<playerstate_t> others;
-struct obj_model_t *mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-Bin *bins[100][100];
-
-gamestate* gs;
+vector<Enemy *> enemies;
+Bin *bins[2*MAP_SIZE][2*MAP_SIZE];
 //objectstate_t crates[5];
-
-
-bool cull(coord2d_t pos){
-	//return false; 
-	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
-	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
-}
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -164,6 +137,8 @@ GLfloat light_spec[4] = {0.8, 0.8, 0.8, 1.0};
 
 int mat = 0;
 //set up some materials
+
+
 
 //other globals
 int GW;
@@ -199,17 +174,6 @@ mdmodel* fred;
 mdmodel* enemy;
 struct anim_info_t idlAnim, walAnim, eneAnim;
 
-#if 0
-// Variables Necessary For FogCoordfEXT
-#define GL_FOG_COORDINATE_SOURCE_EXT	0x8450					// Value Taken From GLEXT.H
-#define GL_FOG_COORDINATE_EXT		0x8451					// Value Taken From GLEXT.H
-
-typedef void (APIENTRY * PFNGLFOGCOORDFEXTPROC) (GLfloat coord);		// Declare Function Prototype
-
-PFNGLFOGCOORDFEXTPROC glFogCoordfEXT = NULL;					// Our glFogCoordfEXT Function
-GLfloat	fogColor[4] = {0.6f, 0.3f, 0.0f, 1.0f};					// Fog Colour 
-
-#endif
 
 float p2w_x(int x) {
   float x1;
@@ -228,6 +192,10 @@ float p2w_y(int y) {
 return y1;
 }
 
+double b2p(int i){
+	return (double)(i-MAP_SIZE);
+}
+
 void damage(uint8_t *target, int dam){
 	if(*target>dam) *target -= dam;
 	else *target = 0;
@@ -235,6 +203,7 @@ void damage(uint8_t *target, int dam){
 
 void drawCharacter();
 bool cull(const coord2d_t);
+bool cullb(const bbody);
 
 ////// dummy ai functions for 25% /////////
 /*
@@ -261,14 +230,14 @@ forward in the last direction it was facing.
 void init_ai(){
 	for(int i=0; i<10; ++i){
 		playerstate_t temp(0);
+		temp._id = 1;
+		temp._tick = 0;
+		temp._hp = 10;
+		temp._mp = 200;
+		temp._weapon = 0;
+		temp._state = PSTATE_AI_SEARCHING;
+		temp._score = 0;
 		others.push_back(temp);
-		others[i]._id = ENEMYID+i;
-		others[i]._tick = 0;
-		others[i]._hp = 10;
-		others[i]._mp = 200;
-		others[i]._weapon = 0;
-		others[i]._state = PSTATE_AI_SEARCHING;
-		others[i]._score = 0;
 	}
 	others[0]._pos.x() = 35.0;
 	others[0]._pos.y() = 3.0;
@@ -319,12 +288,6 @@ void init_ai(){
 	others[9]._pos.y() = 41.5;
 	others[9]._vel.x() = 30.0;
 	others[9]._vel.y() = 0.05;
-
-
-	for(int i=0; i<10; ++i){
-		others[i].body = bbody(others[i]._pos.x(),-others[i]._pos.y(),1.0,0,BB_CIRC);
-	}
-
 }
 
 void drawAi(){
@@ -353,33 +316,15 @@ void tickAi(uint32_t time){
 		it=((*it)._hp<=0)?others.erase(it):it+1)
 	{
 		if ((*it)._hp <= 0){
-
-
-			updatBinLists(&(*it),REMOV);
-
 			player->_score++;
-		}
-
-
-		if((*it)._id >200){
-			printf("corruption found\n");
 		}
 		switch((*it)._state){
 			case PSTATE_AI_SEARCHING:
 				// move forward
-
-				if(SmaPlCollision(&(*it))) {(*it)._vel.y() = 0; (*it)._vel.x() -= 1;}
-				else {(*it)._vel.y() = .05;}
-
 				(*it)._pos.x() += (-sin((*it)._vel.x()) * (*it)._vel.y());
 				(*it)._pos.y() += (cos((*it)._vel.x()) * (*it)._vel.y());
 				(*it).body = bbody((*it)._pos.x(),-(*it)._pos.y(),1.0,0,BB_CIRC);
 				(*it).front = bbody((*it).calcHotSpot(dummy,.6),.1,BB_CIRC);
-
-
-				//if((*it)._vel.y()>0.00) 
-				updatBinLists(&(*it),UPDAT);
-
 
 				// check bounds
 				if ((*it)._pos.x() > AI_BOUNDS_MAX){
@@ -678,9 +623,6 @@ void rapid(playerstate_t& player){
 
 }
 
-
-
-
 void spread(playerstate_t& player){
 	if (player._mp<5){
 		return;
@@ -688,7 +630,7 @@ void spread(playerstate_t& player){
 	if(rfpar.size()<100&&rfire==0){
 		coord2d_t dummy;
 		dummy = player.calcHotSpot(dummy,.6);
-		for(double d=-.5;d<.6;d+=.1){
+		for(double d=-.3;d<.4;d+=.1){
 			double vx = -sin(player._vel.x()+d)*.6;
 			double vz = -cos(player._vel.x()+d)*.6;
 			rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
@@ -698,8 +640,8 @@ void spread(playerstate_t& player){
 			
 		}
 	}
-}
 
+}
 
 void reshape(int w, int h) {
   GW = w;
@@ -719,15 +661,10 @@ void reshape(int w, int h) {
   }
 
   glMatrixMode(GL_MODELVIEW);
-
-
   glViewport(0, 0, w, h);
   
   glutPostRedisplay();
 }
-
-
-
 
 
 
@@ -770,8 +707,10 @@ void drawCharacter(){
 
 	glTranslatef(0.0, 0.25, 0.0);
 
-	enemy->draw(eneAnim);
-	
+	//enemy->draw(eneAnim);
+	fred->draw(walAnim);
+	//glutSolidSphere(.5,10,10);
+
 	glPopMatrix();
 }
 
@@ -1240,9 +1179,9 @@ void displayHud(){
 
 	//materials(Black);
 	glColor3f(0.0, 0.0, 0.0);
-	sprintf(buff, "Health: %d", player->_hp);
+	sprintf(buff, "Health: %f", player->_pos.y());//_hp);
     renderBitmapString(2*GW/10.0,GH/11.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
-	sprintf(buff, "Kills: %d", player->_score);
+	sprintf(buff, "Kills: %d", enemies.size());//player->_score);
 	renderBitmapString(5*GW/10.0,GH/11.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
     sprintf(buff, "FPS: %f", fps);
 	renderBitmapString(7*GW/10.0,GH/11.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
@@ -1275,6 +1214,9 @@ void drawTiles(){
 
   glDisable(GL_TEXTURE_2D);
   glEnable(GL_LIGHTING);
+
+
+
 
 }
 
@@ -1440,100 +1382,57 @@ void drawWater() {
 	glEnable(GL_LIGHTING);
 }
 
-
-
-#if 0
-//vfog ext
-int Extension_Init()
-{
-	char Extension_Name[] = "EXT_fog_coord";
-
-	// Allocate Memory For Our Extension String
-	char* glextstring=(char *)malloc(strlen((char *)glGetString(GL_EXTENSIONS))+1);
-	strcpy (glextstring,(char *)glGetString(GL_EXTENSIONS));		// Grab The Extension List, Store In glextstring
-
-	if (!strstr(glextstring,Extension_Name))				// Check To See If The Extension Is Supported
-		return FALSE;							// If Not, Return FALSE
-
-	free(glextstring);	
-	// Free Allocated Memory
-	// Setup And Enable glFogCoordEXT
-	glFogCoordfEXT = (PFNGLFOGCOORDFEXTPROC) wglGetProcAddress("glFogCoordfEXT");
-
-	return true;
-}
-#endif
-
-void gsDisplay(){
-	if (!gs){
-		//TODO: uninit
-
-		cerr << "DEBUG: No init" << endl;
-	}
-	else{
-
-		if(gs->_state == GSSTATE_ACTIVE){
-
-			gs->draw();
-		}
-		else{
-			//TODO: not active
-
-			cerr << "DEBUG: Not Active" << endl;
-
-		}
-	}
+/*returns true if it needs be culled*/
+bool cull(coord2d_t pos){
+	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
+	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
 }
 
-
-void drawTree(double x, double y, double z) {
-
-glDisable(GL_LIGHTING);
-glEnable(GL_TEXTURE_2D);
-glColor3f(1,1,1);
-glPushMatrix();
-    glTranslatef(x, y, z);
-    RenderOBJModel (mdl);
-glPopMatrix();
-glDisable(GL_TEXTURE_2D);
-glEnable(GL_LIGHTING);
-
+bool cullb(bbody bod){
+	if((bod.VMINX>player->_pos.x()+14.0)||(bod.VMAXX<player->_pos.x()-14.0)) return true;
+	return ((bod.VMINZ>player->_pos.y()+14.0)||(bod.VMAXZ<player->_pos.y()-14.0));
 }
-
-
-
 
 void display() {
   static int frame=0;
   static int lasttime=0;
   
+  
   int time = glutGet(GLUT_ELAPSED_TIME);
+
+
   
   ++frame;
 
   if (time - lasttime > 1000){
-    fps = frame * 1000.0/((float)(time-lasttime));
+    fps = frame*1000.0/(time-lasttime);
     lasttime = time;
     frame = 0;
   }
 
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+ 
 
   glMatrixMode(GL_MODELVIEW);
 
 
-  glPushMatrix();  
+
+  glPushMatrix();
   
+
+
+
   setOrthoProjection();
   glPushMatrix();
-
-
-  //glLoadIdentity(); not needed
-
+	glLoadIdentity();
   
 
     displayHud();
+
+
 
     glPushMatrix();
 
@@ -1561,27 +1460,10 @@ void display() {
 	drawTiles();
 	drawWater();
 
-#if 0
-	// volumetric fog
-
-	glPushMatrix();
-		glBegin(GL_QUADS);							// Back Wall
-	 		glFogCoordfEXT(1.0f); glTexCoord2f(0.0f, 0.0f); glVertex3f(-2.5f,-2.5f,-15.0f);
-			glFogCoordfEXT(1.0f); glTexCoord2f(1.0f, 0.0f); glVertex3f( 2.5f,-2.5f,-15.0f);
-			glFogCoordfEXT(1.0f); glTexCoord2f(1.0f, 1.0f); glVertex3f( 2.5f, 2.5f,-15.0f);
-			glFogCoordfEXT(1.0f); glTexCoord2f(0.0f, 1.0f); glVertex3f(-2.5f, 2.5f,-15.0f);
-		glEnd();
-
-
-	glPopMatrix(); // end v fog
-#endif
 
     glPushMatrix();
 
 
-	glPushMatrix();
-	gsDisplay();
-	glPopMatrix();
 
 		glTranslatef(player->_pos.x(), 0, -player->_pos.y());
         glRotatef(angle, 0, 1, 0);
@@ -1595,21 +1477,22 @@ void display() {
 
     
 
-	  glPushMatrix();
-	  drawAi();
+	  //glPushMatrix();
+	  //drawAi();
 
-	  glPopMatrix();
+	  //glPopMatrix();
+	  for(int i=0;i<enemies.size();i++){
+		  //if(!cullb(squads[i]->body)) squads[i]->draw();
+		  //enemies[i]->active != cull(enemies[i]->_pos);
+		  if(enemies[i]->active) enemies[i]->draw();
+	  }
 
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
 		    //materials(Sand);
         drawGrid();
 		    //glTranslatef(-1.0,0,-1.0);
-
-        drawTree(1, 0, -1);
 		    drawCrates();
-
-
 		//glutSolidSphere(1.0,10,10);
 		    if(beatim>-1) besrc->draw();
       glPopMatrix();
@@ -1623,7 +1506,6 @@ void display() {
   glutSwapBuffers();
     
 }
-
 
 
 
@@ -1747,18 +1629,10 @@ void keyboard(unsigned char key, int x, int y ){
 		for(uint32_t i=0;i<smpar.size();i++){
 			delete smpar[i];
 		}
-		for(int i=0;i<100;i++){
-			for(int j=0;j<100;j++){
-				delete bins[i][j];
-			}
+		for(uint32_t i=0;i<enemies.size();i++){
+			delete enemies[i];
 		}
-		/*for(uint32_t i=0;i<others.size();i++){
-			delete others[i];
-		}*/
-		others.clear();
-		delete fred;
-		delete enemy;
-		fbpar.clear(); expar.clear(); rfpar.clear(); smpar.clear();
+		fbpar.clear(); expar.clear(); rfpar.clear(); smpar.clear(); enemies.clear();
 		//delete fbsrc; delete exsrc;
       exit( EXIT_SUCCESS );
       break;
@@ -1779,6 +1653,8 @@ void keyboard(unsigned char key, int x, int y ){
 		break;
 	case 'c': player->_mp = 200;
 		break;
+	case 'e': enemies.push_back(new Enemy()); break;
+	case 'i': for(int i=0;i<10;i++) enemies.push_back(new Enemy()); break;
 	case '0': hit_damage = 0;
 		break;
 	case '-': hit_damage = 10;
@@ -1786,10 +1662,11 @@ void keyboard(unsigned char key, int x, int y ){
 	case 'r': printf("coordinates: %d, %d\n",x,y); break;
 
 	case 't':
-		printf("showing hps\n");
-		for(vector<playerstate_t>::iterator it = others.begin();it != others.end();++it)
-		{
-			printf("hp: %d\n",(*it)._hp);
+		for(int i=0;i<enemies.size();i++){
+			enemies[i]->_pos.x() = (double)i/100.0;
+			enemies[i]->_pos.y() = 0.0;
+			coord2d_t tem = coord2d_t(0.0,0.0);
+			enemies[i]->move(tem);
 		}
 		break;
 	case 'm':
@@ -1797,9 +1674,6 @@ void keyboard(unsigned char key, int x, int y ){
 		printf("sizeof exsrc: %d\n", sizeof(*exsrc));
 		break;
 	case 'd': case 'D' :
-
-		//TODO: refactor with new gamestate code
-
 		if (player->_mp>=25) {
 			crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
 			
@@ -1807,17 +1681,12 @@ void keyboard(unsigned char key, int x, int y ){
 			double px = crates[crates.size()-1]->_pos.x();
 			double pz = -(crates[crates.size()-1]->_pos.y());
 			crates[crates.size()-1]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
-
-			crates[crates.size()-1]->_id = CRATEID + (cid++);
-			updatBinLists(crates[crates.size()-1],UPDAT);
-
 			player->_mp -= 25;
 		}
 		break;
 
   }
 }
-
 
 int checkPaCollision(source * src){
 	for(unsigned int i = 0 ; i < crates.size(); i++){
@@ -1864,81 +1733,41 @@ int checkPaCollision(source * src){
 			return HIT_PLAYER;
 		}
 	}
+	if(binPaCollision(src,0,100,0,100))
+		return HIT_PLAYER;
 	return 0;
 }
 
-//int checkPaCollision(source * src){
-//	//if(LarPaCollision(src,0,100,0,100)) return HIT_PLAYER;
-//	if(SmaPaCollision(src)) return HIT_PLAYER;
-//	else return 0;
-//	for(unsigned int i = 0 ; i < crates.size(); i++){
-//		if(collide(src->body,crates[i]->body)){
-//			/*if (src->_type == PARTICLE_FIREBALL){
-//				damage(&crates[i]->_hp,10);
-//			}
-//			else if (src->_type == PARTICLE_RAPID){
-//				damage(&crates[i]->_hp,1);
-//			}
-//			else if (src->_type == PARTICLE_BEAM){
-//				damage(&crates[i]->_hp,1);
-//				//continue;
-//			}
-//			else if (src->_type == PARTICLE_EXPLOSION){ //splash damage anyone?
-//				damage(&crates[i]->_hp,1);
-//			}
-//			else if (src->_type == PARTICLE_SMITE){
-//				damage(&crates[i]->_hp,50);
-//			}*/
-//			// this is wrong - hacked way of having the splinter effect on dead crate
-//			damage(&crates[i]->_hp,src->_damage);
-//			if (crates[i]->_hp == 0){
-//			}
-//			return HIT_CRATE;
-//		}
-//	}
-//	if (collide(src->body,player->body)&&!player->checkID(src->pid)){
-//		//damage(&player->_hp,hit_damage);
-//		damage(&player->_hp,src->_damage);
-//		if(src->_type == PARTICLE_FIREBALL) detonate(fbsrc,false);
-//		return HIT_PLAYER;
-//	}
-//	for(unsigned int i=0;i<others.size();i++){
-//		if(collide(src->body,others[i].body)&&!others[i].checkID(src->pid)) {
-//			//damage(&others[i]._hp,5);
-//			/*if (src->_type == PARTICLE_FIREBALL){
-//				damage(&others[i]._hp,10);
-//			}
-//			else if (src->_type == PARTICLE_SMITE){
-//				damage(&others[i]._hp,50);
-//			}
-//			else {
-//				damage(&others[i]._hp,5);
-//			}*/
-//			damage(&crates[i]->_hp,src->_damage);
-//			return HIT_PLAYER;
-//		}
-//	}
-//	return 0;
-//}
-
-
-
-//bool checkPlCollision(playerstate_t * pls){
-//	for(unsigned int i=0; i < crates.size(); i++){
-//		if(collide(pls->front,crates[i]->body)) return true;
-//	}
-//	return false;
-//}
-
+bool checkPlCollision(playerstate_t * pls){
+	for(unsigned int i=0; i < crates.size(); i++){
+		if(collide(pls->front,crates[i]->body)) return true;
+	}
+	return false;
+}
 
 void tick(int state) {
 	int coll = 0;
-	//if(checkPlCollision(player)) vel.y() = 0;
-	if(SmaPlCollision(player)) vel.y() = 0;
+	if(checkPlCollision(player)) vel.y() = 0;
 	player->change_velocity(vel);
 	player->tick(worldtime);
-	updatBinLists(player,UPDAT);
-	tickAi(worldtime);
+	//tickAi(worldtime);
+
+	for(int i = 0;i<enemies.size();i++){
+		if(!enemies[i]->alive){
+			enemies[i]->updateBin();
+			enemies.erase(enemies.begin()+i);
+			i--;
+			continue;
+		}
+		enemies[i]->active = !cull(enemies[i]->_pos);
+		if(enemies[i]->active){
+			enemies[i]->move();
+			//binCollision(enemies[i],0,100,0,100);
+			enemies[i]->colli();
+			enemies[i]->updateBin();
+		}
+	}
+
 	rfire = (rfire+1)%5;
 	if (fbtim>-1){
 		fbtim++;
@@ -1966,8 +1795,7 @@ void tick(int state) {
 		delete fbsrc;
 		explo = true;
 	}
-
-	else if(fbtim>-1&&(coll = SmaPaCollision(fbsrc))){
+	else if(fbtim>-1&&(coll = checkPaCollision(fbsrc))){
 		fbtim=-1;
 		fbsrc->active = false;
 		for(uint32_t i=0;i<fbpar.size();i++) delete fbpar[i];
@@ -1985,9 +1813,7 @@ void tick(int state) {
 				expar.erase(expar.begin()+i);
 			}
 		}
-
-		LarPaCollision(exsrc,0,100,0,100);
-
+		checkPaCollision(exsrc);
 		if(expar.empty()){
 			explo = false;
 			delete exsrc;
@@ -2002,9 +1828,7 @@ void tick(int state) {
 				smpar.erase(smpar.begin()+i);
 			}
 		}
-
-		LarPaCollision(smsrc,0,100,0,100);
-
+		checkPaCollision(smsrc);
 		if(smpar.empty()){
 			smit = false;
 			delete smsrc;
@@ -2012,9 +1836,7 @@ void tick(int state) {
 	}
 	for(int i=rfpar.size()-1;i>-1;i--){
 		rfpar[i]->move();
-
-		if(!rfpar[i]->boom&&SmaPaCollision(rfpar[i])){
-
+		if(!rfpar[i]->boom&&checkPaCollision(rfpar[i])){
 			rfpar[i]->boom = true;
 			rfpar[i]->life = 0.0;
 		}
@@ -2026,17 +1848,11 @@ void tick(int state) {
 	if(beatim>-1){
 		beatim--;
 		besrc->move();
-
-
-		LarPaCollision(besrc,0,100,0,100);
-
+		checkPaCollision(besrc);
 	}
 	for(vector<objectstate_t*>::iterator it = crates.begin();
 		it != crates.end();
 		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){
-
-			if((*it)->_hp == 0) updatBinLists((*it),REMOV);
-
 	}
 
    Animate(&fred->md5anim[0],&idlAnim,WORLD_TIME_RESOLUTION);
@@ -2044,10 +1860,6 @@ void tick(int state) {
 	glutPostRedisplay();
 
 	worldtime+=WORLD_TIME_RESOLUTION;
-
-	int eger = worldtime/WORLD_TIME_RESOLUTION;
-	for(int i=0;i<100;i++) janitor(eger%100,i);
-
 
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
@@ -2058,7 +1870,7 @@ void initModel(){
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
    fred = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
-   enemy = new mdmodel("models/characterModel.md5mesh",NULL,rupTexture);
+   enemy = new mdmodel("model/characterModel.md5mesh",NULL,rupTexture);
    initAnimInfo(&idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
    if(fred->loadAnim("model/hero_walk.md5anim")!=-1){
@@ -2081,38 +1893,51 @@ void mana(int pass) {
 	glutTimerFunc(1000, mana,0);
 }
 
-
-
-
-void initBins() {
-	for(int i=0;i<100;i++){
-		for(int j=0;j<100;j++){
+void init_bins() {
+	//double minx = (double)(-MAP_SIZE);
+	//double minz;
+	//double wid = (2.0*(double)MAP_SIZE)/(double)BIN_DIM;
+	for(int i=0;i<2*MAP_SIZE;i++){
+		//minz = (double)(-MAP_SIZE);
+		for(int j=0;j<2*MAP_SIZE;j++){
 			bins[i][j] = new Bin(bbody(b2p(i),b2p(j),b2p(i+1),b2p(j+1),BB_AABB));
+			//minz += wid;
+		}
+		//minx += wid;
+	}
+	for(int i=0;i<2*MAP_SIZE;i++){
+		for(int j=0;j<2*MAP_SIZE;j++){
+			if(j!=0) bins[i][j]->nbrs.push_back(bins[i][j-1]);
+			if(j<2*MAP_SIZE-1) bins[i][j]->nbrs.push_back(bins[i][j+1]);
+			if(i!=0){
+				bins[i][j]->nbrs.push_back(bins[i-1][j]);
+				if(j!=0) bins[i][j]->nbrs.push_back(bins[i-1][j-1]);
+				if(j<2*MAP_SIZE-1) bins[i][j]->nbrs.push_back(bins[i-1][j+1]);
+			}
+			if(i<2*MAP_SIZE-1){
+				bins[i][j]->nbrs.push_back(bins[i+1][j]);
+				if(j!=0) bins[i][j]->nbrs.push_back(bins[i+1][j-1]);
+				if(j<2*MAP_SIZE-1) bins[i][j]->nbrs.push_back(bins[i+1][j+1]);
+			}
 		}
 	}
-	for(int i=0;i<crates.size();i++) updatBinLists(crates[i],UPDAT);
-	for(int i=0;i<others.size();i++) updatBinLists(&others[i],UPDAT);
-	updatBinLists(player,UPDAT);
 }
 
-
 int main( int argc, char** argv ) {
-
-
+    
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
-
 	bool windo = true; //true - window; false - full screen. quicker than commenting/uncommenting
-	//set up my window
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	GW = 800;
-	GH = 600;
-	if(windo){
+  //set up my window
+  glutInit(&argc, argv);
+  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+  GW = 800;
+  GH = 600;
+  if(windo){
 		glutInitWindowSize(800, 600); 
 		glutInitWindowPosition(0, 0);
 		glutCreateWindow("Island");
-	}else{
+  }else{
 	  glutGameModeString("800x600:32");
 	  if (glutGameModeGet(GLUT_GAME_MODE_POSSIBLE)){
 		glutEnterGameMode();
@@ -2120,88 +1945,57 @@ int main( int argc, char** argv ) {
 	  else{
 		  exit(1);
 	  }
-	}
-	//glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClearColor(1.0, 1.0, 1.0, 1.0);
+  }
+  //glClearColor(0.0, 0.0, 0.0, 1.0);
+  glClearColor(1.0, 1.0, 1.0, 1.0);
 
-	myX = 0;
-	myY = 0;
-	myZ = 0;
-	angle = 0;
-	theta = 0;
+  myX = 0;
+  myY = 0;
+  myZ = 0;
+  angle = 0;
+  theta = 0;
 
-	float shift = 1.0f;
+  float shift = 1.0f;
 
-	if(TOP_VIEW == 1) {
+  if(TOP_VIEW == 1) {
 	  eyex=0;
-	  eyey=75;
-	  eyez=0;
-	}
-	else {
-	eyex = 0;
-	eyey = 5;//4.33;
-	eyez = 3.5;//+shift;//5;
+      eyey=75;
+      eyez=0;
+  }
+  else {
+    eyex = 0;
+    eyey = 5;//4.33;
+    eyez = 3.5+shift;//5;
+  }
+  LAx = 0;
+  LAy = 0;
+  LAz = shift;
 
-	}
-	LAx = 0;
-	LAy = 0;
-	LAz = 0;//shift;
+  player = new playerstate_t(worldtime);
+  player->_hp = 100;
+  player->_mp = 200;
+  fbtim = -1;
+  explo = false;
+  smit = false;
 
+  srand(time(NULL));
 
-	player = new playerstate_t(worldtime);
-	player->_hp = 100;
-	player->_mp = 200;
-	fbtim = -1;
-	explo = false;
-	smit = false;
-
-	srand(time(NULL));
-
-	//register glut callback functions
-	glutDisplayFunc( display );
-	glutReshapeFunc( reshape );
-	glutMouseFunc(mouse);
-	glutKeyboardFunc( keyboard );
-	glutPassiveMotionFunc(processMousePassiveMotion);
-	glutMotionFunc(processMouseActiveMotion);
-	glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
-	glutTimerFunc(1000, mana,0);
-	glEnable(GL_DEPTH_TEST);
-
-#if 0
-	// Set Up Fog 
-	glEnable(GL_FOG);							// Enable Fog
-	glFogi(GL_FOG_MODE, GL_LINEAR);						// Fog Fade Is Linear
-	glFogfv(GL_FOG_COLOR, fogColor);					// Set The Fog Color
-	glFogf(GL_FOG_START,  0.0f);						// Set The Fog Start (Least Dense)
-	glFogf(GL_FOG_END,    1.0f);						// Set The Fog End (Most Dense)
-	glHint(GL_FOG_HINT, GL_NICEST);						// Per-Pixel Fog Calculation
-	glFogi(GL_FOG_COORDINATE_SOURCE_EXT, GL_FOG_COORDINATE_EXT);		// Set Fog Based On Vertice Coordinates
-#endif 
-
-
-	cerr << "INFO: init lighting.. " << endl;
-
-  init_lighting();
-
-  cerr << "INFO: init ai.. " << endl;
-
-  init_ai();
-
-  cerr << "INFO: init model.. " << endl;
-
-  initModel();
-
-
-cerr << "INFO: init gamestate.. " << endl;
-
-  gs = new gamestate();
-
-
-  gs->start(0);
 
   
+  //register glut callback functions
+  glutDisplayFunc( display );
+  glutReshapeFunc( reshape );
+  glutMouseFunc(mouse);
+  glutKeyboardFunc( keyboard );
+  glutPassiveMotionFunc(processMousePassiveMotion);
+  glutMotionFunc(processMouseActiveMotion);
+  glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
+  glutTimerFunc(1000, mana,0);
+  glEnable(GL_DEPTH_TEST);
 
+  init_lighting();
+  //init_ai();
+  initModel();
   glEnable(GL_LIGHTING);
 
 	// loading textures
@@ -2252,57 +2046,22 @@ cerr << "INFO: init gamestate.. " << endl;
   blastTexture = BindTextureBMP((char *)"textures/smite.bmp", true); //10
   textures.push_back(blastTexture);
 
-
-  
-
   for(int i = 0; i < 10; i++){
-
-	  
-
-	  /* uses gamestate object crate:
-	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
-	  temp->_hp = 10;
-	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
-	  gs->_objects.push_back(temp);
-	  */
-	  crate *temp = new crate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
-
+	  crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
 	  crates.push_back(temp);
-
-
-	  
-
   }
   for(int i=0;i<10;i++) {
-
-	  /* uses gamestate object crate:
-	  // TODO: This code does NOT belong here.
-	  double px = gs->_objects[i]->_pos.x();
-	  double pz = -(gs->_objects[i]->_pos.y());
-
-	  //gs->_objects[i]->_id = CRATEID + (cid++);
-	  gs->_objects[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
-	  */
-
-
 	  double px = crates[i]->_pos.x();
 	  double pz = -(crates[i]->_pos.y());
-
-
-	  crates[i]->_id = CRATEID + (cid++);
-
 	  crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
   }
-
-
-  init("model/palmTree.obj", mdl);
-
+	/*
+	for(int i = 0;i<NUMENEMIES;i++){
+		enemies.push_back(new Enemy());
+	}
+	*/
 	init_particle();
-
-//  atexit (cleanup(test));
-
-	initBins();
-
+	init_bins();
   
 	besrc = new beam(player); //only need one beam right now, so might as well initialize it now
   glutMainLoop();

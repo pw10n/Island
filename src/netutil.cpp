@@ -52,15 +52,16 @@ void gamestate_t::updateState(uint8_t state){
 // playerstate_t
 
 
-playerstate_t::playerstate_t(uint32_t time): _tick(time), _hp(0), _mp(0), 
+playerstate_t::playerstate_t(uint32_t time): _tick(time), _mp(0),// _hp(0), 
 					_weapon(0), _state(PSSTATE_INIT),
 					_score(0){
-	_id = (uint16_t) ( 
-		( (double) rand() / ( (double) (RAND_MAX) + 1.0 ) )
-		* UINT16_MAX ) + 1;
-	
+	//_id = (uint16_t) ( 
+	//	( (double) rand() / ( (double) (RAND_MAX) + 1.0 ) )
+	//	* UINT16_MAX ) + 1;
+	_id = 0;
 	for (int i=0; i<PLAYERSTATE_MAXABILITY; ++i)
 		_ability[i]=0;
+	_pos.x() = _pos.y() = 0;
 	body = bbody(_pos.x(),-_pos.y(),1,0,BB_CIRC);
 	coord2d_t dummy;
 	front = bbody(this->calcHotSpot(dummy,.6),.1,BB_CIRC);
