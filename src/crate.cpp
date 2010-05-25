@@ -4,6 +4,7 @@
 #include <GL/glut.h>
 
 void goCrate::draw(){
+	cerr <<" DEBUG: Drawing a crate..." << endl;
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);

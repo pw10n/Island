@@ -19,10 +19,12 @@ gamestate::~gamestate(){
 }
 
 void gamestate::start(int time){
-	
+	_state = GSSTATE_ACTIVE;
+	_tick = time;
 }
 
 void gamestate::draw(){
+	//cerr << "DEBUG: gs draw method" << endl;
 	if(GSSTATE_ACTIVE != _state)
 		return;
 
@@ -31,10 +33,13 @@ void gamestate::draw(){
 		return;
 	_lastDrawn = _tick;*/
 
+	//cerr << "DEBUG: I am here. " << endl;
 	for(vector<objectstate*>::iterator it = _objects.begin();
 		it != _objects.end(); it++){
-			if(!cull((*it)->_pos))
+			//cerr << "DEBUG: calling object draw method" << endl;
+			//if(!cull((*it)->_pos))
 				(*it)->draw();
+				
 	}
 
 	//TODO: do stuff

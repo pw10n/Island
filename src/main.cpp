@@ -1,6 +1,6 @@
-#define _CRTDBG_MAPALLOC   //used to find memory leaks
-#include <stdlib.h>
-#include <crtdbg.h>
+//#define _CRTDBG_MAPALLOC   //used to find memory leaks
+//#include <stdlib.h>
+//#include <crtdbg.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -16,6 +16,7 @@
 #include "texture.h"
 #include "types.h"
 #include "Bin.h"
+#include "crate.h"
 
 //#include "md5mesh.cpp"
 //#include "md5anim.cpp"
@@ -1443,7 +1444,7 @@ void gsDisplay(){
 		cerr << "DEBUG: No init" << endl;
 	}
 	else{
-		if(gs->_state != GSSTATE_ACTIVE){
+		if(gs->_state == GSSTATE_ACTIVE){
 			gs->draw();
 		}
 		else{
@@ -1552,7 +1553,7 @@ void display() {
 		    //materials(Sand);
         drawGrid();
 		    //glTranslatef(-1.0,0,-1.0);
-		    drawCrates();
+		drawCrates();
 		//glutSolidSphere(1.0,10,10);
 		    if(beatim>-1) besrc->draw();
       glPopMatrix();
@@ -1739,6 +1740,7 @@ void keyboard(unsigned char key, int x, int y ){
 		printf("sizeof exsrc: %d\n", sizeof(*exsrc));
 		break;
 	case 'd': case 'D' :
+		//TODO: refactor with new gamestate code
 		if (player->_mp>=25) {
 			crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
 			
@@ -1930,7 +1932,7 @@ void initModel(){
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
    fred = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
-   enemy = new mdmodel("model/characterModel.md5mesh",NULL,rupTexture);
+   enemy = new mdmodel("models/characterModel.md5mesh",NULL,rupTexture);
    initAnimInfo(&idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
    if(fred->loadAnim("model/hero_walk.md5anim")!=-1){
@@ -2043,12 +2045,17 @@ int main( int argc, char** argv ) {
 	glFogi(GL_FOG_COORDINATE_SOURCE_EXT, GL_FOG_COORDINATE_EXT);		// Set Fog Based On Vertice Coordinates
 #endif 
 
+	cerr << "INFO: init lighting.. " << endl;
   init_lighting();
+  cerr << "INFO: init ai.. " << endl;
   init_ai();
+  cerr << "INFO: init model.. " << endl;
   initModel();
-
+cerr << "INFO: init gamestate.. " << endl;
   gs = new gamestate();
   gs->start(0);
+
+  
 
   glEnable(GL_LIGHTING);
 
@@ -2100,11 +2107,28 @@ int main( int argc, char** argv ) {
   blastTexture = BindTextureBMP((char *)"textures/smite.bmp", true); //10
   textures.push_back(blastTexture);
 
+  
   for(int i = 0; i < 10; i++){
+	  /* uses gamestate object crate:
+	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
+	  temp->_hp = 10;
+	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
+	  gs->_objects.push_back(temp);
+	  */
 	  crate *temp = new crate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
 	  crates.push_back(temp);
+	  
   }
   for(int i=0;i<10;i++) {
+	  /* uses gamestate object crate:
+	  // TODO: This code does NOT belong here.
+	  double px = gs->_objects[i]->_pos.x();
+	  double pz = -(gs->_objects[i]->_pos.y());
+
+	  //gs->_objects[i]->_id = CRATEID + (cid++);
+	  gs->_objects[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+	  */
+
 	  double px = crates[i]->_pos.x();
 	  double pz = -(crates[i]->_pos.y());
 	  crates[i]->_id = CRATEID + (cid++);
