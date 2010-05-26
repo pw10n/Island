@@ -71,7 +71,7 @@ void gamestate::addObject(objectstate* o){
 }
 
 playerstate::playerstate(int time):
-_tick(time), _hp(0), _mp(0),_weapon(0),
+_tick(time), _mp(0),_weapon(0),
 _state(PSSTATE_INIT), _score(0){
 	for (int i=0; i<PLAYERSTATE_MAXABILITY; ++i)
 		_ability[i]=0;
@@ -99,13 +99,25 @@ playerstate::playerstate(const playerstate &player){
 
 }
 
+void playerstate::tick(uint32_t time){
+	for(; _tick<time; ++_tick){
+		if (_vel.y() > DBL_EPSILON){
+			_pos.x() += (-sin(_vel.x()) * _vel.y());
+			_pos.y() += (cos(_vel.x()) * _vel.y());
+		}
+	}
+	body = bbody(_pos.x(),-_pos.y(),1,0,BB_CIRC);
+	coord2d_t dummy;
+	front = bbody(this->calcHotSpot(dummy,.6),.1,BB_CIRC);
+}
+
 coord2d_t playerstate::calcHotSpot(coord2d_t hs, double dist){
 	hs.x() = _pos.x()-(sin(_vel.x())*dist);
 	hs.y() = -_pos.y()-(cos(_vel.x())*dist);
 	return hs;
 }
 
-objectstate::objectstate():_id(0), _hp(0), _type(0){}
+objectstate::objectstate(): _type(0){}
 
 objectstate::objectstate(const objectstate &other){
 	_id=other._id;

@@ -7,7 +7,7 @@
 #define PARTICLE_EXPLOSION 3
 #define PARTICLE_SMITE 4
 #include "collision.h"
-#include "netutil.h"
+#include "gamestate.h"
 
 
 class particle
@@ -62,6 +62,9 @@ public:
 class explosion_s : public source
 {
 public:
+	int _damfrac; //"divides" the damage so explosions aren't insanely powerful
+	int _tock;
+
 	explosion_s(double,double);
 	void move(void);
 	void draw(void);
@@ -101,10 +104,10 @@ public:
 class beam : public source
 {
 public:
-	playerstate_t *play; //player who fired this
+	playerstate *play; //player who fired this
 	double ang;
 
-	beam(playerstate_t *);
+	beam(playerstate *);
 	void move(void);
 	void draw(void);
 };

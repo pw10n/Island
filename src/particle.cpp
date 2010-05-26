@@ -149,7 +149,7 @@ void fireball_p::draw(void)
 
 explosion_s::explosion_s(double ix, double iz)
 {
-	pid = 65535;
+	pid = 65535;//explosions belong to NO ONE! Share the pain!
 	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t();
 	life = 4.0f;
 	fade = .5f;
@@ -160,6 +160,8 @@ explosion_s::explosion_s(double ix, double iz)
 	body = bbody(_pos,(double)life,BB_CIRC);
 	_type = PARTICLE_EXPLOSION;
 	_damage = 1;
+	_damfrac = 3;
+	_tock = 0;
 }
 
 void explosion_s::move(void)
@@ -167,6 +169,8 @@ void explosion_s::move(void)
 	if(!active) return;
 	life -= fade;
 	body = bbody(_pos,(double)life,BB_CIRC);
+	_tock++;
+	_damage = (_tock%_damfrac)?0:1;
 }
 
 void explosion_s::draw(void)
@@ -174,9 +178,10 @@ void explosion_s::draw(void)
 	glColor4f(r,g,b,a);
 	glPushMatrix();
 	glTranslatef(_pos.x(),.1,_pos.z());
-	float sca = 4.0f;
-	glScalef(sca,sca,sca);
-	glCallList(PARTLIST);
+	glutWireSphere(life,10,10);
+	//float sca = 4.0f;
+	//glScalef(sca,sca,sca);
+	//glCallList(PARTLIST);
 	glPopMatrix();
 }
 /*
@@ -337,7 +342,7 @@ void splinter::draw(void)
 	glPopMatrix();
 }
 
-beam::beam(playerstate_t *pla)
+beam::beam(playerstate *pla)
 {
 	play = pla;
 	pid = play->_id;
