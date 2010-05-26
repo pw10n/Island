@@ -2095,9 +2095,13 @@ void initBins() {
 	updatBinLists(player,UPDAT);
 }
 
+void fnExit1(){
+	system("pause");
+}
 
 int main( int argc, char** argv ) {
 
+	// use this for debugging unexpected exits: atexit (fnExit1);
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
@@ -2305,5 +2309,7 @@ cerr << "INFO: init gamestate.. " << endl;
 
   
 	besrc = new beam(player); //only need one beam right now, so might as well initialize it now
+
+
   glutMainLoop();
 }
