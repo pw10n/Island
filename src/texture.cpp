@@ -85,7 +85,7 @@ unsigned int BindFailSafe(bool tile){
 	char temp;
 	long i;
 	unsigned int texid;
-	char *fn = "textures\oops.bmp";
+	char *fn = "textures\\oops.bmp";
 
 	BITMAPINFOHEADER* infoheader = (BITMAPINFOHEADER*) malloc(sizeof(BITMAPINFOHEADER));
 	char* data;

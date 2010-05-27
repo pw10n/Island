@@ -143,9 +143,9 @@ vector<playerstate*> others;
 
 struct obj_model_t *hutmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *rockmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+struct obj_model_t oceanmdl;
 struct obj_model_t *shellmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *treemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-Bin *bins[100][100];
 
 
 
@@ -1984,7 +1984,8 @@ int main( int argc, char** argv ) {
 
 
 gs = new gamestate();
-	// use this for debugging unexpected exits: atexit (fnExit1);
+	// use this for debugging unexpected exits: 
+atexit (fnExit1);
 
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
@@ -2233,6 +2234,8 @@ cerr << "INFO: init gamestate.. " << endl;
   init("model/palmTree.obj", treemdl);
   init("model/afro hut.obj", hutmdl);
   init("model/rock_a.obj", rockmdl);
+  init("model/planeMesh.obj", &oceanmdl);
+  
   //init("model/conch.obj", plantemdl);
   //init("model/hut.obj", mdl);
 
