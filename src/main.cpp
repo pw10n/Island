@@ -1551,7 +1551,10 @@ void display() {
 	glUniform1f(getUniLoc(ShadeProg, "wTime"), ((float)worldtime)*0.03);
 	glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
 	glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
-	drawWater();
+	glScalef(8.0,1.0,8.0);
+	glTranslatef(0.0,0.0,-7.0);
+	RenderOBJModel(&oceanmdl);
+	//drawWater();
 	glUseProgram(0);
 
 	glPopMatrix();
@@ -1818,6 +1821,7 @@ void keyboard(unsigned char key, int x, int y ){
 }
 
 void tick(int state) {
+	gs->tick(worldtime);
 	int coll = 0;
 	//if(gs->SmaPlCollision(gs->player)) vel.y() = 0;
 	//gs->player->change_velocity(vel);
@@ -1991,7 +1995,7 @@ int main( int argc, char** argv ) {
 
 gs = new gamestate();
 	// use this for debugging unexpected exits: 
-atexit (fnExit1);
+//atexit (fnExit1);
 
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
