@@ -27,7 +27,7 @@ int printOglError (const char *file, int line) {
     }
 	return retCode;
 }
-#define GL_INFO_LOG_LENGTH 25
+
 void printShaderInfoLog (GLuint shader)
 {
 	int     infologLength = 0;
