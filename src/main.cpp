@@ -267,7 +267,7 @@ forward in the last direction it was facing.
 #define PSTATE_AI_ATACKING 15
 
 void init_ai(){
-	for(int i=0; i<10; ++i){
+	for(int i=0; i<20; ++i){
 		//playerstate temp(0);
 		others.push_back(new playerstate(0));//temp);
 		others[i]->_id = ENEMYID+i;
@@ -328,8 +328,57 @@ void init_ai(){
 	others[9]->_vel.x() = 30.0;
 	others[9]->_vel.y() = 0.05;
 
+	others[10]->_pos.x() = 32.0;
+	others[10]->_pos.y() = 23.0;
+	others[10]->_vel.x() = 45.0;
+	others[10]->_vel.y() = 0.05;
 
-	for(int i=0; i<10; ++i){
+	others[11]->_pos.x() = -13.0;
+	others[11]->_pos.y() = -63.0;
+	others[11]->_vel.x() = 32.0;
+	others[11]->_vel.y() = 0.05;
+
+	others[12]->_pos.x() = 23.0;
+	others[12]->_pos.y() = -14.0;
+	others[12]->_vel.x() = 15.0;
+	others[12]->_vel.y() = 0.05;
+
+	others[13]->_pos.x() = -43.0;
+	others[13]->_pos.y() = 41.0;
+	others[13]->_vel.x() = -45.0;
+	others[13]->_vel.y() = 0.05;
+
+	others[14]->_pos.x() = 2.0;
+	others[14]->_pos.y() = 31.5;
+	others[14]->_vel.x() = 10.0;
+	others[14]->_vel.y() = 0.05;
+
+	others[15]->_pos.x() = 50.0;
+	others[15]->_pos.y() = 4.0;
+	others[15]->_vel.x() = 25.0;
+	others[15]->_vel.y() = 0.05;
+
+	others[16]->_pos.x() = -23.0;
+	others[16]->_pos.y() = 13.0;
+	others[16]->_vel.x() = 82.0;
+	others[16]->_vel.y() = 0.05;
+
+	others[17]->_pos.x() = 13.0;
+	others[17]->_pos.y() = -43.0;
+	others[17]->_vel.x() = 55.0;
+	others[17]->_vel.y() = 0.05;
+
+	others[18]->_pos.x() = -43.0;
+	others[18]->_pos.y() = 41.0;
+	others[18]->_vel.x() = -25.0;
+	others[18]->_vel.y() = 0.05;
+
+	others[19]->_pos.x() = 13.0;
+	others[19]->_pos.y() = -11.5;
+	others[19]->_vel.x() = 30.0;
+	others[19]->_vel.y() = 0.05;
+
+	for(int i=0; i<20; ++i){
 		others[i]->body = bbody(others[i]->_pos.x(),-others[i]->_pos.y(),1.0,0,BB_CIRC);
 	}
 
@@ -437,7 +486,7 @@ void tickAi(uint32_t time){
 						
 					//angle=theta*(180.0f / M_PI);
 					others[i]->_vel.x() = -theta;
-					others[i]->_state = PSTATE_AI_TARGETING_2;
+					others[i]->_state = (others[i]->_id>10)?PSTATE_AI_ATACKING:PSTATE_AI_TARGETING_2;
 				}
 				// else : return to searching state
 				else
@@ -1552,7 +1601,8 @@ void display() {
 	glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
 	glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
 	glScalef(8.0,1.0,8.0);
-	glTranslatef(0.0,0.0,-7.0);
+	glTranslatef(0.0,0.0,-7.2);
+	//materials(Blue);
 	RenderOBJModel(&oceanmdl);
 	//drawWater();
 	glUseProgram(0);

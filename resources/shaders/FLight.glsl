@@ -12,11 +12,13 @@ void main()
 
 	vec4 decalTex = texture2D(dtex, gl_TexCoord[0].st);
 
-        if (decalTex.r < red && decalTex.g < red && decalTex.b < red) {
-          decalTex.r  = 0.8;
-        }
-	vec4 color = lightTex*decalTex;
-
+        
+    decalTex.b = 1.0;
+    decalTex.g = 0.0;
+    decalTex.r = 0.0;
+        
+	//vec4 color = lightTex*decalTex;
+	vec4 color = decalTex;
 	gl_FragColor = color;
 }
 
