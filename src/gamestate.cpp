@@ -138,7 +138,7 @@ void gamestate::draw(){
 	for(vector<objectstate*>::iterator it = _objects.begin();
 		it != _objects.end(); it++){
 			//cerr << "DEBUG: calling object draw method" << endl;
-			//if(!cull((*it)->_pos))
+			if(!cull((*it)->_pos))
 				(*it)->draw();
 				
 	}

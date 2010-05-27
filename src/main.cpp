@@ -60,7 +60,7 @@ using namespace std;
 //#define HIT_PLAYER 2
 #define MAP_SIZE 50 //(set as 50)Equivalent to 100x100 this is the number of sand tiles
 #define TILE_HEIGHT .0001 //used for how high water tiles above 0 level .0001 for 0 top view, .01 for 1 top view
-#define TOP_VIEW 0 //Set to 1 to see birds eye view of island
+#define TOP_VIEW 1 //Set to 1 to see birds eye view of island
 
 #define PLAYERID 0
 #define ENEMYID 100
@@ -735,6 +735,7 @@ void drawCharacter(){
 }
 
 void drawPlayer() {
+	glEnable(GL_LIGHTING);
   materials(Grey);
   glPushMatrix();
   
@@ -742,13 +743,16 @@ void drawPlayer() {
     glTranslatef(0.0, 0.0, -0.5);
     gluCylinder(gluNewQuadric(), .05, .2, 1, 12, 36);
   glPopMatrix();
+  glDisable(GL_LIGHTING);
 }
 
 void drawAniPlayer(bool walk){
+	glEnable(GL_LIGHTING);
    glPushMatrix();
    materials(ModeMat);
    fred->draw((walk)?walAnim:idlAnim);
    glPopMatrix();
+   glDisable(GL_LIGHTING);
 }
 
 void drawFireball() {
@@ -1502,7 +1506,6 @@ void gsDisplay(){
 	else{
 
 		if(gs->_state == GSSTATE_ACTIVE){
-
 			gs->draw();
 		}
 		else{
@@ -2152,7 +2155,7 @@ cerr << "INFO: init gamestate.. " << endl;
   gs->start(0);
   
 
-  glEnable(GL_LIGHTING);
+  //glEnable(GL_LIGHTING);
 
 	// loading textures
 	// clearing the vector
