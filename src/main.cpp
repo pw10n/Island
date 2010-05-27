@@ -131,7 +131,7 @@ materialStruct Sand = {
 	{0.0, 0.0, 0.0, 1.0},
 	{0.0}
 };
-coord2d_t vel;
+//coord2d_t vel;
 //playerstate* gs->player;
 vector<playerstate*> others;
 struct obj_model_t *mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
@@ -1597,11 +1597,11 @@ void mouse(int button, int state, int x, int y) {
   if (button == GLUT_RIGHT_BUTTON) {
     if (state == GLUT_DOWN) { 
 		flag = true;
-		vel.y() = 0.005;
+		gs->player->_vel.y() = 0.005;
     }
 	else {
 		flag = false;
-		vel.y() = 0.000;
+		gs->player->_vel.y() = 0.000;
 	}
   }
 	if(button == GLUT_LEFT_BUTTON) {
