@@ -1,6 +1,8 @@
 /* Taken from: ZJ Wood for CSC 476 Spring 2007
  */
 
+#include "shader.h"
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

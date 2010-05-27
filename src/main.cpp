@@ -17,6 +17,9 @@
 #include "types.h"
 #include "Bin.h"
 #include "crate.h"
+#include "shader.h"
+
+#include "GLSL_helper.h"
 
 
 //#include "md5mesh.cpp"
@@ -2217,6 +2220,15 @@ cerr << "INFO: init gamestate.. " << endl;
   
 	besrc = new beam(player); //only need one beam right now, so might as well initialize it now
 
+	//shader
+	cerr << "INFO: Loading Shaders... ";
+
+	if(!InstallShader(textFileRead("shaders\VLight.glsl"),textFileRead("shaders\FLight.glsl"))){
+		cerr << "FAILED" << endl;
+		exit(-9);
+	}
+	else
+		cerr << "OK" << endl;
 
   glutMainLoop();
 }
