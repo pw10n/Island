@@ -26,3 +26,4 @@ struct obj_model_t
 void init (const char *filename, obj_model_t *objfile);
 void cleanup (obj_model_t objfile);
 void RenderOBJModel (struct obj_model_t *mdl);
+void RenderOBJModelt (struct obj_model_t *mdl, int tex1, int tex2);

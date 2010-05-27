@@ -19,6 +19,11 @@ class objectstate;
 #define GSSTATE_INVALID 99
 
 
+#define HIT_CRATE 1
+#define HIT_PLAYER 2
+#define HIT_HUT 3
+
+
 
 
 //options for checkCollision and updatBinLists

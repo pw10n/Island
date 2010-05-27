@@ -3,6 +3,7 @@
 #include <string.h>
 #include <GL/glut.h>
 #include "objloader.h"
+#include <ctype.h>
 
 /* Vectors */
 typedef float vec3_t[3];
@@ -347,10 +348,12 @@ SecondPass (FILE *fp, struct obj_model_t *mdl)
 	    /* Count number of vertices for this face */
 	    while (*pbuf)
 	      {
-		if (*pbuf == ' ')
-		  pface->num_elems++;
+			if (*pbuf == ' ')
+			if(isalnum(*(pbuf+1))) {
+				pface->num_elems++;
+			}
 
-		pbuf++;
+			pbuf++;
 	      }
 
 	    /* Select primitive type */
@@ -494,21 +497,69 @@ RenderOBJModel (struct obj_model_t *mdl)
 
   //printf("%d\n", mdl->num_faces);
   for (i = 0; i < mdl->num_faces; ++i)
-    {
+  {
+
         
-      glBegin (mdl->faces[i].type);
+    glBegin (mdl->faces[i].type);
 	for (j = 0; j < mdl->faces[i].num_elems; ++j)
-	  {
-      if (mdl->has_texCoords) {
+	{
+		/*printf("test4 %d\n", mdl->texCoords[mdl->faces[i].uvw_indices[j]].uvw);
+		if (i==100) {
+			printf("test4 %d\n", mdl->texCoords[mdl->faces[i].uvw_indices[j]].uvw);
+
+		}*/
+		/*printf("i=%d j=%d %d/", i, j, mdl->faces[i].vert_indices[j]);
+		printf("%d/", mdl->faces[i].uvw_indices[j]);
+		printf("%d\n", mdl->faces[i].norm_indices[j]);*/
+
+	  if (mdl->has_texCoords) {
+		  //printf("test2 %d\n", i);
+		  //printf("test3 %d\n", mdl->texCoords[mdl->faces[i].uvw_indices[j]].uvw);
+	      glTexCoord3fv (mdl->texCoords[mdl->faces[i].uvw_indices[j]].uvw);
+		  //glTexCoord3fv (mdl->texCoords[mdl->faces[219].uvw_indices[3]].uvw);
+      }
+        if (mdl->has_normals){
+		  //glNormal3fv (mdl->normals[mdl->faces[219].norm_indices[3]].ijk);
+	      glNormal3fv (mdl->normals[mdl->faces[i].norm_indices[j]].ijk);
+        
+        }
+	    glVertex4fv (mdl->vertices [mdl->faces[i].vert_indices[j]].xyzw);
+	}
+	glEnd();
+    }
+}
+
+
+void
+RenderOBJModelt (struct obj_model_t *mdl, int tex1, int tex2)
+{
+  int i, j;
+
+  for (i = 0; i < mdl->num_faces; ++i)
+  {
+
+	  if (i>17000) {
+		  glBindTexture(GL_TEXTURE_2D, tex2);
+	  }
+	  else {
+		  glBindTexture(GL_TEXTURE_2D, tex1);
+	  }
+    glBegin (mdl->faces[i].type);
+	for (j = 0; j < mdl->faces[i].num_elems; ++j)
+	{
+
+	  if (mdl->has_texCoords) {
+
 
 	      glTexCoord3fv (mdl->texCoords[mdl->faces[i].uvw_indices[j]].uvw);
+
       }
         if (mdl->has_normals){
 	      glNormal3fv (mdl->normals[mdl->faces[i].norm_indices[j]].ijk);
         
         }
 	    glVertex4fv (mdl->vertices [mdl->faces[i].vert_indices[j]].xyzw);
-	  }
+	}
 	glEnd();
     }
 }

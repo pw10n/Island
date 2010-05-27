@@ -16,10 +16,10 @@
 #include "texture.h"
 #include "types.h"
 #include "Bin.h"
-#include "crate.h"
+#include "gameobjects.h"
 #include "shader.h"
-
 #include "GLSL_helper.h"
+
 
 
 //#include "md5mesh.cpp"
@@ -65,6 +65,7 @@ using namespace std;
 #define PLAYERID 0
 #define ENEMYID 100
 #define CRATEID 200
+#define HUTID 300
 
 
 uint32_t worldtime=0;
@@ -72,6 +73,7 @@ uint32_t worldtime=0;
 int hit_damage = 10;
 
 int cid = 0;
+int hid = 0;
 
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
@@ -134,7 +136,13 @@ materialStruct Sand = {
 //coord2d_t vel;
 //playerstate* gs->player;
 vector<playerstate*> others;
-struct obj_model_t *mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+
+struct obj_model_t *hutmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+struct obj_model_t *rockmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+struct obj_model_t *shellmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+struct obj_model_t *plantemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+Bin *bins[100][100];
+
 
 
 gamestate* gs;
@@ -175,7 +183,10 @@ float fps;
 
 
 vector<unsigned int> textures;
-//vector<goCrate*> crates;
+
+vector<objectstate*> crates;
+
+
 
 mdmodel* fred;
 mdmodel* enemy;
@@ -1088,7 +1099,7 @@ void displayHud(){
 
 	//materials(Black);
 
-    glLoadIdentity();
+    //glLoadIdentity();
 
 	glColor3f(0.7, 0.7, 0.7);
 
@@ -1449,10 +1460,16 @@ void drawTree(double x, double y, double z) {
 
 glDisable(GL_LIGHTING);
 glEnable(GL_TEXTURE_2D);
+glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//glBindTexture(GL_TEXTURE_2D, textures[13]);
+
 glColor3f(1,1,1);
 glPushMatrix();
     glTranslatef(x, y, z);
-    RenderOBJModel (mdl);
+	//glScalef(.009, .009, .009); rocks
+	glScalef(.5, .5, .5);
+	//RenderOBJModel (plantemdl);
+    //RenderOBJModelt (plantemdl, textures[13], textures[14]);
 glPopMatrix();
 glDisable(GL_TEXTURE_2D);
 glEnable(GL_LIGHTING);
@@ -1480,7 +1497,7 @@ void display() {
 
 
   glMatrixMode(GL_MODELVIEW);
-
+  
 
   glPushMatrix();  
   
@@ -1493,7 +1510,8 @@ void display() {
   
 
     displayHud();
-
+  //glPopMatrix();
+  //resetPerspectiveProjection();
     glPushMatrix();
 
 	//gs->player constraints
@@ -1549,10 +1567,12 @@ void display() {
 	gsDisplay();
 	glPopMatrix();
 
+
 		glTranslatef(gs->player->_pos.x(), 0, -gs->player->_pos.y());
         glRotatef(angle, 0, 1, 0);
         glRotatef(180,0,1,0);
 		if(!(gs->player->_hp == 0)) {
+
 			//drawPlayer();
          drawAniPlayer((gs->player->_vel.y()==.005));
 		}
@@ -1569,11 +1589,13 @@ void display() {
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
 		    //materials(Sand);
-        drawGrid();
+        //drawGrid();
 		    //glTranslatef(-1.0,0,-1.0);
+
 
         drawTree(1, 0, -1);
 		    //drawCrates();
+
 
 
 		//glutSolidSphere(1.0,10,10);
@@ -1776,9 +1798,9 @@ void keyboard(unsigned char key, int x, int y ){
 			crt->_hp = 10;
 
 			gs->addObject(crt);
-			
 
 			gs->player->_mp -= 25;
+
 		}
 		break;
 
@@ -1954,8 +1976,12 @@ void fnExit1(){
 }
 
 int main( int argc, char** argv ) {
+
+
+
 gs = new gamestate();
 	// use this for debugging unexpected exits: atexit (fnExit1);
+
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
@@ -2108,12 +2134,28 @@ cerr << "INFO: init gamestate.. " << endl;
   unsigned int blastTexture;
   blastTexture = BindTextureBMP((char *)"textures/smite.bmp", true); //10
   textures.push_back(blastTexture);
+ 
+  unsigned int hutTexture;
+  hutTexture = BindTextureBMP((char *)"textures/hut.bmp", true); //11
+  textures.push_back(hutTexture);
 
-  unsigned int bgaTexture;
+
+  unsigned int rockTexture;
+  rockTexture = BindTextureBMP((char *)"textures/rock.bmp", true); //12
+  textures.push_back(rockTexture);
+
+  /*unsigned int bgaTexture;
   bgaTexture = BindTextureBMP((char *)"textures/bg_attack.bmp", false); //10
-  textures.push_back(bgaTexture);
+  textures.push_back(bgaTexture);*/
 
-  
+
+  unsigned int shellTexture;
+  shellTexture = BindTextureBMP((char *)"textures/shell.bmp", true); //13
+  textures.push_back(shellTexture);
+
+  unsigned int shellTexture2;
+  shellTexture2 = BindTextureBMP((char *)"textures/shell2.bmp", true); //14
+  textures.push_back(shellTexture2);
 
   for(int i = 0; i < 10; i++){
 
@@ -2126,14 +2168,15 @@ cerr << "INFO: init gamestate.. " << endl;
 	  gs->_objects.push_back(temp);
 	  */
 	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
+
 		goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
 		crt->_pos.x() = rand()%20-10;
 		crt->_pos.y() = rand()%20-10;
 		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
 		crt->_hp = 10;
 		crt->_id = CRATEID + (cid++);
-		gs->addObject(crt);
 
+		gs->addObject(crt);
 
 
   }
@@ -2159,7 +2202,11 @@ cerr << "INFO: init gamestate.. " << endl;
   //}
 
 
-  init("model/palmTree.obj", mdl);
+  //init("model/palmTree.obj", mdl);
+  init("model/afro hut.obj", hutmdl);
+  //init("model/rock_a.obj", rockmdl);
+  //init("model/conch.obj", plantemdl);
+  //init("model/hut.obj", mdl);
 
 	init_particle();
 
