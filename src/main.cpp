@@ -71,7 +71,6 @@ uint32_t worldtime=0;
 
 int hit_damage = 10;
 
-
 int cid = 0;
 
 #define MIN(x,y) ((x>y)?y:x)
@@ -136,7 +135,7 @@ coord2d_t vel;
 playerstate* player;
 vector<playerstate*> others;
 struct obj_model_t *mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-Bin *bins[100][100];
+
 
 gamestate* gs;
 
@@ -358,7 +357,7 @@ void tickAi(uint32_t time){
 		if (others[i]->_hp <= 0){
 
 
-			updatBinLists(others[i],REMOV);
+			gs->updatBinLists(others[i],REMOV);
 			delete others[i];
 			others.erase(others.begin()+i);
 
@@ -374,7 +373,7 @@ void tickAi(uint32_t time){
 			case PSTATE_AI_SEARCHING:
 				// move forward
 
-				if(SmaPlCollision(others[i])) {others[i]->_vel.y() = 0; others[i]->_vel.x() -= 1;}
+				if(gs->SmaPlCollision(others[i])) {others[i]->_vel.y() = 0; others[i]->_vel.x() -= 1;}
 				else {others[i]->_vel.y() = .05;}
 
 				others[i]->_pos.x() += (-sin(others[i]->_vel.x()) * others[i]->_vel.y());
@@ -384,7 +383,7 @@ void tickAi(uint32_t time){
 
 
 				//if(others[i]->_vel.y()>0.00) 
-				updatBinLists(others[i],UPDAT);
+				gs->updatBinLists(others[i],UPDAT);
 
 
 				// check bounds
@@ -970,7 +969,6 @@ void drawBox(unsigned int texture) {
 }
 
 void drawBar() {
-
     glBegin(GL_QUADS);
     glVertex2f(-15, -100);
     glVertex2f(-15, 100); 
@@ -980,7 +978,35 @@ void drawBar() {
 }
 
 void drawUIBar(int texture) {
+	/*glPushMatrix();
+	  glEnable(GL_TEXTURE_2D);
+	  //glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
+	  glDisable(GL_LIGHTING);
+	  //glDisable(GL_DEPTH_TEST);
+	
+	  glEnable(GL_BLEND);
+	  glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+	  glBindTexture(GL_TEXTURE_2D, textures[11]);
+	  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	   glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+	  glBegin(GL_QUADS);
+	  glTexCoord2f (0.0, 0.0);
+	  glVertex2f(-40.0, -155.0);
+	  glTexCoord2f (0.0, 1.0);
+	  glVertex2f(-40.0, -88.0); 
+	  glTexCoord2f (1.0, 1.0);
+	  glVertex2f(30.0, -88.0); 
+	  glTexCoord2f (1.0, 0.0);
+	  glVertex2f(30.0, -155.0);
+	  glEnd();
+	  glDisable(GL_TEXTURE_2D);
+	  glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	  //glDisable(GL_BLEND);	   
+	  //glEnable(GL_DEPTH_TEST);
+	   glEnable(GL_LIGHTING);
+	  glPopMatrix();
+	return;*/
 	if (texture == 0) {
 	
 		glColor3f(.7, .7, .7);
@@ -1360,6 +1386,23 @@ void waterBlock(int angle) {
 	glPopMatrix();
 }
 
+void drawWaterTile(){
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0,1.0);
+	glNormal3f(0.0,1.0,0.0);
+	glVertex3f(-1.0, -0.3, 1.0);
+	glTexCoord2f(0.0,0.0);
+	glNormal3f(0.0,1.0,0.0);
+	glVertex3f(-1.0, -0.3, -1.0);
+	glTexCoord2f(1.0,0.0);
+	glNormal3f(0.0,1.0,0.0);
+	glVertex3f(1.0, -0.3, -1.0);
+	glTexCoord2f(1.0,1.0);
+	glNormal3f(0.0,1.0,0.0);
+	glVertex3f(1.0, -0.3, 1.0);
+	glEnd();
+}
+
 void drawWater() {
 	glDisable(GL_LIGHTING);
 	glColor3f(1, 1, 1);
@@ -1368,7 +1411,31 @@ void drawWater() {
   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
   glBindTexture(GL_TEXTURE_2D, textures[3]);
 
+  for(int i=MAP_SIZE; i<MAP_SIZE+20; i+=2){
+	  for(int j=-MAP_SIZE; j<MAP_SIZE; j+=2){
+	glPushMatrix();
+	glTranslatef(i,0,j);
+	drawWaterTile();
+	glPopMatrix();
 
+	glPushMatrix();
+	glTranslatef(-i,0,-j);
+	drawWaterTile();
+	glPopMatrix();
+
+		glPushMatrix();
+	glTranslatef(j,0,i);
+	drawWaterTile();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(-j,0,-i);
+	drawWaterTile();
+	glPopMatrix();
+	  }
+  }
+
+#if 0
 	glBegin(GL_QUADS);
 	  glTexCoord2f (0.0, 0.0);
 	  glVertex3f(-MAP_SIZE-20, -0.1, MAP_SIZE+20);
@@ -1379,6 +1446,7 @@ void drawWater() {
 	  glTexCoord2f (0.0, MAP_SIZE);
 	  glVertex3f(MAP_SIZE+20, -0.1, MAP_SIZE+20);
 	glEnd();
+#endif
 	/*//Left body of water
 	glBegin(GL_QUADS);
 	  glTexCoord2f (0.0, 0.0);
@@ -1566,8 +1634,15 @@ void display() {
 
 
 	drawTiles();
+	glPushMatrix();
+	glUseProgram(ShadeProg);
+	glUniform1f(getUniLoc(ShadeProg, "wTime"), ((float)worldtime)*0.03);
+	glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
+	glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
 	drawWater();
+	glUseProgram(0);
 
+	glPopMatrix();
 #if 0
 	// volumetric fog
 
@@ -1754,11 +1829,7 @@ void keyboard(unsigned char key, int x, int y ){
 		for(uint32_t i=0;i<smpar.size();i++){
 			delete smpar[i];
 		}
-		for(int i=0;i<100;i++){
-			for(int j=0;j<100;j++){
-				delete bins[i][j];
-			}
-		}
+
 		/*for(uint32_t i=0;i<others.size();i++){
 			delete others[i];
 		}*/
@@ -1820,7 +1891,7 @@ void keyboard(unsigned char key, int x, int y ){
 
 			(*it)->_id = CRATEID + (cid++);
 			(*it)->_hp = 10;
-			updatBinLists((*it),UPDAT);
+			gs->updatBinLists((*it),UPDAT);
 
 			player->_mp -= 25;
 		}
@@ -1831,11 +1902,11 @@ void keyboard(unsigned char key, int x, int y ){
 
 void tick(int state) {
 	int coll = 0;
-	if(SmaPlCollision(player)) vel.y() = 0;
+	if(gs->SmaPlCollision(player)) vel.y() = 0;
 	//player->change_velocity(vel);
 	player->_vel = vel;
 	player->tick(worldtime);
-	updatBinLists(player,UPDAT);
+	gs->updatBinLists(player,UPDAT);
 	tickAi(worldtime);
 	rfire = (rfire+1)%5;
 	if (fbtim>-1){
@@ -1865,7 +1936,7 @@ void tick(int state) {
 		explo = true;
 	}
 
-	else if(fbtim>-1&&(coll = SmaPaCollision(fbsrc))){
+	else if(fbtim>-1&&(coll = gs->SmaPaCollision(fbsrc))){
 		fbtim=-1;
 		fbsrc->active = false;
 		for(uint32_t i=0;i<fbpar.size();i++) delete fbpar[i];
@@ -1884,7 +1955,7 @@ void tick(int state) {
 			}
 		}
 
-		LarPaCollision(exsrc,0,100,0,100);
+		gs->LarPaCollision(exsrc,0,100,0,100);
 
 		if(expar.empty()){
 			explo = false;
@@ -1901,7 +1972,7 @@ void tick(int state) {
 			}
 		}
 
-		LarPaCollision(smsrc,0,100,0,100);
+		gs->LarPaCollision(smsrc,0,100,0,100);
 
 		if(smpar.empty()){
 			smit = false;
@@ -1911,7 +1982,7 @@ void tick(int state) {
 	for(int i=rfpar.size()-1;i>-1;i--){
 		rfpar[i]->move();
 
-		if(!rfpar[i]->boom&&SmaPaCollision(rfpar[i])){
+		if(!rfpar[i]->boom&&gs->SmaPaCollision(rfpar[i])){
 
 			rfpar[i]->boom = true;
 			rfpar[i]->life = 0.0;
@@ -1926,7 +1997,7 @@ void tick(int state) {
 		besrc->move();
 
 
-		LarPaCollision(besrc,0,100,0,100);
+		gs->LarPaCollision(besrc,0,100,0,100);
 
 	}
 	/*for(vector<objectstate*>::iterator it = crates.begin();
@@ -1935,7 +2006,7 @@ void tick(int state) {
 	for(unsigned int i=0; i<crates.size();){
 
 		if(crates[i]->_hp == 0) {
-			updatBinLists(crates[i],REMOV);
+			gs->updatBinLists(crates[i],REMOV);
 			delete crates[i];
 			crates.erase(crates.begin()+i);
 		}
@@ -1951,7 +2022,7 @@ void tick(int state) {
 
 	int eger = worldtime/WORLD_TIME_RESOLUTION;
 	for(int i=0;i<100;i++){
-		janitor(eger%100,i);
+		gs->janitor(eger%100,i);
 		//janitor(eger%50+50,i);
 	}
 
@@ -1990,16 +2061,6 @@ void mana(int pass) {
 
 
 
-void initBins() {
-	for(int i=0;i<100;i++){
-		for(int j=0;j<100;j++){
-			bins[i][j] = new Bin(bbody(b2p(i),b2p(j),b2p(i+1),b2p(j+1),BB_AABB));
-		}
-	}
-	for(int i=0;i<crates.size();i++) updatBinLists(crates[i],UPDAT);
-	for(int i=0;i<others.size();i++) updatBinLists(others[i],UPDAT);
-	updatBinLists(player,UPDAT);
-}
 
 void fnExit1(){
 	system("pause");
@@ -2162,6 +2223,9 @@ cerr << "INFO: init gamestate.. " << endl;
   blastTexture = BindTextureBMP((char *)"textures/smite.bmp", true); //10
   textures.push_back(blastTexture);
 
+  unsigned int bgaTexture;
+  bgaTexture = BindTextureBMP((char *)"textures/bg_attack.bmp", false); //10
+  textures.push_back(bgaTexture);
 
   
 
@@ -2215,15 +2279,23 @@ cerr << "INFO: init gamestate.. " << endl;
 
 //  atexit (cleanup(test));
 
-	initBins();
 
   
 	besrc = new beam(player); //only need one beam right now, so might as well initialize it now
 
+	cerr << "INFO: Init glew... ";
+	if(GLEW_OK!=glewInit()){
+		cerr << "FAILED" << endl;
+		exit(-8);
+	}
+	else
+		cerr << "OK" << endl;
+
+
 	//shader
 	cerr << "INFO: Loading Shaders... ";
 
-	if(!InstallShader(textFileRead("shaders\VLight.glsl"),textFileRead("shaders\FLight.glsl"))){
+	if(!InstallShader(textFileRead("shaders\\VWave.glsl"),textFileRead("shaders\\FLight.glsl"))){
 		cerr << "FAILED" << endl;
 		exit(-9);
 	}

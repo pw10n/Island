@@ -7,7 +7,7 @@
 #define PARTICLE_EXPLOSION 3
 #define PARTICLE_SMITE 4
 #include "collision.h"
-#include "gamestate.h"
+#include "playerstate.h"
 
 
 class particle
