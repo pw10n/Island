@@ -9,6 +9,10 @@
 
 #include "GLSL_helper.h"
 
+#include <GL\glut.h>
+
+using namespace std;
+
 int printOglError (const char *file, int line) {
 	/* Returns 1 if an OpenGL error occurred, 0 otherwise. */
 	GLenum glErr;
@@ -23,12 +27,12 @@ int printOglError (const char *file, int line) {
     }
 	return retCode;
 }
-
+#define GL_INFO_LOG_LENGTH 25
 void printShaderInfoLog (GLuint shader)
 {
-	GLint     infologLength = 0;
-	GLint     charsWritten  = 0;
-	GLchar *infoLog;
+	int     infologLength = 0;
+	int     charsWritten  = 0;
+	char *infoLog;
 	
 	printOpenGLError ();  // Check for OpenGL errors
 	glGetShaderiv (shader, GL_INFO_LOG_LENGTH, &infologLength);
@@ -36,7 +40,7 @@ void printShaderInfoLog (GLuint shader)
 	
 	if (infologLength > 0)
     {
-		infoLog = (GLchar *)malloc (infologLength);
+		infoLog = (char *)malloc (infologLength);
 		if (infoLog == NULL)
         {
 			puts ("ERROR: Could not allocate InfoLog buffer");
@@ -52,9 +56,9 @@ void printShaderInfoLog (GLuint shader)
 /* Print out the information log for a program object */
 void printProgramInfoLog (GLuint program)
 {
-	GLint     infologLength = 0;
-	GLint     charsWritten  = 0;
-	GLchar *infoLog;
+	int     infologLength = 0;
+	int     charsWritten  = 0;
+	char *infoLog;
 	
 	printOpenGLError ();  // Check for OpenGL errors
 	glGetProgramiv (program, GL_INFO_LOG_LENGTH, &infologLength);
@@ -62,7 +66,7 @@ void printProgramInfoLog (GLuint program)
 	
 	if (infologLength > 0)
     {
-		infoLog = (GLchar *)malloc (infologLength);
+		infoLog = (char *)malloc (infologLength);
 		if (infoLog == NULL)
         {
 			puts ("ERROR: Could not allocate InfoLog buffer");
@@ -76,8 +80,8 @@ void printProgramInfoLog (GLuint program)
 }
 
 //A helper routine to make it easier to set uniform variables in the shader
-GLint getUniLoc(GLuint program, const GLchar *name) {
-	GLint loc;
+int getUniLoc(GLuint program, const char *name) {
+	int loc;
 	
 	loc = glGetUniformLocation(program, name);
 	
