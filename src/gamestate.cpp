@@ -68,7 +68,7 @@ bool killcoto(const colliobj* obj){
 }
 
 gamestate::gamestate() :
-_tick(0), _lastDrawn(0), _state(GSSTATE_INACTIVE) {
+_tick(0), _lastDrawn(0), _state(GSSTATE_INACTIVE),rfire(0) {
 	initBins();
 }
 
@@ -161,6 +161,7 @@ void gamestate::tick(uint32_t time){
 	_tick = time;
 	
 	//TODO: do stuff
+	if(SmaPlCollision(player)) player->_vel.y() = 0;
 }
 
 void gamestate::addEnemy(playerstate* e){
