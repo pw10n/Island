@@ -143,7 +143,7 @@ vector<playerstate*> others;
 
 struct obj_model_t *hutmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *rockmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-struct obj_model_t *shellmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+struct obj_model_t *rock2mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *treemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 Bin *bins[100][100];
 
@@ -2148,18 +2148,23 @@ cerr << "INFO: init gamestate.. " << endl;
   rockTexture = BindTextureBMP((char *)"textures/rock.bmp", true); //12
   textures.push_back(rockTexture);
 
+  unsigned int shellTexture2;
+  shellTexture2 = BindTextureBMP((char *)"textures/rock2.bmp", true); //13
+  textures.push_back(shellTexture2);
+
   /*unsigned int bgaTexture;
   bgaTexture = BindTextureBMP((char *)"textures/bg_attack.bmp", false); //10
   textures.push_back(bgaTexture);*/
 
 
-  unsigned int shellTexture;
+  /*unsigned int shellTexture;
   shellTexture = BindTextureBMP((char *)"textures/shell.bmp", true); //13
-  textures.push_back(shellTexture);
+  textures.push_back(shellTexture);*/
 
-  unsigned int shellTexture2;
+  /*unsigned int shellTexture2;
   shellTexture2 = BindTextureBMP((char *)"textures/shell2.bmp", true); //14
-  textures.push_back(shellTexture2);
+  textures.push_back(shellTexture2);*/
+
 
   for(int i = 0; i < 10; i++){
 
@@ -2201,10 +2206,20 @@ cerr << "INFO: init gamestate.. " << endl;
 		rck->_hp = 10;
 		rck->_id = ROCKID + (rid++);
 
+		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rock2mdl);
+		rck2->_pos.x() = rand()%20-10;
+		rck2->_pos.y() = rand()%20-10;
+		rck2->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		rck2->_hp = 10;
+		rck2->_id = ROCKID + (rid++);
+
+
+
 		gs->addObject(crt);
 		gs->addObject(hut);
 		gs->addObject(tree);
 		gs->addObject(rck);
+		gs->addObject(rck2);
 
 
   }
@@ -2233,6 +2248,8 @@ cerr << "INFO: init gamestate.. " << endl;
   init("model/palmTree.obj", treemdl);
   init("model/afro hut.obj", hutmdl);
   init("model/rock_a.obj", rockmdl);
+  init("model/rock_b.obj", rock2mdl);
+
   //init("model/conch.obj", plantemdl);
   //init("model/hut.obj", mdl);
 

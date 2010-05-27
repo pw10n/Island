@@ -21,11 +21,13 @@ class objectstate;
 #define OBJECTSTATE_CRATE 0
 #define OBJECTSTATE_HUT 11
 #define OBJECTSTATE_ROCK 12
+#define OBJECTSTATE_ROCK2 13
 #define HIT_CRATE 1
 #define HIT_PLAYER 2
 #define HIT_HUT 3
 #define HIT_TREE 4
 #define HIT_ROCK 5
+#define HIT_ROCK2 6
 
 
 

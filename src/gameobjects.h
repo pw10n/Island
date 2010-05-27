@@ -42,3 +42,13 @@ public:
 	int hitWhat(void) const {return HIT_ROCK;};
 };
 
+class rock2 : public objectstate{
+public:
+	rock2(unsigned int texture, struct obj_model_t *mdl):objectstate(),_tid(texture), mdl(mdl) {};
+	unsigned int _tid;
+
+	struct obj_model_t *mdl;
+	void draw();
+	int hitWhat(void) const {return HIT_ROCK;};
+};
+
