@@ -2196,12 +2196,12 @@ cerr << "INFO: init gamestate.. " << endl;
 		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
 		crt->_hp = 10;
 		crt->_id = CRATEID + (cid++);
-		while (gs->LarObCollision(crt, 0, 100, 0, 100)) {
+		/*while (gs->LarObCollision(crt, 0, 100, 0, 100)) {
 			printf("1\n");
 			crt->_pos.x() = rand()%30-15;
 			crt->_pos.y() = 35 + rand()%30-15;
 			crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
-		}
+		}*/
 		gs->addObject(crt);
 	    }
 
@@ -2212,12 +2212,12 @@ cerr << "INFO: init gamestate.. " << endl;
 		hut->body = bbody(hut->_pos.x()-2,-hut->_pos.y()-2,hut->_pos.x()+2,-hut->_pos.y()+2,BB_AABB);
 		hut->_hp = 100;
 		hut->_id = HUTID + (hid++);
-		while (gs->LarObCollision(hut, 0, 100, 0, 100)) {
+		/*while (gs->LarObCollision(hut, 0, 100, 0, 100)) {
 			printf("2\n");
 			hut->_pos.x() = rand()%30-15;
 			hut->_pos.y() = 35 +rand()%30-15;
 			hut->body = bbody(hut->_pos.x()-2,-hut->_pos.y()-2,hut->_pos.x()+2,-hut->_pos.y()+2,BB_AABB);
-		}
+		}*/
 		gs->addObject(hut);
 		}
 
@@ -2228,12 +2228,12 @@ cerr << "INFO: init gamestate.. " << endl;
 		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
 		tree->_hp = 10;
 		tree->_id = TREEID + (tid++);
-		while (gs->LarObCollision(tree, 0, 100, 0, 100)) {
+		/*while (gs->LarObCollision(tree, 0, 100, 0, 100)) {
 			printf("3\n");
 			tree->_pos.x() = rand()%30-15;
 			tree->_pos.y() = 35 +rand()%30-15;
 			tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
-		}
+		}*/
 		gs->addObject(tree);
 
 		if (i > 10) {
@@ -2243,12 +2243,12 @@ cerr << "INFO: init gamestate.. " << endl;
 		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
 		rck->_hp = 10;
 		rck->_id = ROCKID + (rid++);
-		while (gs->LarObCollision(rck, 0, 100, 0, 100)) {
+		/*while (gs->LarObCollision(rck, 0, 100, 0, 100)) {
 			printf("4\n");
 			rck->_pos.x() = rand()%30-15;
 			rck->_pos.y() = 35 +rand()%30-15;
 			rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
-		}
+		}*/
 		gs->addObject(rck);
 		}
 
@@ -2259,12 +2259,12 @@ cerr << "INFO: init gamestate.. " << endl;
 		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
 		rck2->_hp = 10;
 		rck2->_id = ROCKID + (rid2++);
-		while (gs->LarObCollision(rck2, 0, 100, 0, 100)) {
+		/*while (gs->LarObCollision(rck2, 0, 100, 0, 100)) {
 			printf("5\n");
 			rck2->_pos.x() = rand()%30-15;
 			rck2->_pos.y() = 35 +rand()%30-15;
 			rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
-		}
+		}*/
 		gs->addObject(rck2);
 		}
 
