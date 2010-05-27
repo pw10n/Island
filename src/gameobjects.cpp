@@ -1,6 +1,7 @@
 #include "gameobjects.h"
 #include "util.h"
 #include "objloader.h"
+#include <cstdlib>
 
 #include <GL/glut.h>
 
@@ -118,6 +119,7 @@ void rock::draw(){
 	glPushMatrix();
 		glTranslatef(_pos.x(),0,-_pos.y());
 		glScalef(.009, .009, .009);
+		glRotatef(angle, 0, 1, 0);
 		RenderOBJModel (mdl);
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
@@ -134,6 +136,7 @@ void rock2::draw(){
 	glPushMatrix();
 		glTranslatef(_pos.x(),0,-_pos.y());
 		glScalef(.009, .009, .009);
+		glRotatef(angle, 0, 1, 0);
 		RenderOBJModel (mdl);
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);

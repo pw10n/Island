@@ -68,6 +68,7 @@ using namespace std;
 #define HUTID 300
 #define TREEID 400
 #define ROCKID 500
+#define ROCKID2 600
 
 
 uint32_t worldtime=0;
@@ -78,6 +79,7 @@ int cid = 0;
 int hid = 0;
 int tid = 0;
 int rid = 0;
+int rid2 = 0;
 
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
@@ -2039,6 +2041,8 @@ gs = new gamestate();
 	gs->player = new playerstate(worldtime);
 	gs->player->_hp = 100;
 	gs->player->_mp = 200;
+	gs->player->_pos.x() = 0;
+	gs->player->_pos.y() = 35;
 	gs->fbtim = -1;
 	gs->explo = false;
 	gs->smit = false;
@@ -2166,60 +2170,71 @@ cerr << "INFO: init gamestate.. " << endl;
   textures.push_back(shellTexture2);*/
 
 
-  for(int i = 0; i < 10; i++){
-
-	  
+  for(int i = 0; i < 20; i++){  
 
 	  /* uses gamestate object crate:
 	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
 	  temp->_hp = 10;
 	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
-	  gs->_objects.push_back(temp);
+      gs->_objects.push_back(temp);
 	  */
 	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
 
+	    if (i > 10) {
 		goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
-		crt->_pos.x() = rand()%20-10;
-		crt->_pos.y() = rand()%20-10;
+		crt->_pos.x() = rand()%30-15;
+		crt->_pos.y() = 35 + rand()%30-15;
 		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
 		crt->_hp = 10;
 		crt->_id = CRATEID + (cid++);
+		gs->addObject(crt);
+	    }
 
+		if (i > 10) {
 		Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
-		hut->_pos.x() = rand()%30;
-		hut->_pos.y() = rand()%30;
-		hut->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
-		hut->_hp = 10;
+		hut->_pos.x() = rand()%30-15;
+		hut->_pos.y() = 35 +rand()%30-15;
+		hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
+		hut->_hp = 100;
 		hut->_id = HUTID + (hid++);
+		gs->addObject(hut);
+		}
+
 
 		palmTree *tree = new palmTree(textures[0], treemdl);
-		tree->_pos.x() = rand()%20;
-		tree->_pos.y() = rand()%20;
-		tree->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		tree->_pos.x() = rand()%30-15;
+		tree->_pos.y() = 35 +rand()%30-15;
+		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
 		tree->_hp = 10;
 		tree->_id = TREEID + (tid++);
+		gs->addObject(tree);
 
-		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rockmdl);
-		rck->_pos.x() = rand()%20-10;
-		rck->_pos.y() = rand()%20-10;
-		rck->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		if (i > 10) {
+		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rand()%90, rockmdl);
+		rck->_pos.x() = rand()%30-15;
+		rck->_pos.y() = 35 +rand()%30-15;
+		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
 		rck->_hp = 10;
 		rck->_id = ROCKID + (rid++);
-
-		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rock2mdl);
-		rck2->_pos.x() = rand()%20-10;
-		rck2->_pos.y() = rand()%20-10;
-		rck2->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
-		rck2->_hp = 10;
-		rck2->_id = ROCKID + (rid++);
-
-
-
-		gs->addObject(crt);
-		gs->addObject(hut);
-		gs->addObject(tree);
 		gs->addObject(rck);
+		}
+
+		if (i > 10) {
+		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
+		rck2->_pos.x() = rand()%30-15;
+		rck2->_pos.y() = 35 +rand()%30-15;
+		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
+		rck2->_hp = 10;
+		rck2->_id = ROCKID + (rid2++);
 		gs->addObject(rck2);
+		}
+
+
+
+		
+		
+		
+		
 
 
   }

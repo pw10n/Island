@@ -34,8 +34,9 @@ public:
 
 class rock : public objectstate{
 public:
-	rock(unsigned int texture, struct obj_model_t *mdl):objectstate(),_tid(texture), mdl(mdl) {};
+	rock(unsigned int texture, int angle, struct obj_model_t *mdl):objectstate(),_tid(texture), angle(angle), mdl(mdl) {};
 	unsigned int _tid;
+	int angle;
 
 	struct obj_model_t *mdl;
 	void draw();
@@ -44,8 +45,9 @@ public:
 
 class rock2 : public objectstate{
 public:
-	rock2(unsigned int texture, struct obj_model_t *mdl):objectstate(),_tid(texture), mdl(mdl) {};
+	rock2(unsigned int texture, int angle, struct obj_model_t *mdl):objectstate(),_tid(texture), angle(angle), mdl(mdl) {};
 	unsigned int _tid;
+	int angle;
 
 	struct obj_model_t *mdl;
 	void draw();

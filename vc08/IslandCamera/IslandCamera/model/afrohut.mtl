@@ -1,0 +1,28 @@
+newmtl material25
+Kd 0.820000 0.830000 0.870000
+Ks 0.150000 0.150000 0.150000
+Ns 100.000000
+d 1.000000
+illum 2
+map_Kd C:\POSER 3 AND 7\e frontier\Poser 7\Runtime\Textures\textures various straw tp\palm_tree_bark.jpg
+newmtl material27
+Kd 0.820000 0.830000 0.870000
+Ks 0.150000 0.150000 0.150000
+Ns 100.000000
+d 1.000000
+illum 2
+map_Kd C:\Documents and Settings\XPuser009\My Documents\ktnbark-3.jpg
+newmtl material31
+Kd 0.820000 0.830000 0.870000
+Ks 0.150000 0.150000 0.150000
+Ns 100.000000
+d 1.000000
+illum 2
+map_Kd C:\POSER 3 AND 7\e frontier\Poser 7\Runtime\Textures\textures various straw tp\treeBark.jpg
+newmtl material33
+Kd 0.820000 0.830000 0.870000
+Ks 0.150000 0.150000 0.150000
+Ns 100.000000
+d 1.000000
+illum 2
+map_Kd C:\Documents and Settings\XPuser009\Desktop\afro hut\treeBark.jpg
