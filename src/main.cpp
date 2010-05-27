@@ -60,7 +60,7 @@ using namespace std;
 //#define HIT_PLAYER 2
 #define MAP_SIZE 50 //(set as 50)Equivalent to 100x100 this is the number of sand tiles
 #define TILE_HEIGHT .0001 //used for how high water tiles above 0 level .0001 for 0 top view, .01 for 1 top view
-#define TOP_VIEW 1 //Set to 1 to see birds eye view of island
+#define TOP_VIEW 0 //Set to 1 to see birds eye view of island
 
 #define PLAYERID 0
 #define ENEMYID 100
@@ -98,9 +98,9 @@ materialStruct Black = {
   {0.0}
 };
 materialStruct White = {
-  {1.0, 1.0, 1.0, 0.0},
-  {1.0, 1.0, 1.0, 0.0},
-  {1.0, 1.0, 1.0, 0.0},
+  {1.0, 1.0, 1.0, 1.0},
+  {1.0, 1.0, 1.0, 1.0},
+  {1.0, 1.0, 1.0, 1.0},
   {1.0}
 };
 
@@ -391,6 +391,7 @@ void drawAi(){
 	for(unsigned int i=0; i<others.size(); i++)
 	{
 		if(cull(others[i]->_pos)) continue;
+		materials(Blue);
 		glPushMatrix();
 		//translate
 		glTranslatef(others[i]->_pos.x(), 0.2, -(others[i]->_pos.y()));
@@ -1601,14 +1602,19 @@ void display() {
 	glPushMatrix();
 	glUseProgram(ShadeProg);
 	glUniform1f(getUniLoc(ShadeProg, "wTime"), ((float)worldtime)*0.03);
-	glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
-	glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
+	//glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
+	//glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
 	glScalef(8.0,1.0,8.0);
 	glTranslatef(0.0,0.0,-7.2);
-	//materials(Blue);
+	//glEnable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
+	materials(Blue);
+	glColor3f(0.0,0.0,1.0);
 	RenderOBJModel(&oceanmdl);
 	//drawWater();
+	materials(White);
 	glUseProgram(0);
+	glDisable(GL_LIGHTING);
 
 	glPopMatrix();
 #if 0
@@ -1682,6 +1688,7 @@ void display() {
 
 
 void mouse(int button, int state, int x, int y) {
+	gs->bflag = false;
   if (button == GLUT_RIGHT_BUTTON) {
     if (state == GLUT_DOWN) { 
 		flag = true;
