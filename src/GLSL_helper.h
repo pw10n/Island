@@ -6,18 +6,18 @@
  *  Created by zwood on 2/21/10.
  *
  */
+#pragma once
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 
-#ifdef __APPLE__
-#include "GLUT/glut.h"
-#include <OPENGL/gl.h>
-#endif
-#ifdef __unix__
+#include <GL/glew.h>
 #include <GL/glut.h>
-#endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+using namespace std;
+
+
 
 int printOglError (const char *file, int line);
 
@@ -29,7 +29,7 @@ void printShaderInfoLog (GLuint shader);
 #define printOpenGLError() printOglError(__FILE__, __LINE__)
 
 //A helper routine to make it easier to set uniform variables in the shader
-GLint getUniLoc(GLuint program, const GLchar *name);
+int getUniLoc(GLuint program, const char *name);
 
 void getGLversion();
 
