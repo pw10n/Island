@@ -432,7 +432,7 @@ SecondPass (FILE *fp, struct obj_model_t *mdl)
   printf ("   * %i texture coords.\n", puvw - mdl->texCoords);
   printf ("   * %i normal vectors\n", pnorm - mdl->normals);
   printf ("   * %i faces\n", pface - mdl->faces);
-  printf("wtf %d\n", mdl->num_faces);
+  //printf("wtf %d\n", mdl->num_faces);
 
   return 1;
 }
@@ -492,7 +492,7 @@ RenderOBJModel (struct obj_model_t *mdl)
 {
   int i, j;
 
-  printf("%d\n", mdl->num_faces);
+  //printf("%d\n", mdl->num_faces);
   for (i = 0; i < mdl->num_faces; ++i)
     {
         
