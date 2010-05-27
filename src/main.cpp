@@ -175,7 +175,7 @@ float fps;
 
 
 vector<unsigned int> textures;
-vector<goCrate*> crates;
+//vector<goCrate*> crates;
 
 mdmodel* fred;
 mdmodel* enemy;
@@ -744,7 +744,7 @@ void resetPerspectiveProjection() {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-
+#if 0
 void drawCrates(){
 
 	glEnable(GL_TEXTURE_2D);
@@ -815,6 +815,7 @@ void drawCrates(){
 	}
 	glDisable(GL_TEXTURE_2D);
 }
+#endif
 
 
 void drawBox(unsigned int texture) {
@@ -1572,7 +1573,7 @@ void display() {
 		    //glTranslatef(-1.0,0,-1.0);
 
         drawTree(1, 0, -1);
-		    drawCrates();
+		    //drawCrates();
 
 
 		//glutSolidSphere(1.0,10,10);
@@ -1763,18 +1764,19 @@ void keyboard(unsigned char key, int x, int y ){
 
 		if (gs->player->_mp>=25) {
 			//goCrate *temp = new goCrate(0, 10, OBJECTSTATE_CRATE, coord2d_t(gs->player->_pos.x() + (-sin(gs->player->_vel.x()) * dist),(gs->player->_pos.y() + (cos(gs->player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
+			goCrate* crt = new goCrate(textures[OBJECTSTATE_CRATE]);
 			
-			crates.push_back(new goCrate(textures[OBJECTSTATE_CRATE]));
-			vector<goCrate*>::iterator it = crates.end()-1;
-			(*it)->_pos.x() = gs->player->_pos.x() + (-sin(gs->player->_vel.x()) * dist);
-			(*it)->_pos.y() = gs->player->_pos.y() + (cos(gs->player->_vel.x()) * dist);
-			double px = (*it)->_pos.x();
-			double pz = -((*it)->_pos.y());
-			(*it)->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+			crt->_pos.x() = gs->player->_pos.x() + (-sin(gs->player->_vel.x()) * dist);
+			crt->_pos.y() = gs->player->_pos.y() + (cos(gs->player->_vel.x()) * dist);
+			double px = crt->_pos.x();
+			double pz = -(crt->_pos.y());
+			crt->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
 
-			(*it)->_id = CRATEID + (cid++);
-			(*it)->_hp = 10;
-			gs->updatBinLists((*it),UPDAT);
+			crt->_id = CRATEID + (cid++);
+			crt->_hp = 10;
+
+			gs->addObject(crt);
+			
 
 			gs->player->_mp -= 25;
 		}
@@ -1886,6 +1888,7 @@ void tick(int state) {
 	/*for(vector<objectstate*>::iterator it = crates.begin();
 		it != crates.end();
 		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){*/
+	/*
 	for(unsigned int i=0; i<crates.size();){
 
 		if(crates[i]->_hp == 0) {
@@ -1896,6 +1899,7 @@ void tick(int state) {
 		else i++;
 
 	}
+	*/
 
    Animate(&fred->md5anim[0],&idlAnim,WORLD_TIME_RESOLUTION);
    Animate(&fred->md5anim[1],&walAnim,WORLD_TIME_RESOLUTION);
@@ -2122,15 +2126,15 @@ cerr << "INFO: init gamestate.. " << endl;
 	  gs->_objects.push_back(temp);
 	  */
 	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
+		goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
+		crt->_pos.x() = rand()%20-10;
+		crt->_pos.y() = rand()%20-10;
+		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		crt->_hp = 10;
+		crt->_id = CRATEID + (cid++);
+		gs->addObject(crt);
 
-		crates.push_back(new goCrate(textures[OBJECTSTATE_CRATE]));
-		double px = crates[i]->_pos.x() = rand()%20-10;
-		double pz = -(crates[i]->_pos.y() = rand()%20-10);
-		//double px = crates[i]->_pos.x();
-		//double pz = -(crates[i]->_pos.y());
-		crates[i]->_id = CRATEID + (cid++);
-		crates[i]->_hp = 10;
-		crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+
 
   }
   //for(int i=0;i<10;i++) {

@@ -162,6 +162,17 @@ void gamestate::tick(uint32_t time){
 	
 	//TODO: do stuff
 	if(SmaPlCollision(player)) player->_vel.y() = 0;
+
+	for(vector<objectstate*>::iterator it = _objects.begin(); it!=_objects.end();){
+		if((*it)->_hp == 0){
+			updatBinLists((*it), REMOV);
+			delete (*it);
+			it=_objects.erase(it);
+		}
+		else
+			++it;
+	}
+
 }
 
 void gamestate::addEnemy(playerstate* e){
