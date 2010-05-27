@@ -129,20 +129,12 @@ materialStruct Sand = {
 	{0.0}
 };
 coord2d_t vel;
-playerstate_t* player;
-vector<playerstate_t> others;
+playerstate* player;
+vector<playerstate*> others;
 struct obj_model_t *mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 Bin *bins[100][100];
 
 gamestate* gs;
-//objectstate_t crates[5];
-
-
-bool cull(coord2d_t pos){
-	//return false; 
-	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
-	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
-}
 
 //sets up a specific material
 void materials(materialStruct materials) {
@@ -152,7 +144,7 @@ void materials(materialStruct materials) {
   glMaterialfv(GL_FRONT, GL_SHININESS, materials.shininess);
 }
 
-void rapid(playerstate_t&);
+void rapid(playerstate&);
 int light;
 //globals for lighting - use a white light and apply materials
 //light position
@@ -193,7 +185,7 @@ bool bflag;
 beam * besrc;
 
 vector<unsigned int> textures;
-vector<objectstate_t*> crates;
+vector<goCrate*> crates;
 
 mdmodel* fred;
 mdmodel* enemy;
@@ -233,8 +225,13 @@ void damage(uint8_t *target, int dam){
 	else *target = 0;
 }
 
+bool cull(coord2d_t pos){
+	//return false; 
+	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
+	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
+}
+
 void drawCharacter();
-bool cull(const coord2d_t);
 
 ////// dummy ai functions for 25% /////////
 /*
@@ -260,84 +257,85 @@ forward in the last direction it was facing.
 
 void init_ai(){
 	for(int i=0; i<10; ++i){
-		playerstate_t temp(0);
-		others.push_back(temp);
-		others[i]._id = ENEMYID+i;
-		others[i]._tick = 0;
-		others[i]._hp = 10;
-		others[i]._mp = 200;
-		others[i]._weapon = 0;
-		others[i]._state = PSTATE_AI_SEARCHING;
-		others[i]._score = 0;
+		//playerstate temp(0);
+		others.push_back(new playerstate(0));//temp);
+		others[i]->_id = ENEMYID+i;
+		others[i]->_tick = 0;
+		others[i]->_hp = 10;
+		others[i]->_mp = 200;
+		others[i]->_weapon = 0;
+		others[i]->_state = PSTATE_AI_SEARCHING;
+		others[i]->_score = 0;
 	}
-	others[0]._pos.x() = 35.0;
-	others[0]._pos.y() = 3.0;
-	others[0]._vel.x() = 45.0;
-	others[0]._vel.y() = 0.05;
+	others[0]->_pos.x() = 35.0;
+	others[0]->_pos.y() = 3.0;
+	others[0]->_vel.x() = 45.0;
+	others[0]->_vel.y() = 0.05;
 
-	others[1]._pos.x() = -43.0;
-	others[1]._pos.y() = -13.0;
-	others[1]._vel.x() = 32.0;
-	others[1]._vel.y() = 0.05;
+	others[1]->_pos.x() = -43.0;
+	others[1]->_pos.y() = -13.0;
+	others[1]->_vel.x() = 32.0;
+	others[1]->_vel.y() = 0.05;
 
-	others[2]._pos.x() = 20.0;
-	others[2]._pos.y() = -13.0;
-	others[2]._vel.x() = 15.0;
-	others[2]._vel.y() = 0.05;
+	others[2]->_pos.x() = 20.0;
+	others[2]->_pos.y() = -13.0;
+	others[2]->_vel.x() = 15.0;
+	others[2]->_vel.y() = 0.05;
 
-	others[3]._pos.x() = -23.0;
-	others[3]._pos.y() = 43.0;
-	others[3]._vel.x() = -45.0;
-	others[3]._vel.y() = 0.05;
+	others[3]->_pos.x() = -23.0;
+	others[3]->_pos.y() = 43.0;
+	others[3]->_vel.x() = -45.0;
+	others[3]->_vel.y() = 0.05;
 
-	others[4]._pos.x() = 5.0;
-	others[4]._pos.y() = 0.5;
-	others[4]._vel.x() = 10.0;
-	others[4]._vel.y() = 0.05;
+	others[4]->_pos.x() = 5.0;
+	others[4]->_pos.y() = 0.5;
+	others[4]->_vel.x() = 10.0;
+	others[4]->_vel.y() = 0.05;
 
-	others[5]._pos.x() = 15.0;
-	others[5]._pos.y() = 3.0;
-	others[5]._vel.x() = 25.0;
-	others[5]._vel.y() = 0.05;
+	others[5]->_pos.x() = 15.0;
+	others[5]->_pos.y() = 3.0;
+	others[5]->_vel.x() = 25.0;
+	others[5]->_vel.y() = 0.05;
 
-	others[6]._pos.x() = -3.0;
-	others[6]._pos.y() = -13.0;
-	others[6]._vel.x() = 82.0;
-	others[6]._vel.y() = 0.05;
+	others[6]->_pos.x() = -3.0;
+	others[6]->_pos.y() = -13.0;
+	others[6]->_vel.x() = 82.0;
+	others[6]->_vel.y() = 0.05;
 
-	others[7]._pos.x() = 10.0;
-	others[7]._pos.y() = -13.0;
-	others[7]._vel.x() = 55.0;
-	others[7]._vel.y() = 0.05;
+	others[7]->_pos.x() = 10.0;
+	others[7]->_pos.y() = -13.0;
+	others[7]->_vel.x() = 55.0;
+	others[7]->_vel.y() = 0.05;
 
-	others[8]._pos.x() = -13.0;
-	others[8]._pos.y() = 31.0;
-	others[8]._vel.x() = -25.0;
-	others[8]._vel.y() = 0.05;
+	others[8]->_pos.x() = -13.0;
+	others[8]->_pos.y() = 31.0;
+	others[8]->_vel.x() = -25.0;
+	others[8]->_vel.y() = 0.05;
 
-	others[9]._pos.x() = 4.0;
-	others[9]._pos.y() = 41.5;
-	others[9]._vel.x() = 30.0;
-	others[9]._vel.y() = 0.05;
+	others[9]->_pos.x() = 4.0;
+	others[9]->_pos.y() = 41.5;
+	others[9]->_vel.x() = 30.0;
+	others[9]->_vel.y() = 0.05;
 
 
 	for(int i=0; i<10; ++i){
-		others[i].body = bbody(others[i]._pos.x(),-others[i]._pos.y(),1.0,0,BB_CIRC);
+		others[i]->body = bbody(others[i]->_pos.x(),-others[i]->_pos.y(),1.0,0,BB_CIRC);
 	}
 
 }
 
 void drawAi(){
-	for(vector<playerstate_t>::iterator it = others.begin();
+	/*for(vector<playerstate*>::iterator it = others.begin();
 		it != others.end();
-		++it)
+		++it)*/
+	for(unsigned int i=0; i<others.size(); i++)
 	{
-		if(cull((*it)._pos)) continue;
+		if(cull(others[i]->_pos)) continue;
 		glPushMatrix();
 		//translate
-		glTranslatef((*it)._pos.x(), 0.2, -(*it)._pos.y());
+		glTranslatef(others[i]->_pos.x(), 0.2, -(others[i]->_pos.y()));
 		//rotate
-		glRotatef((*it)._vel.x() * (180.0 / M_PI), 0.0, 1.0, 0.0);
+		glRotatef(others[i]->_vel.x() * (180.0 / M_PI), 0.0, 1.0, 0.0);
 		drawCharacter();
 		glPopMatrix();
 	}
@@ -348,67 +346,71 @@ void drawAi(){
 #define AI_BOUNDS_MIN -40.0
 void tickAi(uint32_t time){
 	coord2d_t dummy;
-	for(vector<playerstate_t>::iterator it = others.begin();
+	/*for(vector<playerstate>::iterator it = others.begin();
 		it != others.end();
-		it=((*it)._hp<=0)?others.erase(it):it+1)
+		it=((*it)->_hp<=0)?others.erase(it):it+1)*/
+	for(unsigned int i=0; i<others.size(); ) //i++ is at the end of for loop
 	{
-		if ((*it)._hp <= 0){
+		if (others[i]->_hp <= 0){
 
 
-			updatBinLists(&(*it),REMOV);
+			updatBinLists(others[i],REMOV);
+			delete others[i];
+			others.erase(others.begin()+i);
 
 			player->_score++;
+			continue;
 		}
 
 
-		if((*it)._id >200){
+		if(others[i]->_id >200){
 			printf("corruption found\n");
 		}
-		switch((*it)._state){
+		switch(others[i]->_state){
 			case PSTATE_AI_SEARCHING:
 				// move forward
 
-				if(SmaPlCollision(&(*it))) {(*it)._vel.y() = 0; (*it)._vel.x() -= 1;}
-				else {(*it)._vel.y() = .05;}
+				if(SmaPlCollision(others[i])) {others[i]->_vel.y() = 0; others[i]->_vel.x() -= 1;}
+				else {others[i]->_vel.y() = .05;}
 
-				(*it)._pos.x() += (-sin((*it)._vel.x()) * (*it)._vel.y());
-				(*it)._pos.y() += (cos((*it)._vel.x()) * (*it)._vel.y());
-				(*it).body = bbody((*it)._pos.x(),-(*it)._pos.y(),1.0,0,BB_CIRC);
-				(*it).front = bbody((*it).calcHotSpot(dummy,.6),.1,BB_CIRC);
+				others[i]->_pos.x() += (-sin(others[i]->_vel.x()) * others[i]->_vel.y());
+				others[i]->_pos.y() += (cos(others[i]->_vel.x()) * others[i]->_vel.y());
+				others[i]->body = bbody(others[i]->_pos.x(),-others[i]->_pos.y(),1.0,0,BB_CIRC);
+				others[i]->front = bbody(others[i]->calcHotSpot(dummy,.6),.1,BB_CIRC);
 
 
-				//if((*it)._vel.y()>0.00) 
-				updatBinLists(&(*it),UPDAT);
+				//if(others[i]->_vel.y()>0.00) 
+				updatBinLists(others[i],UPDAT);
 
 
 				// check bounds
-				if ((*it)._pos.x() > AI_BOUNDS_MAX){
-					(*it)._pos.x() = AI_BOUNDS_MAX;
-					(*it)._vel.x() += M_PI;
+				if (others[i]->_pos.x() > AI_BOUNDS_MAX){
+					others[i]->_pos.x() = AI_BOUNDS_MAX;
+					others[i]->_vel.x() += M_PI;
 				}
-				else if ((*it)._pos.x() < AI_BOUNDS_MIN){
-					(*it)._pos.x() = AI_BOUNDS_MIN;
-					(*it)._vel.x() += M_PI;
+				else if (others[i]->_pos.x() < AI_BOUNDS_MIN){
+					others[i]->_pos.x() = AI_BOUNDS_MIN;
+					others[i]->_vel.x() += M_PI;
 				}
-				if ((*it)._pos.y() > AI_BOUNDS_MAX){
-					(*it)._pos.y() = AI_BOUNDS_MAX;
-					(*it)._vel.x() += M_PI;
+				if (others[i]->_pos.y() > AI_BOUNDS_MAX){
+					others[i]->_pos.y() = AI_BOUNDS_MAX;
+					others[i]->_vel.x() += M_PI;
 				}
-				else if ((*it)._pos.y() < AI_BOUNDS_MIN){
-					(*it)._pos.y() = AI_BOUNDS_MIN;
-					(*it)._vel.x() += M_PI;
+				else if (others[i]->_pos.y() < AI_BOUNDS_MIN){
+					others[i]->_pos.y() = AI_BOUNDS_MIN;
+					others[i]->_vel.x() += M_PI;
 				}
 
-				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
-					(*it)._state = PSTATE_AI_TARGETING_1;
+				if(others[i]->_pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
+					others[i]->_state = PSTATE_AI_TARGETING_1;
 				
 
 				break;
 			case PSTATE_AI_TARGETING_1:
 				// if still in range
-				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
-					coord2d_t pos = (*it)._pos-player->_pos ;
-					float theta=(*it)._vel.x();
+				if(others[i]->_pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
+					coord2d_t pos = others[i]->_pos-player->_pos ;
+					float theta=others[i]->_vel.x();
 					if (pos.x()==0 && pos.x()<0) // handle div by zero case.
 						theta = M_PI/2.0f;
 					else if (pos.y()==0 && pos.x()>0) // handle div by zero case.
@@ -423,50 +425,51 @@ void tickAi(uint32_t time){
 						theta = atan((float)pos.x()/(float)pos.y())+M_PI;
 						
 					//angle=theta*(180.0f / M_PI);
-					(*it)._vel.x() = -theta;
-					(*it)._state = PSTATE_AI_TARGETING_2;
+					others[i]->_vel.x() = -theta;
+					others[i]->_state = PSTATE_AI_TARGETING_2;
 				}
 				// else : return to searching state
 				else
-					(*it)._state = PSTATE_AI_SEARCHING;
+					others[i]->_state = PSTATE_AI_SEARCHING;
 				break;
 			case PSTATE_AI_TARGETING_2:
 				// if still in range
-				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
-					(*it)._state = PSTATE_AI_TARGETING_3;
+				if(others[i]->_pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
+					others[i]->_state = PSTATE_AI_TARGETING_3;
 				}
 				// else : return to searching state
 				else
-					(*it)._state = PSTATE_AI_SEARCHING;
+					others[i]->_state = PSTATE_AI_SEARCHING;
 				break;
 			case PSTATE_AI_TARGETING_3:
 				// if still in range
-				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
+				if(others[i]->_pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE ){
 					
-					(*it)._state = PSTATE_AI_ATACKING;
+					others[i]->_state = PSTATE_AI_ATACKING;
 				}
 				// else : return to searching state
 				else
-					(*it)._state = PSTATE_AI_SEARCHING;
+					others[i]->_state = PSTATE_AI_SEARCHING;
 				break;
 			case PSTATE_AI_ATACKING:
 				// TODO: FIRE
 				{
-					coord2d_t save = (*it)._vel;
-					(*it)._vel.x() += (rand() % 10)*0.1f-0.5f;
-					rapid((*it));
-					(*it)._vel = save;
+					coord2d_t save = others[i]->_vel;
+					others[i]->_vel.x() += (rand() % 10)*0.1f-0.5f;
+					rapid(*others[i]);
+					others[i]->_vel = save;
 				}
 				// if still in rage
-				if((*it)._pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
-					(*it)._state = PSTATE_AI_TARGETING_1;
+				if(others[i]->_pos.distanceTo((*player)._pos) < MIN_AI_DISTANCE )
+					others[i]->_state = PSTATE_AI_TARGETING_1;
 				// else : return to searching state
 				else
-					(*it)._state = PSTATE_AI_SEARCHING;
+					others[i]->_state = PSTATE_AI_SEARCHING;
 				break;
 			default:
-				(*it)._state = PSTATE_AI_SEARCHING;
+				others[i]->_state = PSTATE_AI_SEARCHING;
 		}
+		i++;
 	}
 }
 
@@ -626,7 +629,7 @@ void smiteEm(int x, int y){
 	double dz = log((double)y*2.0/GH)/-.159;
 	coord2d_t targ;
 	targ.x() = player->_pos.x() - dz*dx/dy;
-	targ.y() = player->_pos.y() + dz - 1.0;
+	targ.y() = player->_pos.y() + dz;
 
 	smit = true;
 	smsrc = new smite_s(targ.x(),-targ.y(),player->_id);
@@ -660,7 +663,7 @@ void detonate(source * ws, bool splin){
 	}
 }
 
-void rapid(playerstate_t& player){
+void rapid(playerstate& player){
 	if (player._mp<5){
 		return;
 	}
@@ -681,7 +684,7 @@ void rapid(playerstate_t& player){
 
 
 
-void spread(playerstate_t& player){
+void spread(playerstate& player){
 	if (player._mp<5){
 		return;
 	}
@@ -800,7 +803,7 @@ void drawFireball() {
 }
 
 void drawExplosion() {
-	//exsrc->draw();
+	exsrc->draw();
 	for(uint32_t i=0;i<expar.size();i++){
 		expar[i]->draw();
 	}
@@ -877,7 +880,7 @@ void drawCrates(){
 		glTexCoord2f (0.0, 1.0);
 		glVertex3f (-.5, 1.0, 0.5);
 		glEnd();
-		glBindTexture(GL_TEXTURE_2D, ((crate*)crates[i])->texture);
+		glBindTexture(GL_TEXTURE_2D, ((goCrate*)crates[i])->_tid);
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
 		glVertex3f (0.5, 0.0, -.5);
@@ -888,7 +891,7 @@ void drawCrates(){
 		glTexCoord2f (0.0, 1.0);
 		glVertex3f (0.5, 1.0, -.5);
 		glEnd();
-		//glBindTexture(GL_TEXTURE_2D, ((crate*)crates[i])->texture);
+		//glBindTexture(GL_TEXTURE_2D, ((goCrate*)crates[i])->texture);
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
 		glVertex3f (-.5, 1.0, -.5);
@@ -899,7 +902,7 @@ void drawCrates(){
 		glTexCoord2f (0.0, 1.0);
 		glVertex3f (-.5, 1.0, 0.5);
 		glEnd();
-		//glBindTexture(GL_TEXTURE_2D, ((crate*)&crates[i])->texture);
+		//glBindTexture(GL_TEXTURE_2D, ((goCrate*)&crates[i])->texture);
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
 		glVertex3f (-.5, 0.0, 0.5);
@@ -910,7 +913,7 @@ void drawCrates(){
 		glTexCoord2f (0.0, 1.0);
 		glVertex3f (-.5, 1.0, 0.5);
 		glEnd();
-		//glBindTexture(GL_TEXTURE_2D, ((crate*)&crates[i])->texture);
+		//glBindTexture(GL_TEXTURE_2D, ((goCrate*)&crates[i])->texture);
 		//back
 		glBegin(GL_QUADS);
 		glTexCoord2f (0.0, 0.0);
@@ -1787,9 +1790,9 @@ void keyboard(unsigned char key, int x, int y ){
 
 	case 't':
 		printf("showing hps\n");
-		for(vector<playerstate_t>::iterator it = others.begin();it != others.end();++it)
+		for(unsigned int i=0;i<others.size();i++)
 		{
-			printf("hp: %d\n",(*it)._hp);
+			printf("hp: %d\n",others[i]->_hp);
 		}
 		break;
 	case 'm':
@@ -1801,15 +1804,19 @@ void keyboard(unsigned char key, int x, int y ){
 		//TODO: refactor with new gamestate code
 
 		if (player->_mp>=25) {
-			crate *temp = new crate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
+			//goCrate *temp = new goCrate(0, 10, OBJECTSTATE_CRATE, coord2d_t(player->_pos.x() + (-sin(player->_vel.x()) * dist),(player->_pos.y() + (cos(player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
 			
-			crates.push_back(temp);
-			double px = crates[crates.size()-1]->_pos.x();
-			double pz = -(crates[crates.size()-1]->_pos.y());
-			crates[crates.size()-1]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+			crates.push_back(new goCrate(textures[OBJECTSTATE_CRATE]));
+			vector<goCrate*>::iterator it = crates.end()-1;
+			(*it)->_pos.x() = player->_pos.x() + (-sin(player->_vel.x()) * dist);
+			(*it)->_pos.y() = player->_pos.y() + (cos(player->_vel.x()) * dist);
+			double px = (*it)->_pos.x();
+			double pz = -((*it)->_pos.y());
+			(*it)->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
 
-			crates[crates.size()-1]->_id = CRATEID + (cid++);
-			updatBinLists(crates[crates.size()-1],UPDAT);
+			(*it)->_id = CRATEID + (cid++);
+			(*it)->_hp = 10;
+			updatBinLists((*it),UPDAT);
 
 			player->_mp -= 25;
 		}
@@ -1818,124 +1825,11 @@ void keyboard(unsigned char key, int x, int y ){
   }
 }
 
-
-int checkPaCollision(source * src){
-	for(unsigned int i = 0 ; i < crates.size(); i++){
-		if(collide(src->body,crates[i]->body)){
-			if (src->_type == PARTICLE_FIREBALL){
-				damage(&crates[i]->_hp,10);
-			}
-			else if (src->_type == PARTICLE_RAPID){
-				damage(&crates[i]->_hp,1);
-			}
-			else if (src->_type == PARTICLE_BEAM){
-				damage(&crates[i]->_hp,1);
-				//continue;
-			}
-			else if (src->_type == PARTICLE_EXPLOSION){ //splash damage anyone?
-				damage(&crates[i]->_hp,1);
-			}
-			else if (src->_type == PARTICLE_SMITE){
-				damage(&crates[i]->_hp,50);
-			}
-			// this is wrong - hacked way of having the splinter effect on dead crate
-			if (crates[i]->_hp == 0){
-			}
-			return HIT_CRATE;
-		}
-	}
-	if (collide(src->body,player->body)&&!player->checkID(src->pid)){
-		damage(&player->_hp,hit_damage);
-		if(src->_type == PARTICLE_FIREBALL) detonate(fbsrc,false);
-		return HIT_PLAYER;
-	}
-	for(unsigned int i=0;i<others.size();i++){
-		if(collide(src->body,others[i].body)&&!others[i].checkID(src->pid)) {
-			//damage(&others[i]._hp,5);
-			if (src->_type == PARTICLE_FIREBALL){
-				damage(&others[i]._hp,10);
-			}
-			else if (src->_type == PARTICLE_SMITE){
-				damage(&others[i]._hp,50);
-			}
-			else {
-				damage(&others[i]._hp,5);
-			}
-			return HIT_PLAYER;
-		}
-	}
-	return 0;
-}
-
-//int checkPaCollision(source * src){
-//	//if(LarPaCollision(src,0,100,0,100)) return HIT_PLAYER;
-//	if(SmaPaCollision(src)) return HIT_PLAYER;
-//	else return 0;
-//	for(unsigned int i = 0 ; i < crates.size(); i++){
-//		if(collide(src->body,crates[i]->body)){
-//			/*if (src->_type == PARTICLE_FIREBALL){
-//				damage(&crates[i]->_hp,10);
-//			}
-//			else if (src->_type == PARTICLE_RAPID){
-//				damage(&crates[i]->_hp,1);
-//			}
-//			else if (src->_type == PARTICLE_BEAM){
-//				damage(&crates[i]->_hp,1);
-//				//continue;
-//			}
-//			else if (src->_type == PARTICLE_EXPLOSION){ //splash damage anyone?
-//				damage(&crates[i]->_hp,1);
-//			}
-//			else if (src->_type == PARTICLE_SMITE){
-//				damage(&crates[i]->_hp,50);
-//			}*/
-//			// this is wrong - hacked way of having the splinter effect on dead crate
-//			damage(&crates[i]->_hp,src->_damage);
-//			if (crates[i]->_hp == 0){
-//			}
-//			return HIT_CRATE;
-//		}
-//	}
-//	if (collide(src->body,player->body)&&!player->checkID(src->pid)){
-//		//damage(&player->_hp,hit_damage);
-//		damage(&player->_hp,src->_damage);
-//		if(src->_type == PARTICLE_FIREBALL) detonate(fbsrc,false);
-//		return HIT_PLAYER;
-//	}
-//	for(unsigned int i=0;i<others.size();i++){
-//		if(collide(src->body,others[i].body)&&!others[i].checkID(src->pid)) {
-//			//damage(&others[i]._hp,5);
-//			/*if (src->_type == PARTICLE_FIREBALL){
-//				damage(&others[i]._hp,10);
-//			}
-//			else if (src->_type == PARTICLE_SMITE){
-//				damage(&others[i]._hp,50);
-//			}
-//			else {
-//				damage(&others[i]._hp,5);
-//			}*/
-//			damage(&crates[i]->_hp,src->_damage);
-//			return HIT_PLAYER;
-//		}
-//	}
-//	return 0;
-//}
-
-
-
-//bool checkPlCollision(playerstate_t * pls){
-//	for(unsigned int i=0; i < crates.size(); i++){
-//		if(collide(pls->front,crates[i]->body)) return true;
-//	}
-//	return false;
-//}
-
-
 void tick(int state) {
 	int coll = 0;
-	//if(checkPlCollision(player)) vel.y() = 0;
 	if(SmaPlCollision(player)) vel.y() = 0;
-	player->change_velocity(vel);
+	//player->change_velocity(vel);
+	player->_vel = vel;
 	player->tick(worldtime);
 	updatBinLists(player,UPDAT);
 	tickAi(worldtime);
@@ -2031,11 +1925,17 @@ void tick(int state) {
 		LarPaCollision(besrc,0,100,0,100);
 
 	}
-	for(vector<objectstate_t*>::iterator it = crates.begin();
+	/*for(vector<objectstate*>::iterator it = crates.begin();
 		it != crates.end();
-		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){
+		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){*/
+	for(unsigned int i=0; i<crates.size();){
 
-			if((*it)->_hp == 0) updatBinLists((*it),REMOV);
+		if(crates[i]->_hp == 0) {
+			updatBinLists(crates[i],REMOV);
+			delete crates[i];
+			crates.erase(crates.begin()+i);
+		}
+		else i++;
 
 	}
 
@@ -2046,8 +1946,10 @@ void tick(int state) {
 	worldtime+=WORLD_TIME_RESOLUTION;
 
 	int eger = worldtime/WORLD_TIME_RESOLUTION;
-	for(int i=0;i<100;i++) janitor(eger%100,i);
-
+	for(int i=0;i<100;i++){
+		janitor(eger%100,i);
+		//janitor(eger%50+50,i);
+	}
 
 	glutTimerFunc(WORLD_TIME_RESOLUTION, &tick, 0);
 }
@@ -2058,7 +1960,7 @@ void initModel(){
   textures.push_back(rupTexture);
    //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
    fred = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
-   enemy = new mdmodel("models/characterModel.md5mesh",NULL,rupTexture);
+   enemy = new mdmodel("model/characterModel.md5mesh",NULL,rupTexture);
    initAnimInfo(&idlAnim,0);
    idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
    if(fred->loadAnim("model/hero_walk.md5anim")!=-1){
@@ -2091,13 +1993,17 @@ void initBins() {
 		}
 	}
 	for(int i=0;i<crates.size();i++) updatBinLists(crates[i],UPDAT);
-	for(int i=0;i<others.size();i++) updatBinLists(&others[i],UPDAT);
+	for(int i=0;i<others.size();i++) updatBinLists(others[i],UPDAT);
 	updatBinLists(player,UPDAT);
 }
 
+void fnExit1(){
+	system("pause");
+}
 
 int main( int argc, char** argv ) {
 
+	// use this for debugging unexpected exits: atexit (fnExit1);
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
@@ -2148,7 +2054,7 @@ int main( int argc, char** argv ) {
 	LAz = 0;//shift;
 
 
-	player = new playerstate_t(worldtime);
+	player = new playerstate(worldtime);
 	player->_hp = 100;
 	player->_mp = 200;
 	fbtim = -1;
@@ -2265,34 +2171,38 @@ cerr << "INFO: init gamestate.. " << endl;
 	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
 	  gs->_objects.push_back(temp);
 	  */
-	  crate *temp = new crate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
+	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
 
-	  crates.push_back(temp);
-
-
-	  
+		crates.push_back(new goCrate(textures[OBJECTSTATE_CRATE]));
+		double px = crates[i]->_pos.x() = rand()%20-10;
+		double pz = -(crates[i]->_pos.y() = rand()%20-10);
+		//double px = crates[i]->_pos.x();
+		//double pz = -(crates[i]->_pos.y());
+		crates[i]->_id = CRATEID + (cid++);
+		crates[i]->_hp = 10;
+		crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
 
   }
-  for(int i=0;i<10;i++) {
+  //for(int i=0;i<10;i++) {
 
-	  /* uses gamestate object crate:
-	  // TODO: This code does NOT belong here.
-	  double px = gs->_objects[i]->_pos.x();
-	  double pz = -(gs->_objects[i]->_pos.y());
+	 // /* uses gamestate object crate:
+	 // // TODO: This code does NOT belong here.
+	 // double px = gs->_objects[i]->_pos.x();
+	 // double pz = -(gs->_objects[i]->_pos.y());
 
-	  //gs->_objects[i]->_id = CRATEID + (cid++);
-	  gs->_objects[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
-	  */
-
-
-	  double px = crates[i]->_pos.x();
-	  double pz = -(crates[i]->_pos.y());
+	 // //gs->_objects[i]->_id = CRATEID + (cid++);
+	 // gs->_objects[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+	 // */
 
 
-	  crates[i]->_id = CRATEID + (cid++);
+	 // double px = crates[i]->_pos.x();
+	 // double pz = -(crates[i]->_pos.y());
 
-	  crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
-  }
+
+	 // crates[i]->_id = CRATEID + (cid++);
+
+	 // crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+  //}
 
 
   init("model/palmTree.obj", mdl);
@@ -2305,5 +2215,7 @@ cerr << "INFO: init gamestate.. " << endl;
 
   
 	besrc = new beam(player); //only need one beam right now, so might as well initialize it now
+
+
   glutMainLoop();
 }

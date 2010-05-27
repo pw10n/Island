@@ -5,8 +5,10 @@
 
 //hitAll: false = stop after first hit; true = check all objects in Bin
 int Bin::checkPaCollision(source *src, bool hitAll){
+	if(hitAll) objs.unique(); //don't want duplicates if we hit every element of the list
 	if(collide(src->body,box)){
-		list<netobj *>::iterator iter;
+		objs.remove_if(killcoto);
+		list<colliobj *>::iterator iter;
 		for(iter=objs.begin();iter!=objs.end();iter++){
 			if((*iter)->_id==src->pid) continue;
 			if(collide(src->body,(*iter)->body)){
@@ -18,9 +20,10 @@ int Bin::checkPaCollision(source *src, bool hitAll){
 	return 0; //hitAll = true doesn't care what it hit, so return value doesn't matter
 }
 
-bool Bin::checkPlCollision(playerstate_t *pla){
+bool Bin::checkPlCollision(playerstate *pla){
 	if(collide(pla->front,box)){
-		list<netobj *>::iterator iter;
+		objs.remove_if(killcoto);
+		list<colliobj *>::iterator iter;
 		for(iter=objs.begin();iter!=objs.end();iter++){
 			if((*iter)->_id==pla->_id) continue;
 			if(collide(pla->front,(*iter)->body)){
@@ -31,7 +34,8 @@ bool Bin::checkPlCollision(playerstate_t *pla){
 	return false;
 }
 
-bool Bin::checkObCollision(netobj *obj,int op){
+bool Bin::checkObCollision(colliobj *obj,int op){
+	objs.remove_if(killcoto);
 	if(op==REMOV) {
 		objs.remove(obj); //this is why I used list. Does nothing if obj is not there
 		return true;
@@ -42,7 +46,7 @@ bool Bin::checkObCollision(netobj *obj,int op){
 			return true;		//remove will handle duplicates
 		}
 		if(op==COLLI){
-			list<netobj *>::iterator iter;
+			list<colliobj *>::iterator iter;
 			for(iter=objs.begin();iter!=objs.end();iter++){
 				if(obj->_id==(*iter)->_id) continue; //don't collide with yourself
 				if(collide(obj->body,(*iter)->body)){
@@ -93,7 +97,7 @@ void LarPaCollision(source *src, int minx, int maxx, int minz, int maxz){
 	}
 }
 
-bool LarObCollision(netobj *obj, int minx, int maxx, int minz, int maxz){
+bool LarObCollision(colliobj *obj, int minx, int maxx, int minz, int maxz){
 	if (minx>maxx) {int t=minx; minx = maxx; maxx = t;}
 	if (minz>maxz) {int t=minz; minz = maxz; maxz = t;}
 	if(!collide(obj->body,bbody(b2p(minx),b2p(minz),b2p(maxx),b2p(maxz),BB_AABB))){
@@ -145,7 +149,7 @@ int SmaPaCollision(source *src){
 	return 0;
 }
 
-bool SmaObCollision(netobj *obj){
+bool SmaObCollision(colliobj *obj){
 	int ix = int(obj->_pos.x()) + 49; ix = MAX(ix,0); ix = MIN(ix,99);
 	int iz = int(obj->_pos.y()) + 49; iz = MAX(iz,0); iz = MIN(iz,99);
 	bool b = false;
@@ -158,7 +162,7 @@ bool SmaObCollision(netobj *obj){
 	return b;
 }
 
-bool SmaPlCollision(playerstate_t *pla){
+bool SmaPlCollision(playerstate *pla){
 	int ix = int(pla->front.VCENX) + 49; ix = MAX(ix,0); ix = MIN(ix,99);
 	int iz = int(pla->front.VCENZ) + 49; iz = MAX(iz,0); iz = MIN(iz,99);
 	bool b = false;
@@ -172,7 +176,7 @@ bool SmaPlCollision(playerstate_t *pla){
 }
 
 //Similar to Sma functions above but needs to check a little wider area (up to nine Bins)
-void updatBinLists(netobj *obj,int op){
+void updatBinLists(colliobj *obj,int op){
 	int ix = int(obj->_pos.x()) + 49; ix = MAX(ix,0); ix = MIN(ix,99);
 	int iz = -int(obj->_pos.y()) + 49; iz = MAX(iz,0); iz = MIN(iz,99);
 	bins[ix][iz]->checkObCollision(obj,op);
@@ -192,9 +196,10 @@ void updatBinLists(netobj *obj,int op){
 
 void janitor(int x, int z){
 	bins[x][z]->objs.unique();
-	bins[x][z]->objs.remove_if(killneto);
+	bins[x][z]->objs.remove_if(killcoto);
 }
 
-bool killneto(const netobj* obj){
-	return (obj->hitWhat()==0);
+bool killcoto(const colliobj* obj){
+	//return (obj->hitWhat()==0);
+	return (NULL==obj);
 }

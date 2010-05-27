@@ -35,7 +35,7 @@ void goCrate::draw(){
 	glTexCoord2f (0.0, 1.0);
 	glVertex3f (0.5, 1.0, -.5);
 	glEnd();
-	//glBindTexture(GL_TEXTURE_2D, ((crate*)crates[i])->texture);
+	//glBindTexture(GL_TEXTURE_2D, ((goCrate*)crates[i])->texture);
 	glBegin(GL_QUADS);
 	glTexCoord2f (0.0, 0.0);
 	glVertex3f (-.5, 1.0, -.5);
@@ -46,7 +46,7 @@ void goCrate::draw(){
 	glTexCoord2f (0.0, 1.0);
 	glVertex3f (-.5, 1.0, 0.5);
 	glEnd();
-	//glBindTexture(GL_TEXTURE_2D, ((crate*)&crates[i])->texture);
+	//glBindTexture(GL_TEXTURE_2D, ((goCrate*)&crates[i])->texture);
 	glBegin(GL_QUADS);
 	glTexCoord2f (0.0, 0.0);
 	glVertex3f (-.5, 0.0, 0.5);
@@ -57,7 +57,7 @@ void goCrate::draw(){
 	glTexCoord2f (0.0, 1.0);
 	glVertex3f (-.5, 1.0, 0.5);
 	glEnd();
-	//glBindTexture(GL_TEXTURE_2D, ((crate*)&crates[i])->texture);
+	//glBindTexture(GL_TEXTURE_2D, ((goCrate*)&crates[i])->texture);
 	//back
 	glBegin(GL_QUADS);
 	glTexCoord2f (0.0, 0.0);

@@ -2,7 +2,7 @@
 #include "collision.h"
 #include "particle.h"
 #include "netutil.h" //switch me out when the time comes
-//#include "gamestate.h" //switch me in when the time comes
+#include "gamestate.h" //switch me in when the time comes
 #include <list> //lists are faster at removing from the middle
 
 using namespace std;
@@ -21,26 +21,26 @@ class Bin
 {
 public:
 	bbody box;
-	list<netobj *> objs;
+	list<colliobj *> objs;
 
 	Bin(void) {}
 	Bin(bbody bod): box(bod) {}
-	~Bin(void) {} //deletion of objs' contents will be handled by the global vectors
+	~Bin(void) {} //deletion of objs' contents will be handled by the gamestate vectors
 	int checkPaCollision(source *src,bool hitAll);
-	bool checkObCollision(netobj *obj,int op);
-	bool checkPlCollision(playerstate_t *pla);
+	bool checkObCollision(colliobj *obj,int op);
+	bool checkPlCollision(playerstate *pla);
 };
 
 double b2p(int i);
 void LarPaCollision(source *src,int minx,int maxx,int minz,int maxz);
-bool LarObCollision(netobj *obj,int minx,int maxx,int minz,int maxz);
+bool LarObCollision(colliobj *obj,int minx,int maxx,int minz,int maxz);
 int SmaPaCollision(source *src);
-bool SmaObCollision(netobj *obj);
-bool SmaPlCollision(playerstate_t *pla);
-void updatBinLists(netobj *obj,int op);
+bool SmaObCollision(colliobj *obj);
+bool SmaPlCollision(playerstate *pla);
+void updatBinLists(colliobj *obj,int op);
 
 //cleans up strange problems
 void janitor(int x, int z);
-//used for list::remove_if to get rid of netobj*s that aren't players or objects
+//used for list::remove_if to get rid of colliobj*s that aren't players or objects
 //don't know why they show up, but they do. This gets rid of them
-bool killneto(const netobj* obj);
+bool killcoto(const colliobj* obj);
