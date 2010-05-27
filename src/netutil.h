@@ -126,7 +126,7 @@ class playerstate_t: public netobj{
 	  int hitWhat(void) const {return HIT_PLAYER;};
 };
 
-#define OBJECTSTATE_CRATE 0
+
 #define OBJECTSTATE_CRATE_DIM 1
 
 class objectstate_t: public netobj{

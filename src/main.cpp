@@ -66,6 +66,8 @@ using namespace std;
 #define ENEMYID 100
 #define CRATEID 200
 #define HUTID 300
+#define TREEID 400
+#define ROCKID 500
 
 
 uint32_t worldtime=0;
@@ -74,6 +76,8 @@ int hit_damage = 10;
 
 int cid = 0;
 int hid = 0;
+int tid = 0;
+int rid = 0;
 
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
@@ -140,7 +144,7 @@ vector<playerstate*> others;
 struct obj_model_t *hutmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *rockmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *shellmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-struct obj_model_t *plantemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+struct obj_model_t *treemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 Bin *bins[100][100];
 
 
@@ -2176,7 +2180,31 @@ cerr << "INFO: init gamestate.. " << endl;
 		crt->_hp = 10;
 		crt->_id = CRATEID + (cid++);
 
+		Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
+		hut->_pos.x() = rand()%30;
+		hut->_pos.y() = rand()%30;
+		hut->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		hut->_hp = 10;
+		hut->_id = HUTID + (hid++);
+
+		palmTree *tree = new palmTree(textures[0], treemdl);
+		tree->_pos.x() = rand()%20;
+		tree->_pos.y() = rand()%20;
+		tree->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		tree->_hp = 10;
+		tree->_id = TREEID + (tid++);
+
+		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rockmdl);
+		rck->_pos.x() = rand()%20-10;
+		rck->_pos.y() = rand()%20-10;
+		rck->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		rck->_hp = 10;
+		rck->_id = ROCKID + (rid++);
+
 		gs->addObject(crt);
+		gs->addObject(hut);
+		gs->addObject(tree);
+		gs->addObject(rck);
 
 
   }
@@ -2202,9 +2230,9 @@ cerr << "INFO: init gamestate.. " << endl;
   //}
 
 
-  //init("model/palmTree.obj", mdl);
+  init("model/palmTree.obj", treemdl);
   init("model/afro hut.obj", hutmdl);
-  //init("model/rock_a.obj", rockmdl);
+  init("model/rock_a.obj", rockmdl);
   //init("model/conch.obj", plantemdl);
   //init("model/hut.obj", mdl);
 

@@ -18,10 +18,14 @@ class objectstate;
 #define GSSTATE_ACTIVE 1
 #define GSSTATE_INVALID 99
 
-
+#define OBJECTSTATE_CRATE 0
+#define OBJECTSTATE_HUT 11
+#define OBJECTSTATE_ROCK 12
 #define HIT_CRATE 1
 #define HIT_PLAYER 2
 #define HIT_HUT 3
+#define HIT_TREE 4
+#define HIT_ROCK 5
 
 
 
