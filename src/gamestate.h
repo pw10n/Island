@@ -18,6 +18,7 @@ class objectstate;
 
 #define HIT_CRATE 1
 #define HIT_PLAYER 2
+#define HIT_HUT 3
 
 class colliobj{
 

@@ -36,7 +36,7 @@ unsigned int BindTextureBMP(const char *fn, bool tile){
 	if (infoheader->biBitCount != 24){
 		cerr << "ERROR: Bpp is not 24." << endl;
 		return BindFailSafe(tile);
-		//exit(-3);
+		exit(-3);
 	}
 	
 	if(!(data = (char*) malloc(infoheader->biWidth * infoheader->biHeight * 3))){
@@ -73,8 +73,8 @@ unsigned int BindTextureBMP(const char *fn, bool tile){
 
 	//glTexImage2D(GL_TEXTURE_2D, 0, 3, infoheader->biWidth, infoheader->biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 
-	free(infoheader);
-	free(data);
+//	free(infoheader);
+//	free(data);
 
 	return texid;
 }
