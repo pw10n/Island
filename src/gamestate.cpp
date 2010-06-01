@@ -51,6 +51,7 @@ bool Bin::checkObCollision(colliobj *obj,int op){
 			for(iter=objs.begin();iter!=objs.end();iter++){
 				if(obj->_id==(*iter)->_id) continue; //don't collide with yourself
 				if(collide(obj->body,(*iter)->body)){
+					printf("%d collided with %d\n",obj->_id,(*iter)->_id);
 					return true;
 				}
 			}
