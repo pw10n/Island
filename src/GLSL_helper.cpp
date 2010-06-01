@@ -85,7 +85,7 @@ int getUniLoc(GLuint program, const char *name) {
 	
 	loc = glGetUniformLocation(program, name);
 	
-	if (loc ==1) {
+	if (loc == -1) { //tbd changed from 1
 		printf("No such uniform named %s\n", name);
 	}
 	

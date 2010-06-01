@@ -174,7 +174,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\..\src\Bin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\collision.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\gameobjects.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\gamestate.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\GLSL_helper.cpp"
 				>
 			</File>
 			<File
@@ -182,15 +198,15 @@
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\md5anim.cpp"
+				RelativePath="..\..\..\src\md5anim.cpp"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\md5mesh.cpp"
+				RelativePath="..\..\..\src\md5mesh.cpp"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\mdmodel.cpp"
+				RelativePath="..\..\..\src\mdmodel.cpp"
 				>
 			</File>
 			<File
@@ -202,7 +218,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\objloader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\particle.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\playerstate.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\shader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\tex.cpp"
 				>
 			</File>
 			<File
@@ -220,15 +252,31 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\..\src\Bin.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\collision.h"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\md5model.h"
+				RelativePath="..\..\..\src\gameobjects.h"
 				>
 			</File>
 			<File
-				RelativePath="\\marvin\pwongvib\school\csc476\other\Island\src\mdmodel.h"
+				RelativePath="..\..\..\src\gamestate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\GLSL_helper.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\md5model.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\mdmodel.h"
 				>
 			</File>
 			<File
@@ -240,15 +288,27 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\objloader.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\particle.h"
 				>
 			</File>
 			<File
-				RelativePath=".\resource.h"
+				RelativePath="..\..\..\src\playerstate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\shader.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\stdint.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\tex.h"
 				>
 			</File>
 			<File
@@ -259,6 +319,10 @@
 				RelativePath="..\..\..\src\types.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\src\util.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -266,6 +330,14 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
+		<File
+			RelativePath="..\..\..\deps\glew32.lib"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\deps\glew32s.lib"
+			>
+		</File>
 		<File
 			RelativePath="..\..\..\deps\glut32.lib"
 			>

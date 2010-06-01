@@ -70,6 +70,7 @@ using namespace std;
 #define ROCKID 500
 #define ROCKID2 600
 
+bool shadeOn; //are shaders on?
 
 uint32_t worldtime=0;
 
@@ -98,9 +99,9 @@ materialStruct Black = {
   {0.0}
 };
 materialStruct White = {
-  {1.0, 1.0, 1.0, 0.0},
-  {1.0, 1.0, 1.0, 0.0},
-  {1.0, 1.0, 1.0, 0.0},
+  {1.0, 1.0, 1.0, 1.0},
+  {1.0, 1.0, 1.0, 1.0},
+  {1.0, 1.0, 1.0, 1.0},
   {1.0}
 };
 
@@ -267,7 +268,7 @@ forward in the last direction it was facing.
 #define PSTATE_AI_ATACKING 15
 
 void init_ai(){
-	for(int i=0; i<10; ++i){
+	for(int i=0; i<20; ++i){
 		//playerstate temp(0);
 		others.push_back(new playerstate(0));//temp);
 		others[i]->_id = ENEMYID+i;
@@ -328,8 +329,57 @@ void init_ai(){
 	others[9]->_vel.x() = 30.0;
 	others[9]->_vel.y() = 0.05;
 
+	others[10]->_pos.x() = 32.0;
+	others[10]->_pos.y() = 23.0;
+	others[10]->_vel.x() = 45.0;
+	others[10]->_vel.y() = 0.05;
 
-	for(int i=0; i<10; ++i){
+	others[11]->_pos.x() = -13.0;
+	others[11]->_pos.y() = -63.0;
+	others[11]->_vel.x() = 32.0;
+	others[11]->_vel.y() = 0.05;
+
+	others[12]->_pos.x() = 23.0;
+	others[12]->_pos.y() = -14.0;
+	others[12]->_vel.x() = 15.0;
+	others[12]->_vel.y() = 0.05;
+
+	others[13]->_pos.x() = -43.0;
+	others[13]->_pos.y() = 41.0;
+	others[13]->_vel.x() = -45.0;
+	others[13]->_vel.y() = 0.05;
+
+	others[14]->_pos.x() = 2.0;
+	others[14]->_pos.y() = 31.5;
+	others[14]->_vel.x() = 10.0;
+	others[14]->_vel.y() = 0.05;
+
+	others[15]->_pos.x() = 50.0;
+	others[15]->_pos.y() = 4.0;
+	others[15]->_vel.x() = 25.0;
+	others[15]->_vel.y() = 0.05;
+
+	others[16]->_pos.x() = -23.0;
+	others[16]->_pos.y() = 13.0;
+	others[16]->_vel.x() = 82.0;
+	others[16]->_vel.y() = 0.05;
+
+	others[17]->_pos.x() = 13.0;
+	others[17]->_pos.y() = -43.0;
+	others[17]->_vel.x() = 55.0;
+	others[17]->_vel.y() = 0.05;
+
+	others[18]->_pos.x() = -43.0;
+	others[18]->_pos.y() = 41.0;
+	others[18]->_vel.x() = -25.0;
+	others[18]->_vel.y() = 0.05;
+
+	others[19]->_pos.x() = 13.0;
+	others[19]->_pos.y() = -11.5;
+	others[19]->_vel.x() = 30.0;
+	others[19]->_vel.y() = 0.05;
+
+	for(int i=0; i<20; ++i){
 		others[i]->body = bbody(others[i]->_pos.x(),-others[i]->_pos.y(),1.0,0,BB_CIRC);
 	}
 
@@ -342,6 +392,7 @@ void drawAi(){
 	for(unsigned int i=0; i<others.size(); i++)
 	{
 		if(cull(others[i]->_pos)) continue;
+		materials(Blue);
 		glPushMatrix();
 		//translate
 		glTranslatef(others[i]->_pos.x(), 0.2, -(others[i]->_pos.y()));
@@ -437,7 +488,7 @@ void tickAi(uint32_t time){
 						
 					//angle=theta*(180.0f / M_PI);
 					others[i]->_vel.x() = -theta;
-					others[i]->_state = PSTATE_AI_TARGETING_2;
+					others[i]->_state = (others[i]->_id>10)?PSTATE_AI_ATACKING:PSTATE_AI_TARGETING_2;
 				}
 				// else : return to searching state
 				else
@@ -686,6 +737,7 @@ void drawCharacter(){
 }
 
 void drawPlayer() {
+	glEnable(GL_LIGHTING);
   materials(Grey);
   glPushMatrix();
   
@@ -693,13 +745,16 @@ void drawPlayer() {
     glTranslatef(0.0, 0.0, -0.5);
     gluCylinder(gluNewQuadric(), .05, .2, 1, 12, 36);
   glPopMatrix();
+  glDisable(GL_LIGHTING);
 }
 
 void drawAniPlayer(bool walk){
+	glEnable(GL_LIGHTING);
    glPushMatrix();
    materials(ModeMat);
    fred->draw((walk)?walAnim:idlAnim);
    glPopMatrix();
+   glDisable(GL_LIGHTING);
 }
 
 void drawFireball() {
@@ -1453,7 +1508,6 @@ void gsDisplay(){
 	else{
 
 		if(gs->_state == GSSTATE_ACTIVE){
-
 			gs->draw();
 		}
 		else{
@@ -1547,15 +1601,23 @@ void display() {
 
 	drawTiles();
 	glPushMatrix();
-	glUseProgram(ShadeProg);
-	glUniform1f(getUniLoc(ShadeProg, "wTime"), ((float)worldtime)*0.03);
-	glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
-	glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
+	if(shadeOn){
+		glUseProgram(ShadeProg);
+		glUniform1f(getUniLoc(ShadeProg, "wTime"), ((float)worldtime)*0.03);
+		//glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
+		//glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
+	}
 	glScalef(8.0,1.0,8.0);
-	glTranslatef(0.0,0.0,-7.0);
+	glTranslatef(0.0,0.0,-7.2);
+	//glEnable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
+	materials(Blue);
+	glColor3f(0.0,0.0,1.0);
 	RenderOBJModel(&oceanmdl);
 	//drawWater();
-	glUseProgram(0);
+	materials(White);
+	if(shadeOn) glUseProgram(0);
+	glDisable(GL_LIGHTING);
 
 	glPopMatrix();
 #if 0
@@ -1629,6 +1691,7 @@ void display() {
 
 
 void mouse(int button, int state, int x, int y) {
+	gs->bflag = false;
   if (button == GLUT_RIGHT_BUTTON) {
     if (state == GLUT_DOWN) { 
 		flag = true;
@@ -2102,7 +2165,7 @@ cerr << "INFO: init gamestate.. " << endl;
   gs->start(0);
   
 
-  glEnable(GL_LIGHTING);
+  //glEnable(GL_LIGHTING);
 
 	// loading textures
 	// clearing the vector
@@ -2196,12 +2259,6 @@ cerr << "INFO: init gamestate.. " << endl;
 		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
 		crt->_hp = 10;
 		crt->_id = CRATEID + (cid++);
-		while (gs->LarObCollision(crt, 0, 100, 0, 100)) {
-			printf("1\n");
-			crt->_pos.x() = rand()%30-15;
-			crt->_pos.y() = 35 + rand()%30-15;
-			crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
-		}
 		gs->addObject(crt);
 	    }
 
@@ -2209,15 +2266,9 @@ cerr << "INFO: init gamestate.. " << endl;
 		Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
 		hut->_pos.x() = rand()%30-15;
 		hut->_pos.y() = 35 +rand()%30-15;
-		hut->body = bbody(hut->_pos.x()-2,-hut->_pos.y()-2,hut->_pos.x()+2,-hut->_pos.y()+2,BB_AABB);
+		hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
 		hut->_hp = 100;
 		hut->_id = HUTID + (hid++);
-		while (gs->LarObCollision(hut, 0, 100, 0, 100)) {
-			printf("2\n");
-			hut->_pos.x() = rand()%30-15;
-			hut->_pos.y() = 35 +rand()%30-15;
-			hut->body = bbody(hut->_pos.x()-2,-hut->_pos.y()-2,hut->_pos.x()+2,-hut->_pos.y()+2,BB_AABB);
-		}
 		gs->addObject(hut);
 		}
 
@@ -2228,12 +2279,6 @@ cerr << "INFO: init gamestate.. " << endl;
 		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
 		tree->_hp = 10;
 		tree->_id = TREEID + (tid++);
-		while (gs->LarObCollision(tree, 0, 100, 0, 100)) {
-			printf("3\n");
-			tree->_pos.x() = rand()%30-15;
-			tree->_pos.y() = 35 +rand()%30-15;
-			tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
-		}
 		gs->addObject(tree);
 
 		if (i > 10) {
@@ -2243,12 +2288,6 @@ cerr << "INFO: init gamestate.. " << endl;
 		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
 		rck->_hp = 10;
 		rck->_id = ROCKID + (rid++);
-		while (gs->LarObCollision(rck, 0, 100, 0, 100)) {
-			printf("4\n");
-			rck->_pos.x() = rand()%30-15;
-			rck->_pos.y() = 35 +rand()%30-15;
-			rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
-		}
 		gs->addObject(rck);
 		}
 
@@ -2259,12 +2298,6 @@ cerr << "INFO: init gamestate.. " << endl;
 		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
 		rck2->_hp = 10;
 		rck2->_id = ROCKID + (rid2++);
-		while (gs->LarObCollision(rck2, 0, 100, 0, 100)) {
-			printf("5\n");
-			rck2->_pos.x() = rand()%30-15;
-			rck2->_pos.y() = 35 +rand()%30-15;
-			rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
-		}
 		gs->addObject(rck2);
 		}
 
@@ -2329,15 +2362,20 @@ cerr << "INFO: init gamestate.. " << endl;
 		cerr << "OK" << endl;
 
 
-	//shader
-	cerr << "INFO: Loading Shaders... ";
+	shadeOn = !(glCreateShader==NULL); //if computer can use shaders, glCreateShader won't be null
+	if(shadeOn){
+		//shader
+		cerr << "INFO: Loading Shaders... ";
 
-	if(!InstallShader(textFileRead("shaders\\VWave.glsl"),textFileRead("shaders\\FLight.glsl"))){
-		cerr << "FAILED" << endl;
-		exit(-9);
+		if(!InstallShader(textFileRead("shaders\\VWave.glsl"),textFileRead("shaders\\FLight.glsl"))){
+			cerr << "FAILED" << endl;
+			exit(-9);
+		}
+		else
+			cerr << "OK" << endl;
 	}
 	else
-		cerr << "OK" << endl;
+		cerr << "Shaders don't work on this computer. Going without." << endl;
 
   glutMainLoop();
 }
