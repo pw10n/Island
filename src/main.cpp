@@ -204,6 +204,8 @@ mdmodel* playerMod;
 mdmodel* enemyMod;
 struct anim_info_t idlAnim, walAnim, eneAnim;
 
+unsigned int hutTex, rockTex, rock2Tex;
+
 #if 0
 // Variables Necessary For FogCoordfEXT
 #define GL_FOG_COORDINATE_SOURCE_EXT	0x8450					// Value Taken From GLEXT.H
@@ -603,6 +605,62 @@ void init_particle(){
 	glEnd();
 	glEnable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_2D);
+	glEndList();
+}
+
+void init_dispList(){
+	glNewList(TREELIST,GL_COMPILE);
+	glDisable(GL_LIGHTING);
+	glPushMatrix();
+		glScalef(1, 1, 1);
+		RenderOBJModel (treemdl);
+	glPopMatrix();
+	glEnable(GL_LIGHTING);
+	glEndList();
+
+	glNewList(HUTLIST,GL_COMPILE);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, hutTex);
+
+	glColor3f(1,1,1);
+	glPushMatrix();
+		glScalef(.04, .04, .04);
+		RenderOBJModel (hutmdl);
+	glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	glEndList();
+
+	glNewList(ROCKLIST,GL_COMPILE);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, rockTex);
+
+	glColor3f(1,1,1);
+	glPushMatrix();
+		glScalef(.009, .009, .009);
+		RenderOBJModel (rockmdl);
+	glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	glEndList();
+
+	glNewList(ROCK2LIST,GL_COMPILE);
+	glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, rock2Tex);
+
+	glColor3f(1,1,1);
+	glPushMatrix();
+		glScalef(.009, .009, .009);
+		RenderOBJModel (rock2mdl);
+	glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
 	glEndList();
 }
 
@@ -2233,18 +2291,15 @@ cerr << "INFO: init gamestate.. " << endl;
   blastTexture = BindTextureBMP((char *)"textures/smite.bmp", true); //10
   textures.push_back(blastTexture);
  
-  unsigned int hutTexture;
-  hutTexture = BindTextureBMP((char *)"textures/hut.bmp", true); //11
-  textures.push_back(hutTexture);
+  hutTex = BindTextureBMP((char *)"textures/hut.bmp", true); //11
+  textures.push_back(hutTex);
 
 
-  unsigned int rockTexture;
-  rockTexture = BindTextureBMP((char *)"textures/rock.bmp", true); //12
-  textures.push_back(rockTexture);
+  rockTex = BindTextureBMP((char *)"textures/rock.bmp", true); //12
+  textures.push_back(rockTex);
 
-  unsigned int shellTexture2;
-  shellTexture2 = BindTextureBMP((char *)"textures/rock2.bmp", true); //13
-  textures.push_back(shellTexture2);
+  rock2Tex = BindTextureBMP((char *)"textures/rock2.bmp", true); //13
+  textures.push_back(rock2Tex);
 
   /*unsigned int bgaTexture;
   bgaTexture = BindTextureBMP((char *)"textures/bg_attack.bmp", false); //10
@@ -2353,11 +2408,10 @@ cerr << "INFO: init gamestate.. " << endl;
   init("model/palmTree.obj", treemdl);
   init("model/afro hut.obj", hutmdl);
   init("model/rock_a.obj", rockmdl);
-
   init("model/planeMesh.obj", &oceanmdl);
-  
-
   init("model/rock_b.obj", rock2mdl);
+
+  init_dispList();
 
 
   //init("model/conch.obj", plantemdl);

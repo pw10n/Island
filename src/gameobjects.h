@@ -2,6 +2,11 @@
 
 #include "gamestate.h"
 
+#define TREELIST 2
+#define HUTLIST 3
+#define ROCKLIST 4
+#define ROCK2LIST 5
+
 using namespace std;
 
 class goCrate : public objectstate{

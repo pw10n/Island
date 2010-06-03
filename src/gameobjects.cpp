@@ -85,23 +85,24 @@ void goCrate::draw(){
 }
 
 void Hut::draw(){
-	glDisable(GL_LIGHTING);
+	/*glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, _tid);
+	glBindTexture(GL_TEXTURE_2D, _tid);*/
 
-	glColor3f(1,1,1);
+	//glColor3f(1,1,1);
 	glPushMatrix();
 		glTranslatef(_pos.x(),0,-_pos.y());
-		glScalef(.04, .04, .04);
-		RenderOBJModel (mdl);
+		//glScalef(.04, .04, .04);
+		//RenderOBJModel (mdl);
+		glCallList(HUTLIST);
 	glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
+	//glDisable(GL_TEXTURE_2D);
+	//glEnable(GL_LIGHTING);
 }
 
 void palmTree::draw(){
-	glDisable(GL_LIGHTING);
+	//glDisable(GL_LIGHTING);
 	//glEnable(GL_TEXTURE_2D);
 	//glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	//glBindTexture(GL_TEXTURE_2D, _tid);
@@ -109,44 +110,47 @@ void palmTree::draw(){
 	glColor3f(1,1,1);
 	glPushMatrix();
 		glTranslatef(_pos.x(),0,-_pos.y());
-		glScalef(1, 1, 1);
-		RenderOBJModel (mdl);
+		//glScalef(1, 1, 1);
+		//RenderOBJModel (mdl);
+		glCallList(TREELIST);
 	glPopMatrix();
 	//glDisable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHTING);
 }
 
 void rock::draw(){
-	glDisable(GL_LIGHTING);
+	/*glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, _tid);
+	glBindTexture(GL_TEXTURE_2D, _tid);*/
 
-	glColor3f(1,1,1);
+	//glColor3f(1,1,1);
 	glPushMatrix();
 		glTranslatef(_pos.x(),0,-_pos.y());
-		glScalef(.009, .009, .009);
+		//glScalef(.009, .009, .009);
 		glRotatef(angle, 0, 1, 0);
-		RenderOBJModel (mdl);
+		//RenderOBJModel (mdl);
+		glCallList(ROCKLIST);
 	glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
+	/*glDisable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);*/
 }
 
 void rock2::draw(){
-	glDisable(GL_LIGHTING);
+	/*glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, _tid);
+	glBindTexture(GL_TEXTURE_2D, _tid);*/
 
-	glColor3f(1,1,1);
+	//glColor3f(1,1,1);
 	glPushMatrix();
 		glTranslatef(_pos.x(),0,-_pos.y());
-		glScalef(.009, .009, .009);
+		//glScalef(.009, .009, .009);
 		glRotatef(angle, 0, 1, 0);
-		RenderOBJModel (mdl);
+		//RenderOBJModel (mdl);
+		glCallList(ROCK2LIST);
 	glPopMatrix();
-	glDisable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
+	/*glDisable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);*/
 }
 
