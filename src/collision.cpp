@@ -25,12 +25,12 @@ bbody::bbody(coord2d_t ina, coord2d_t inb, int intyp){
 		vald = 0;
 	}
 	else{
-		double tempa = ina.y() - inb.y();
+		double tempa = inb.y() - ina.y();//ina.y() - inb.y();
 		double tempb = inb.x() - ina.x();
 		VACO = tempa/hypot(tempb,tempa);
 		VBCO = tempb/hypot(tempb,tempa);
-		VCCO = -(ina.x()*VACO + ina.y()*VBCO);//eq of line: ax+by+c=0
-		VDCO = -(ina.x()*VBCO - ina.y()*VACO);//eq of perp line: bx-ay+d=0
+		VCCO = -(ina.x()*VACO - ina.y()*VBCO);//eq of line: ax+by+c=0  +
+		VDCO = -(ina.x()*VBCO + ina.y()*VACO);//eq of perp line: bx-ay+d=0   -
 	}
 	_type = intyp;
 }
@@ -168,7 +168,8 @@ bool lineptcollide(bbody lin, coord2d_t pt){
 	double d = ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO);
 	if(d>-.001&&d<.001){
 		d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
-		return (d>0&&d<LINELEN); //checks that pt is within specific range and in right direction
+		if(lin._type==BB_LINE) return (d>0&&d<LINELEN); //checks that pt is within specific range
+		else return (d>0&&d<LLINELEN);				// and in right direction
 	}
 	return false;
 }
@@ -177,25 +178,25 @@ bool lineAABBcollide(bbody lin, bbody box){
 	bool ean;
 	bool thrubox = false; //does line pass through box, true if at least one corner is on opp side of line from others
 	bool inrange = false; //is box in within correct range, true if at least one corner is
-	double d;
+	double d; double rang = (lin._type==BB_LINE)?LINELEN:LLINELEN;
 	coord2d_t pt(box.VMINX,box.VMINZ);
 	ean = (ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO)>0);
 	d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
-	inrange |= (d>0&&d<LINELEN);
+	inrange |= (d>0&&d<rang);
 	pt = coord2d_t(box.VMINX,box.VMAXZ);
 	thrubox = (ean != (ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO)>0));
 	d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
-	inrange |= (d>0&&d<LINELEN);
+	inrange |= (d>0&&d<rang);
 	if(thrubox&&inrange) return true;
 	pt = coord2d_t(box.VMAXX,box.VMINZ);
 	thrubox |= (ean != (ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO)>0));
 	d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
-	inrange |= (d>0&&d<LINELEN);
+	inrange |= (d>0&&d<rang);
 	if(thrubox&&inrange) return true;
 	pt = coord2d_t(box.VMAXX,box.VMAXZ);
 	thrubox |= (ean != (ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO)>0));
 	d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
-	inrange |= (d>0&&d<LINELEN);
+	inrange |= (d>0&&d<rang);
 	return thrubox && inrange;
 }
 
@@ -204,7 +205,8 @@ bool linecirclecollide(bbody lin, bbody cir){
 	double d = ptonline(pt,lin.VACO,lin.VBCO,lin.VCCO);
 	if(d<cir.VRAD&&d>-cir.VRAD){
 		d = ptonline(pt,lin.VBCO,-lin.VACO,lin.VDCO);
-		return (d<(cir.VRAD+LINELEN)) && (d>-cir.VRAD);
+		if(lin._type==BB_LINE) return (d<(cir.VRAD+LINELEN)) && (d>-cir.VRAD);
+		else return (d<(cir.VRAD+LLINELEN)) && (d>-cir.VRAD);
 	}
 	return false;
 }

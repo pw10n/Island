@@ -12,8 +12,14 @@ int Bin::checkPaCollision(source *src, bool hitAll){
 		list<colliobj *>::iterator iter;
 		for(iter=objs.begin();iter!=objs.end();iter++){
 			if((*iter)->_id==src->pid) continue;
+			if(src->_type==PARTICLE_LOA&&(*iter)->_id==0)
+				continue; //LOA is supposed to collide with the player, so we'll ignore that happening
 			if(collide(src->body,(*iter)->body)){
 				damage(&((*iter)->_hp),src->_damage);
+				if(src->_type==PARTICLE_LOA){
+					src->active = true; //active is being used as a marker
+					return 0; //don't need to check any further
+				}
 				if(!hitAll) return (*iter)->hitWhat();
 			}
 		}
@@ -142,6 +148,7 @@ void gamestate::draw(){
 				(*it)->draw();
 				
 	}
+	if(!(player->_hp == 0)) player->draw();
 
 	//TODO: do stuff
 }

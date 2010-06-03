@@ -43,7 +43,8 @@ mdmodel::mdmodel(const char *filename, const char *animfile, int tn)
       }
       else if(!CheckAnimValidity(&md5file,&md5anim[0]))
       {
-         FreeAnim (&md5anim[0]);
+         cerr << "invalid animation" << endl;
+		  FreeAnim (&md5anim[0]);
       }
       else
 	   {

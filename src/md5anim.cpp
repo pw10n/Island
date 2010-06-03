@@ -165,8 +165,8 @@ CheckAnimValidity (const struct md5_model_t *mdl,
 	return 0;
 
       /* Joints must have the same name */
-      if (strcmp (mdl->baseSkel[i].name, anim->skelFrames[0][i].name) != 0)
-	return 0;
+    /*  if (strcmp (mdl->baseSkel[i].name, anim->skelFrames[0][i].name) != 0)
+	return 0;*/
     }
 
   return 1;
@@ -336,9 +336,9 @@ ReadMD5Anim (const char *filename, struct md5_anim_t *anim)
 	}
       else if (sscanf (buff, " frameRate %d", &anim->frameRate) == 1)
 	{
-	  /*
+	  
 	    printf ("md5anim: animation's frame rate is %d\n", anim->frameRate);
-	  */
+	  
 	}
       else if (sscanf (buff, " numAnimatedComponents %d", &numAnimatedComponents) == 1)
 	{
@@ -483,16 +483,18 @@ void
 Animate (const struct md5_anim_t *anim,
 	 struct anim_info_t *animInfo, double dt)
 {
-  int maxFrames = anim->num_frames - 1;
+	if(animInfo->max_time<.00001) return;
+	int maxFrames = anim->num_frames - 1;
 
-  animInfo->last_time += dt;
+  animInfo->last_time += dt/720.00;
 
   /* move to next frame */
-  if (animInfo->last_time >= animInfo->max_time)
+  while (animInfo->last_time >= animInfo->max_time)
     {
       animInfo->curr_frame++;
       animInfo->next_frame++;
-      animInfo->last_time = 0.0;
+      animInfo->last_time -= animInfo->max_time;//= 0.0;
+	  if(animInfo->last_time<0.0) animInfo->last_time = 0.0;
 
       if (animInfo->curr_frame > maxFrames)
 	animInfo->curr_frame = 0;

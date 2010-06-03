@@ -24,6 +24,10 @@
 #define VDCO vald
 #define LINELEN .05 //this is assuming lines will have uniform length
 
+//longer line than BB_LINE. use the same V* defines
+#define BB_LLINE 3
+#define LLINELEN 6.0
+
 typedef struct bbody {
 	double vala, valb, valc, vald; //uses the V* defines above for naming, based on the type
 	uint8_t _type; //uses the BB_* defines above

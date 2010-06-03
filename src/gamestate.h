@@ -5,7 +5,7 @@
 #include "types.h"
 #include "stdint.h"
 #include "collision.h"
-#include "Bin.h"
+//#include "Bin.h" don't need anymore
 #include "playerstate.h"
 #include "particle.h"
 

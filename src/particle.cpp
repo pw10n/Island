@@ -445,3 +445,12 @@ void smite_p::draw(void)
 	glCallList(PARTLIST);
 	glPopMatrix();
 }
+
+lineOfAtt::lineOfAtt(coord2d_t src, coord2d_t tar, uint16_t id)
+{
+	pid = id;
+	body = bbody(src,tar,BB_LLINE);
+	_type = PARTICLE_LOA;
+	_damage = 0;
+	active = false; //active will serve as a marker, because LarPaCollision() returns void
+}

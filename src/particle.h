@@ -6,6 +6,7 @@
 #define PARTICLE_BEAM 2
 #define PARTICLE_EXPLOSION 3
 #define PARTICLE_SMITE 4
+#define PARTICLE_LOA 5
 #include "collision.h"
 #include "playerstate.h"
 
@@ -130,3 +131,11 @@ public:
 	void draw(void);
 };
 
+//not an actual attack. Used by ranged AI to determine if anything is in the way of the shot
+class lineOfAtt : public source
+{
+public:
+	lineOfAtt(coord2d_t,coord2d_t,uint16_t);
+	void move(void) {printf("Why did you call me?\n");};
+	void draw(void) {printf("I'm not supposed to be called.\n");};
+};

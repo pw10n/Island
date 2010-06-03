@@ -15,11 +15,11 @@
 #include "netutil.h"
 #include "texture.h"
 #include "types.h"
-#include "Bin.h"
+//#include "Bin.h" don't need anymore
 #include "gameobjects.h"
 #include "shader.h"
 #include "GLSL_helper.h"
-
+#include "enemy.h"
 
 
 //#include "md5mesh.cpp"
@@ -81,6 +81,7 @@ int hid = 0;
 int tid = 0;
 int rid = 0;
 int rid2 = 0;
+int eid = 0;
 
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
@@ -199,8 +200,8 @@ vector<objectstate*> crates;
 
 
 
-mdmodel* fred;
-mdmodel* enemy;
+mdmodel* playerMod;
+mdmodel* enemyMod;
 struct anim_info_t idlAnim, walAnim, eneAnim;
 
 #if 0
@@ -270,8 +271,9 @@ forward in the last direction it was facing.
 void init_ai(){
 	for(int i=0; i<20; ++i){
 		//playerstate temp(0);
-		others.push_back(new playerstate(0));//temp);
-		others[i]->_id = ENEMYID+i;
+		if(i%2) others.push_back(new meleeAI());//temp);
+		else others.push_back(new rangedAI());
+		others[i]->_id = ENEMYID+(eid++);
 		others[i]->_tick = 0;
 		others[i]->_hp = 10;
 		others[i]->_mp = 200;
@@ -386,19 +388,19 @@ void init_ai(){
 }
 
 void drawAi(){
-	/*for(vector<playerstate*>::iterator it = others.begin();
-		it != others.end();
-		++it)*/
 	for(unsigned int i=0; i<others.size(); i++)
 	{
 		if(cull(others[i]->_pos)) continue;
 		materials(Blue);
 		glPushMatrix();
 		//translate
-		glTranslatef(others[i]->_pos.x(), 0.2, -(others[i]->_pos.y()));
+		//glTranslatef(others[i]->_pos.x(), 0.2, -(others[i]->_pos.y()));
 		//rotate
-		glRotatef(others[i]->_vel.x() * (180.0 / M_PI), 0.0, 1.0, 0.0);
-		drawCharacter();
+		//glRotatef(others[i]->_vel.x() * (180.0 / M_PI), 0.0, 1.0, 0.0);
+		//drawCharacter();
+		glEnable(GL_LIGHTING);
+		others[i]->draw();
+		glDisable(GL_LIGHTING);
 		glPopMatrix();
 	}
 }
@@ -731,7 +733,7 @@ void drawCharacter(){
 
 	glTranslatef(0.0, 0.25, 0.0);
 
-	enemy->draw(eneAnim);
+	enemyMod->draw(eneAnim);
 	
 	glPopMatrix();
 }
@@ -752,7 +754,7 @@ void drawAniPlayer(bool walk){
 	glEnable(GL_LIGHTING);
    glPushMatrix();
    materials(ModeMat);
-   fred->draw((walk)?walAnim:idlAnim);
+   playerMod->draw((walk)?walAnim:idlAnim);
    glPopMatrix();
    glDisable(GL_LIGHTING);
 }
@@ -765,7 +767,7 @@ void drawFireball() {
 }
 
 void drawExplosion() {
-	gs->exsrc->draw();
+	//gs->exsrc->draw();
 	for(uint32_t i=0;i<gs->expar.size();i++){
 		gs->expar[i]->draw();
 	}
@@ -1642,17 +1644,7 @@ void display() {
 	gsDisplay();
 	glPopMatrix();
 
-
-		glTranslatef(gs->player->_pos.x(), 0, -gs->player->_pos.y());
-        glRotatef(angle, 0, 1, 0);
-        glRotatef(180,0,1,0);
-		if(!(gs->player->_hp == 0)) {
-
-			//drawPlayer();
-         drawAniPlayer((gs->player->_vel.y()==.005));
-		}
-
-      glPopMatrix();
+    glPopMatrix();
 
     
 
@@ -1816,8 +1808,8 @@ void keyboard(unsigned char key, int x, int y ){
 			delete others[i];
 		}*/
 		others.clear();
-		delete fred;
-		delete enemy;
+		delete playerMod;
+		delete enemyMod;
 		gs->fbpar.clear(); gs->expar.clear(); gs->rfpar.clear(); gs->smpar.clear();
 		//delete fbsrc; delete exsrc;
       exit( EXIT_SUCCESS );
@@ -1891,7 +1883,18 @@ void tick(int state) {
 	//gs->player->_vel = vel;
 	gs->player->tick(worldtime);
 	gs->updatBinLists(gs->player,UPDAT);
-	tickAi(worldtime);
+	//tickAi(worldtime);
+	for(unsigned int i=0;i<others.size();i++){
+		if(others[i]->_hp==0){
+			gs->updatBinLists(others[i],REMOV);
+			delete others[i];
+			others.erase(others.begin()+i);
+			i--;
+			gs->player->_score++;
+			continue;
+		}
+		others[i]->tick(worldtime);
+	}
 	gs->rfire = (gs->rfire+1)%5;
 	if (gs->fbtim>-1){
 		gs->fbtim++;
@@ -2000,8 +2003,8 @@ void tick(int state) {
 	}
 	*/
 
-   Animate(&fred->md5anim[0],&idlAnim,WORLD_TIME_RESOLUTION);
-   Animate(&fred->md5anim[1],&walAnim,WORLD_TIME_RESOLUTION);
+   Animate(&playerMod->md5anim[0],&idlAnim,WORLD_TIME_RESOLUTION);
+   Animate(&playerMod->md5anim[1],&walAnim,WORLD_TIME_RESOLUTION);
 	glutPostRedisplay();
 
 	worldtime+=WORLD_TIME_RESOLUTION;
@@ -2019,19 +2022,34 @@ void initModel(){
    unsigned int rupTexture; 
   rupTexture = BindTextureBMP((char *)"textures/rupee2.bmp", false);
   textures.push_back(rupTexture);
-   //fred = new mdmodel("rupee.md5mesh",NULL,rupTexture);
-   fred = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
-   enemy = new mdmodel("model/characterModel.md5mesh",NULL,rupTexture);
-   initAnimInfo(&idlAnim,0);
-   idlAnim.max_time = 1.0/fred->md5anim[0].frameRate;
-   if(fred->loadAnim("model/hero_walk.md5anim")!=-1){
-      initAnimInfo(&walAnim,1);
-      walAnim.max_time = 1.0/fred->md5anim[1].frameRate;
+   //playerMod = new mdmodel("rupee.md5mesh",NULL,rupTexture);
+   playerMod = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
+   enemyMod = new mdmodel("model/characterModel.md5mesh","model/characterModelIdle.md5anim",rupTexture);
+   initAnimInfo(&gs->player->idlAni,0);
+   gs->player->idlAni.max_time = 1.0/playerMod->md5anim[0].frameRate;
+   if(playerMod->loadAnim("model/hero_walk.md5anim")!=-1){
+      initAnimInfo(&gs->player->walAni,1);
+      gs->player->walAni.max_time = 1.0/playerMod->md5anim[1].frameRate;
    }
-   
-   //enemy = new mdmodel("model/rupee.md5mesh",NULL,rupTexture);
-   initAnimInfo(&eneAnim,0);
-   cerr << "hello?" << endl;
+   if(playerMod->loadAnim("model/hero_attack_sword.md5anim")!=-1){
+      initAnimInfo(&gs->player->attAni,2);
+      gs->player->attAni.max_time = 1.0/playerMod->md5anim[2].frameRate;
+   }
+   //enemyMod = new mdmodel("model/rupee.md5mesh",NULL,rupTexture);
+   //initAnimInfo(&eneAnim,0);
+   double imt = 1.0/enemyMod->md5anim[0].frameRate;
+   double wmt = 0;
+   if(enemyMod->loadAnim("model/characterModelRunning2.md5anim")!=-1){
+      wmt = 1.0/enemyMod->md5anim[1].frameRate;
+   }
+   for(unsigned int i=0;i<others.size();i++){
+		initAnimInfo(&others[i]->idlAni,0);
+		others[i]->idlAni.max_time = imt;
+		if(wmt!=0){
+			initAnimInfo(&others[i]->walAni,1);
+			others[i]->walAni.max_time = wmt;
+		}
+   }
 }
 
 void mana(int pass) {
