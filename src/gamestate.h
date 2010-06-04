@@ -78,15 +78,13 @@ public:
 	uint8_t _state;
 
 	fireball_s * fbsrc;
-	vector<fireball_p *> fbpar;
 	int fbtim;
 	explosion_s * exsrc;
-	vector<particle *> expar;
 	bool explo;
 	smite_s * smsrc;
-	vector<smite_p *> smpar;
 	bool smit;
 	vector<rapidfire *> rfpar;
+	vector<particle *> _pars;
 	int beatim;
 	bool bflag;
 	beam * besrc;
@@ -98,7 +96,8 @@ public:
 	void draw();
 	void tick(uint32_t time);
 
-	bool cull(coord2d_t pos);
+	bool cull2(coord2d_t pos);
+	bool cull3(vec3d_t pos);
 
 	void addEnemy(playerstate* e);
 	void addObject(objectstate* o);
@@ -124,7 +123,7 @@ public:
 		dummy = player->calcHotSpot(dummy,.6);
 		fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0,fbz/5.0,player->_id);
 		for(int i=0;i<200;i++){
-			fbpar.push_back(new fireball_p(fbsrc));
+			_pars.push_back(new fireball_p(fbsrc));
 		}
 		if (player->_mp>=10) {
 			player->_mp -= 10;
@@ -147,7 +146,7 @@ public:
 		smit = true;
 		smsrc = new smite_s(targ.x(),-targ.y(),player->_id);
 		for(int i=0;i<400;i++){
-			smpar.push_back(new smite_p(smsrc));
+			_pars.push_back(new smite_p(smsrc));
 		}
 	}
 
@@ -156,21 +155,21 @@ public:
 		exsrc = new explosion_s(ws->_pos.x(),ws->_pos.z());
 		if(!splin){
 			for(int i=0;i<400;i++){
-				expar.push_back(new explosion_p(exsrc));
+				_pars.push_back(new explosion_p(exsrc));
 			}
 		}
 		else{
 			if (ws->_type == PARTICLE_FIREBALL){
 				for(int i=0;i<200;i++){
-					expar.push_back(new explosion_p(exsrc));
+					_pars.push_back(new explosion_p(exsrc));
 				}
 				for(int i=0;i<200;i++){
-					expar.push_back(new splinter(exsrc));
+					_pars.push_back(new splinter(exsrc));
 				}
 			}
 			else if (ws->_type == PARTICLE_RAPID){
 				for(int i=0;i<200;i++){
-					expar.push_back(new splinter(exsrc));
+					_pars.push_back(new splinter(exsrc));
 				}
 			}
 		}

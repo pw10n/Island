@@ -24,6 +24,7 @@ public:
 	~particle(void);
 	virtual void move(void) = 0; //this makes it virtual, and particle abstract, nu?
 	virtual void draw(void) = 0;
+	coord2d_t * v2c(coord2d_t *dum) {dum->x() = _pos.x();dum->y() = _pos.z(); return dum;};
 };
 //sources are particles that have collision detection
 //and are passed over the network in some form.
@@ -65,6 +66,7 @@ class explosion_s : public source
 public:
 	int _damfrac; //"divides" the damage so explosions aren't insanely powerful
 	int _tock;
+	int subPar; //number of particles attached to this
 
 	explosion_s(double,double);
 	void move(void);
@@ -96,8 +98,10 @@ class splinter : public particle
 public:
 	float roh,rov,sph,spv; //ROtation/SPin; horizontal/vertical
 	explosion_s *src;
+	bool unatt; //if true, this is not attached to an explosion_s
 
 	splinter(explosion_s *);
+	splinter(vec3d_t);
 	void move(void);
 	void draw(void);
 };
@@ -116,6 +120,8 @@ public:
 class smite_s : public source
 {
 public:
+	int subPar; //number of particles attached to this
+
 	smite_s(double,double, uint16_t);
 	void move(void);
 	void draw(void);
@@ -138,4 +144,12 @@ public:
 	lineOfAtt(coord2d_t,coord2d_t,uint16_t);
 	void move(void) {printf("Why did you call me?\n");};
 	void draw(void) {printf("I'm not supposed to be called.\n");};
+};
+
+class blood : public particle
+{
+public:
+	blood(vec3d_t);
+	void move(void);
+	void draw(void);
 };

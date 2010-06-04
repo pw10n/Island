@@ -61,14 +61,7 @@ void fireball_s::draw(void)
 	glPopMatrix();
 	glEnable(GL_LIGHTING);
 }
-/*
-bool fireball_s::collide(float obx, float obz, float obr)
-{
-	float rad = (float)MIN(age,15)/100.f;
-	float dist = hypot(obx-x,obz-z);
-	return (dist<(obr+rad));
-}
-*/
+
 fireball_p::fireball_p(fireball_s * sour)
 {
 	src = sour;
@@ -123,10 +116,16 @@ void fireball_p::refresh(void)
 
 void fireball_p::move(void)
 {
+	if(src==NULL){
+		active = false;
+		return;
+	}
 	life -= fade;
+	if(life<0.0){
+		refresh();
+		return;
+	}
 	_pos = _pos + _vel; _vel = _vel * .9;
-	//r = (life>1.0f)?1.0f:life;
-	//g = (life>1.0f)?(life-1.0f):0;
 	if(life>1.5f){
 		g = (life-1.5f)*2.0f;
 	}else{
@@ -140,7 +139,6 @@ void fireball_p::draw(void)
 	glColor4f(1.0f,g,b,a);
 	glPushMatrix();
 	glTranslatef(_pos.x(),_pos.y(),_pos.z());
-	//float sca = 5.0f-life*2.0f;
 	float sca = life*2.0f;
 	glScalef(sca,sca,sca);
 	glCallList(PARTLIST);
@@ -153,8 +151,6 @@ explosion_s::explosion_s(double ix, double iz)
 	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t();
 	life = 4.0f;
 	fade = .5f;
-	//life = 1.0f;
-	//fade = (float)(rand()%7+3)/50.0f;
 	r = g = a = 1.0f; b = 0.0f;
 	active = true;
 	body = bbody(_pos,(double)life,BB_CIRC);
@@ -162,6 +158,7 @@ explosion_s::explosion_s(double ix, double iz)
 	_damage = 1;
 	_damfrac = 3;
 	_tock = 0;
+	subPar = 0;
 }
 
 void explosion_s::move(void)
@@ -179,18 +176,9 @@ void explosion_s::draw(void)
 	glPushMatrix();
 	glTranslatef(_pos.x(),.1,_pos.z());
 	glutWireSphere(life,10,10);
-	//float sca = 4.0f;
-	//glScalef(sca,sca,sca);
-	//glCallList(PARTLIST);
 	glPopMatrix();
 }
-/*
-bool explosion_s::collide(float obx, float obz, float obr)
-{
-	float dist = hypot(obx-x,obz-z);
-	return (dist<(obr+life));
-}
-*/
+
 explosion_p::explosion_p(explosion_s * sour)
 {
 	src = sour;
@@ -202,15 +190,23 @@ explosion_p::explosion_p(explosion_s * sour)
 	_vel.z() = .4f*DCOS(t)*DCOS(p);
 	life = (float)(rand()%4+1);
 	fade = 2.0f/life;
-	//life = 1.0f;
-	//fade = (float)(rand()%7+3)/50.0f;
 	r = g = a = 1.0f; b = 0.0f;
 	active = true;
+	src->subPar += 1;
 }
 
 void explosion_p::move(void)
 {
+	if(src==NULL||!src->active){
+		active = false;
+		return;
+	}
 	life -= fade;
+	if(life<0.0){
+		src->subPar -= 1;
+		active = false;
+		return;
+	}
 	_pos = _pos + _vel;
 	if(life>3.0f){
 		g = 1.0f;
@@ -248,10 +244,7 @@ void rapidfire::move(void)
 {
 	life += .1;
 	if(!boom){
-		//_pos.x() += -sin(vtr)*.6;
-		//_pos.z() += -cos(vtr)*.6;
 		_pos = _pos + _vel;
-		//body = bbody(_pos,.01,BB_CIRC);
 		body.VCENX = _pos.x();
 		body.VCENZ = _pos.z();
 		if(life>3.0){
@@ -288,13 +281,7 @@ void rapidfire::draw(void)
 	}
 	glPopMatrix();
 }
-/*
-bool rapidfire::collide(float obx, float obz, float obr)
-{
-	float dist = hypot(obx-x,obz-z);
-	return (dist<(obr+.2f));
-}
-*/
+
 splinter::splinter(explosion_s * sour)
 {
 	src = sour;
@@ -313,19 +300,49 @@ splinter::splinter(explosion_s * sour)
 	spv = (float)(rand()%15);
 	r = .5f; g = .25f; b = 0; a = 1.0f;
 	active = true;
+	src->subPar += 1;
+	unatt = false;
+}
+
+splinter::splinter(vec3d_t inpos)
+{
+	src = NULL; //we'll be ignoring src
+	float t = (float)(rand()%360);
+	float p = (float)(rand()%90);
+	float v = (float)(rand()%8+1)/10.0f;
+	_pos = inpos;
+	_vel.x() = v*DSIN(t)*DCOS(p);
+	_vel.y() = v*DSIN(p);
+	_vel.z() = v*DCOS(t)*DCOS(p);
+	life = (float)(rand()%7+1);
+	fade = .2f;
+	roh = (float)(rand()%360);
+	rov = (float)(rand()%360);
+	sph = (float)(rand()%30-15);
+	spv = (float)(rand()%15);
+	r = .5f; g = .25f; b = 0; a = 1.0f;
+	active = true;
+	unatt = true;
 }
 
 void splinter::move(void)
 {
+	if(!unatt&&(src==NULL||!src->active)){
+		active = false;
+		return;
+	}
 	life -= fade;
+	if(life<0.0){
+		if(!unatt) src->subPar -= 1;
+		active = false;
+		return;
+	}
 	if(_pos.y()>0){
-		//_pos.x() += _vel.x(); _pos.x() += _vel.y(); _pos.x() += _vel.z();
 		_pos = _pos + _vel;
 		_vel.y() -= .1;
 		roh += sph;
 		rov += spv;
 	}
-	//if(y<0) life = -0.1f;
 	else a *= .9;
 }
 
@@ -392,6 +409,7 @@ smite_s::smite_s(double ix, double iz, uint16_t id)
 	body = bbody(_pos,.25,BB_CIRC);
 	_type = PARTICLE_SMITE;
 	_damage = 50;
+	subPar = 0;
 }
 
 void smite_s::move(void)
@@ -425,11 +443,21 @@ smite_p::smite_p(smite_s * sour)
 	b = a = 1.0f;
 	r = g = (float)(rand()%128)/128.0f;
 	active = true;
+	src->subPar += 1;
 }
 
 void smite_p::move(void)
 {
+	if(src==NULL||!src->active){
+		active = false;
+		return;
+	}
 	life -= fade;
+	if(life<0.0){
+		src->subPar -= 1;
+		active = false;
+		return;
+	}
 	_pos = _pos + _vel;
 	a = life/2.0f;
 
@@ -441,7 +469,7 @@ void smite_p::draw(void)
 	glPushMatrix();
 	glTranslatef(_pos.x(),_pos.y(),_pos.z());
 	float sca = 4.0f;
-	glScalef(1,sca,1);
+	glScalef(2,sca,2);
 	glCallList(PARTLIST);
 	glPopMatrix();
 }
@@ -453,4 +481,48 @@ lineOfAtt::lineOfAtt(coord2d_t src, coord2d_t tar, uint16_t id)
 	_type = PARTICLE_LOA;
 	_damage = 0;
 	active = false; //active will serve as a marker, because LarPaCollision() returns void
+}
+
+blood::blood(vec3d_t inpos)
+{
+	float t = (float)(rand()%360);
+	float p = (float)(rand()%90);
+	float v = (float)(rand()%8+1)/20.0f;
+	_pos = inpos;
+	_vel.x() = v*DSIN(t)*DCOS(p);
+	_vel.y() = v*DSIN(p);
+	_vel.z() = v*DCOS(t)*DCOS(p);
+	life = (float)(rand()%8+1);
+	fade = .2f;
+	r = .95f; g = b = 0; a = 1.0f;
+	active = true;
+}
+
+void blood::move(void)
+{
+	life -= fade;
+	if(life<0.0){
+		active = false;
+		return;
+	}
+	if(_pos.y()>0){
+		_pos = _pos + _vel;
+		_vel.y() -= .2;
+	}
+	else a *= .95;
+}
+
+void blood::draw(void)
+{
+	float pa = MIN((2.0f*a),1.0f);
+	glColor4f(r,g,b,pa);
+	glPushMatrix();
+	glTranslatef(_pos.x(),_pos.y(),_pos.z());
+	float sca = 4.0f*(1.2f-a);
+	glScalef(sca,sca,sca);
+	//glCallList(PARTLIST);
+	glDisable(GL_LIGHTING);
+	glutSolidSphere(.05,5,5);
+	glEnable(GL_LIGHTING);
+	glPopMatrix();
 }

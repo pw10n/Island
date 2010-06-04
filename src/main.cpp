@@ -819,23 +819,23 @@ void drawAniPlayer(bool walk){
 
 void drawFireball() {
 	gs->fbsrc->draw();
-	for(uint32_t i=0;i<gs->fbpar.size();i++){
+	/*for(uint32_t i=0;i<gs->fbpar.size();i++){
 		gs->fbpar[i]->draw();
-	}
+	}*/
 }
 
-void drawExplosion() {
-	//gs->exsrc->draw();
-	for(uint32_t i=0;i<gs->expar.size();i++){
-		gs->expar[i]->draw();
-	}
-}
+//void drawExplosion() {
+//	//gs->exsrc->draw();
+//	for(uint32_t i=0;i<gs->expar.size();i++){
+//		gs->expar[i]->draw();
+//	}
+//}
 
 void drawSmite() {
 	gs->smsrc->draw();
-	for(uint32_t i=0;i<gs->smpar.size();i++){
+	/*for(uint32_t i=0;i<gs->smpar.size();i++){
 		gs->smpar[i]->draw();
-	}
+	}*/
 }
 
 void drawRapid() {
@@ -1697,7 +1697,6 @@ void display() {
 
     glPushMatrix();
 
-
 	glPushMatrix();
 	gsDisplay();
 	glPopMatrix();
@@ -1726,8 +1725,6 @@ void display() {
 		//glutSolidSphere(1.0,10,10);
 		    if(gs->beatim>-1) gs->besrc->draw();
       glPopMatrix();
-	  if(gs->fbtim>-1) drawFireball();
-	  if(gs->explo) drawExplosion();
 	  if(gs->smit) drawSmite();
 	  drawRapid();
     glPopMatrix();
@@ -1849,26 +1846,17 @@ void keyboard(unsigned char key, int x, int y ){
   float dist = 3.0;
   switch( key ) {
     case 'q': case 'Q' :
-		for(uint32_t i=0;i<gs->fbpar.size();i++){
-			delete gs->fbpar[i];
-		}
-		for(uint32_t i=0;i<gs->expar.size();i++){
-			delete gs->expar[i];
-		}
 		for(uint32_t i=0;i<gs->rfpar.size();i++){
 			delete gs->rfpar[i];
 		}
-		for(uint32_t i=0;i<gs->smpar.size();i++){
-			delete gs->smpar[i];
+		for(uint32_t i=0;i<gs->_pars.size();i++){
+			delete gs->_pars[i];
 		}
 
-		/*for(uint32_t i=0;i<others.size();i++){
-			delete others[i];
-		}*/
 		others.clear();
 		delete playerMod;
 		delete enemyMod;
-		gs->fbpar.clear(); gs->expar.clear(); gs->rfpar.clear(); gs->smpar.clear();
+		gs->_pars.clear(); gs->rfpar.clear();
 		//delete fbsrc; delete exsrc;
       exit( EXIT_SUCCESS );
       break;
@@ -1957,13 +1945,13 @@ void tick(int state) {
 	if (gs->fbtim>-1){
 		gs->fbtim++;
 		gs->fbsrc->move();
-		for(uint32_t i=0;i<gs->fbpar.size();i++){
-			gs->fbpar[i]->move();
-			if(gs->fbpar[i]->life<0.0f){
-				//gs->fbpar[i] = new fireball_p(fbsrc);
-				gs->fbpar[i]->refresh();
-			}
-		}
+		//for(uint32_t i=0;i<gs->fbpar.size();i++){
+		//	gs->fbpar[i]->move();
+		//	if(gs->fbpar[i]->life<0.0f){
+		//		//gs->fbpar[i] = new fireball_p(fbsrc);
+		//		gs->fbpar[i]->refresh();
+		//	}
+		//}
 		if(gs->fbtim<15){
 			gs->fbsrc->_pos.x() = gs->player->front.VCENX;
 			gs->fbsrc->_pos.z() = gs->player->front.VCENZ;
@@ -1974,8 +1962,8 @@ void tick(int state) {
 	if(gs->fbtim>50){
 		gs->fbtim=-1;
 		gs->fbsrc->active = false;
-		for(uint32_t i=0;i<gs->fbpar.size();i++) delete gs->fbpar[i];
-		gs->fbpar.clear();
+		//for(uint32_t i=0;i<gs->fbpar.size();i++) delete gs->fbpar[i];
+		//gs->fbpar.clear();
 		gs->detonate(gs->fbsrc,false);
 		delete gs->fbsrc;
 		gs->explo = true;
@@ -1984,42 +1972,44 @@ void tick(int state) {
 	else if(gs->fbtim>-1&&(coll = gs->SmaPaCollision(gs->fbsrc))){
 		gs->fbtim=-1;
 		gs->fbsrc->active = false;
-		for(uint32_t i=0;i<gs->fbpar.size();i++) delete gs->fbpar[i];
-		gs->fbpar.clear();
+		//for(uint32_t i=0;i<gs->fbpar.size();i++) delete gs->fbpar[i];
+		//gs->fbpar.clear();
 		gs->detonate(gs->fbsrc,(coll==HIT_CRATE)); //if gs->fbtim less than 50, fb must have collided with something
 		delete gs->fbsrc;
 		gs->explo = true;
 	}
 	if (gs->explo){
 		gs->exsrc->move();
-		for(int i=gs->expar.size()-1;i>-1;i--){
+		/*for(int i=gs->expar.size()-1;i>-1;i--){
 			gs->expar[i]->move();
 			if(gs->expar[i]->life<0.0f){
 				delete gs->expar[i];
 				gs->expar.erase(gs->expar.begin()+i);
 			}
-		}
+		}*/
 
 		gs->LarPaCollision(gs->exsrc,0,100,0,100);
 
-		if(gs->expar.empty()){
+		//if(gs->expar.empty()){
+		if(gs->exsrc->subPar<1){
 			gs->explo = false;
 			delete gs->exsrc;
 		}
 	}
 	if (gs->smit){
 		gs->smsrc->move();
-		for(int i=gs->smpar.size()-1;i>-1;i--){
+		/*for(int i=gs->smpar.size()-1;i>-1;i--){
 			gs->smpar[i]->move();
 			if(gs->smpar[i]->life<0.0f){
 				delete gs->smpar[i];
 				gs->smpar.erase(gs->smpar.begin()+i);
 			}
-		}
+		}*/
 
 		gs->LarPaCollision(gs->smsrc,0,100,0,100);
 
-		if(gs->smpar.empty()){
+		//if(gs->smpar.empty()){
+		if(gs->smsrc->subPar<1){
 			gs->smit = false;
 			delete gs->smsrc;
 		}
@@ -2027,10 +2017,18 @@ void tick(int state) {
 	for(int i=gs->rfpar.size()-1;i>-1;i--){
 		gs->rfpar[i]->move();
 
-		if(!gs->rfpar[i]->boom&&gs->SmaPaCollision(gs->rfpar[i])){
+		if(!gs->rfpar[i]->boom&&(coll = gs->SmaPaCollision(gs->rfpar[i]))){
 
 			gs->rfpar[i]->boom = true;
 			gs->rfpar[i]->life = 0.0;
+			if(coll==HIT_CRATE||coll==HIT_HUT||coll==HIT_TREE){
+			for(int j=0;j<10;j++)
+				gs->_pars.push_back(new splinter(gs->rfpar[i]->_pos));
+			}
+			else if(coll==HIT_PLAYER){
+			for(int j=0;j<10;j++)
+				gs->_pars.push_back(new blood(gs->rfpar[i]->_pos));
+			}
 		}
 		if(!gs->rfpar[i]->active){
 			delete gs->rfpar[i];

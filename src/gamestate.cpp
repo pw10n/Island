@@ -140,24 +140,41 @@ void gamestate::draw(){
 		return;
 	_lastDrawn = _tick;*/
 
+	if(!(player->_hp == 0)) player->draw();
+
 	//cerr << "DEBUG: I am here. " << endl;
 	for(vector<objectstate*>::iterator it = _objects.begin();
 		it != _objects.end(); it++){
 			//cerr << "DEBUG: calling object draw method" << endl;
-			if(!cull((*it)->_pos))
+			if(!cull2((*it)->_pos))
 				(*it)->draw();
 				
 	}
-	if(!(player->_hp == 0)) player->draw();
+	if(fbtim>-1) fbsrc->draw();
+	if(smit) smsrc->draw();
+	for(vector<particle*>::iterator it = _pars.begin();
+		it != _pars.end(); it++){
+			//cerr << "DEBUG: calling particle draw method" << endl;
+			if(!cull3((*it)->_pos))
+				(*it)->draw();
+				
+	}
+	
 
 	//TODO: do stuff
 }
 
 /*returns true if it needs be culled*/
-bool gamestate::cull(coord2d_t pos){
+bool gamestate::cull2(coord2d_t pos){
 	//return false; 
 	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
 	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
+}
+
+bool gamestate::cull3(vec3d_t pos){
+	//return false; 
+	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
+	return ((-pos.z()>player->_pos.y()+14.0)||(-pos.z()<player->_pos.y()-14.0));
 }
 
 void gamestate::tick(uint32_t time){
@@ -175,6 +192,16 @@ void gamestate::tick(uint32_t time){
 			updatBinLists((*it), REMOV);
 			delete (*it);
 			it=_objects.erase(it);
+		}
+		else
+			++it;
+	}
+
+	for(vector<particle *>::iterator it = _pars.begin(); it!=_pars.end();){
+		(*it)->move();
+		if(!(*it)->active){
+			delete (*it);
+			it=_pars.erase(it);
 		}
 		else
 			++it;
