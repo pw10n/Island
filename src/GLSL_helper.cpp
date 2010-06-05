@@ -14,6 +14,7 @@
 using namespace std;
 
 int printOglError (const char *file, int line) {
+	return 0;
 	/* Returns 1 if an OpenGL error occurred, 0 otherwise. */
 	GLenum glErr;
 	int    retCode = 0;
@@ -85,7 +86,7 @@ int getUniLoc(GLuint program, const char *name) {
 	
 	loc = glGetUniformLocation(program, name);
 	
-	if (loc == -1) { //tbd changed from 1
+	if (loc == 1) {
 		printf("No such uniform named %s\n", name);
 	}
 	

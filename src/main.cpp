@@ -1506,7 +1506,7 @@ void display() {
 
 
   //glLoadIdentity(); not needed
-
+//printOpenGLError();
   
 
     displayHud();
@@ -1535,11 +1535,13 @@ void display() {
 		glPushMatrix(); // Tiles
 			drawTiles();
 		glPushMatrix(); // End Tiles
-
+		//printOpenGLError();
 		glPushMatrix(); // Ocean
 			if(shadeOn){
 				glUseProgram(ShadeProg);
+				//printOpenGLError();
 				glUniform1f(getUniLoc(ShadeProg, "wTime"), ((float)worldtime)*0.03);
+				//printOpenGLError();
 				//glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
 				//glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
 			}
@@ -1547,9 +1549,12 @@ void display() {
 			glTranslatef(0.0,0.0,-7.2);
 			//glEnable(GL_LIGHTING);
 			glDisable(GL_LIGHTING);
-			materials(Blue);
+
+			//materials(Blue);
+			//printOpenGLError();
 			glColor3f(0.0,0.0,1.0);
 			RenderOBJModel(&oceanmdl);
+			//printOpenGLError();
 			//drawWater();
 			materials(White);
 			if(shadeOn) glUseProgram(0);
@@ -1562,7 +1567,7 @@ void display() {
 
     glPopMatrix();
 
-    
+    //printOpenGLError();
 
 	  glPushMatrix();
 	  drawAi();
@@ -1579,7 +1584,7 @@ void display() {
         drawTree(1, 0, -1);
 		    //drawCrates();
 
-
+//printOpenGLError();
 
 		//glutSolidSphere(1.0,10,10);
 		    if(gs->beatim>-1) gs->besrc->draw();
@@ -1590,7 +1595,7 @@ void display() {
   glPopMatrix();
   
   glutSwapBuffers();
-    
+    //printOpenGLError();
 }
 
 
@@ -1991,7 +1996,7 @@ srand (time (NULL));
 
 gs = new gamestate();
 	// use this for debugging unexpected exits: 
-//atexit (fnExit1);
+atexit (fnExit1);
 
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
