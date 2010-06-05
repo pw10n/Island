@@ -1,6 +1,9 @@
+#pragma once
+
 #include "gamestate.h"
 #include "collision.h"
-
+#include "playerstate.h"
+#include "stdint.h"
 
 class meleeAI: public playerstate{
 public:
@@ -25,3 +28,15 @@ public:
 	void draw();
 	bool checkLOA();
 };
+
+void spwanEnemyHelperRandPos(playerstate* obj,
+					  uint8_t hp,
+					  uint8_t mp,
+					  uint32_t tick);
+
+void spawnEnemyHelper(playerstate* obj, 
+					  uint8_t hp,
+					  uint8_t mp,
+					  uint32_t tick,
+					  coord2d_t pos, 
+					  coord2d_t vel);

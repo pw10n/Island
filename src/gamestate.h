@@ -29,7 +29,11 @@ class objectstate;
 #define HIT_ROCK 5
 #define HIT_ROCK2 6
 
-
+#define PSTATE_AI_SEARCHING 11
+#define PSTATE_AI_TARGETING_1 12
+#define PSTATE_AI_TARGETING_2 13
+#define PSTATE_AI_TARGETING_3 14
+#define PSTATE_AI_ATACKING 15
 
 
 //options for checkCollision and updatBinLists

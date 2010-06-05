@@ -32,7 +32,6 @@ playerstate::playerstate(const playerstate &player){
 	_score = player._score;
 	body = player.body;
 	front = player.front;
-
 }
 
 void playerstate::tick(uint32_t time){

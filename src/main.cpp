@@ -10,6 +10,7 @@
 #include <cstring>
 #include <map>
 #include <vector>
+#include <time.h>
 #include "particle.h"
 #include "collision.h"
 #include "netutil.h"
@@ -248,145 +249,20 @@ bool cull(coord2d_t pos){
 
 void drawCharacter();
 
-////// dummy ai functions for 25% /////////
-/*
 
-AI LOGIC PLAN:
-
-AI will move in random direction bouncing off the 
-walls in a 10.0 x 10.0 map until it encounters a gs->player
-in firing range. Once the gs->player is encountered, it will
-Wait 3 ticks (30ms x 3) before firing.
-
-Once the gs->player has moved out of range, it continues to move
-forward in the last direction it was facing.
-
-*/
-
-
-#define PSTATE_AI_SEARCHING 11
-#define PSTATE_AI_TARGETING_1 12
-#define PSTATE_AI_TARGETING_2 13
-#define PSTATE_AI_TARGETING_3 14
-#define PSTATE_AI_ATACKING 15
 
 void init_ai(){
 	for(int i=0; i<20; ++i){
+		playerstate* temp;
+
 		//playerstate temp(0);
-		if(i%2) others.push_back(new meleeAI());//temp);
-		else others.push_back(new rangedAI());
-		others[i]->_id = ENEMYID+(eid++);
-		others[i]->_tick = 0;
-		others[i]->_hp = 10;
-		others[i]->_mp = 200;
-		others[i]->_weapon = 0;
-		others[i]->_state = PSTATE_AI_SEARCHING;
-		others[i]->_score = 0;
+		if(i%2) temp = new meleeAI();//temp);
+		else temp = new rangedAI();
+		spwanEnemyHelperRandPos(temp,10,200,worldtime);
+		others.push_back(temp);
+
+
 	}
-	others[0]->_pos.x() = 35.0;
-	others[0]->_pos.y() = 3.0;
-	others[0]->_vel.x() = 45.0;
-	others[0]->_vel.y() = 0.05;
-
-	others[1]->_pos.x() = -43.0;
-	others[1]->_pos.y() = -13.0;
-	others[1]->_vel.x() = 32.0;
-	others[1]->_vel.y() = 0.05;
-
-	others[2]->_pos.x() = 20.0;
-	others[2]->_pos.y() = -13.0;
-	others[2]->_vel.x() = 15.0;
-	others[2]->_vel.y() = 0.05;
-
-	others[3]->_pos.x() = -23.0;
-	others[3]->_pos.y() = 43.0;
-	others[3]->_vel.x() = -45.0;
-	others[3]->_vel.y() = 0.05;
-
-	others[4]->_pos.x() = 5.0;
-	others[4]->_pos.y() = 0.5;
-	others[4]->_vel.x() = 10.0;
-	others[4]->_vel.y() = 0.05;
-
-	others[5]->_pos.x() = 15.0;
-	others[5]->_pos.y() = 3.0;
-	others[5]->_vel.x() = 25.0;
-	others[5]->_vel.y() = 0.05;
-
-	others[6]->_pos.x() = -3.0;
-	others[6]->_pos.y() = -13.0;
-	others[6]->_vel.x() = 82.0;
-	others[6]->_vel.y() = 0.05;
-
-	others[7]->_pos.x() = 10.0;
-	others[7]->_pos.y() = -13.0;
-	others[7]->_vel.x() = 55.0;
-	others[7]->_vel.y() = 0.05;
-
-	others[8]->_pos.x() = -13.0;
-	others[8]->_pos.y() = 31.0;
-	others[8]->_vel.x() = -25.0;
-	others[8]->_vel.y() = 0.05;
-
-	others[9]->_pos.x() = 4.0;
-	others[9]->_pos.y() = 41.5;
-	others[9]->_vel.x() = 30.0;
-	others[9]->_vel.y() = 0.05;
-
-	others[10]->_pos.x() = 32.0;
-	others[10]->_pos.y() = 23.0;
-	others[10]->_vel.x() = 45.0;
-	others[10]->_vel.y() = 0.05;
-
-	others[11]->_pos.x() = -13.0;
-	others[11]->_pos.y() = -63.0;
-	others[11]->_vel.x() = 32.0;
-	others[11]->_vel.y() = 0.05;
-
-	others[12]->_pos.x() = 23.0;
-	others[12]->_pos.y() = -14.0;
-	others[12]->_vel.x() = 15.0;
-	others[12]->_vel.y() = 0.05;
-
-	others[13]->_pos.x() = -43.0;
-	others[13]->_pos.y() = 41.0;
-	others[13]->_vel.x() = -45.0;
-	others[13]->_vel.y() = 0.05;
-
-	others[14]->_pos.x() = 2.0;
-	others[14]->_pos.y() = 31.5;
-	others[14]->_vel.x() = 10.0;
-	others[14]->_vel.y() = 0.05;
-
-	others[15]->_pos.x() = 50.0;
-	others[15]->_pos.y() = 4.0;
-	others[15]->_vel.x() = 25.0;
-	others[15]->_vel.y() = 0.05;
-
-	others[16]->_pos.x() = -23.0;
-	others[16]->_pos.y() = 13.0;
-	others[16]->_vel.x() = 82.0;
-	others[16]->_vel.y() = 0.05;
-
-	others[17]->_pos.x() = 13.0;
-	others[17]->_pos.y() = -43.0;
-	others[17]->_vel.x() = 55.0;
-	others[17]->_vel.y() = 0.05;
-
-	others[18]->_pos.x() = -43.0;
-	others[18]->_pos.y() = 41.0;
-	others[18]->_vel.x() = -25.0;
-	others[18]->_vel.y() = 0.05;
-
-	others[19]->_pos.x() = 13.0;
-	others[19]->_pos.y() = -11.5;
-	others[19]->_vel.x() = 30.0;
-	others[19]->_vel.y() = 0.05;
-
-	for(int i=0; i<20; ++i){
-		others[i]->body = bbody(others[i]->_pos.x(),-others[i]->_pos.y(),1.0,0,BB_CIRC);
-	}
-
 }
 
 void drawAi(){
@@ -1638,68 +1514,51 @@ void display() {
   //resetPerspectiveProjection();
     glPushMatrix();
 
-	//gs->player constraints
-    if (gs->player->_pos.x()>MAP_SIZE) {
-		gs->player->_pos.x() = MAP_SIZE;
-    }
-    if (gs->player->_pos.x()<-MAP_SIZE) {
-		gs->player->_pos.x() = -MAP_SIZE;
-    }
-    if (gs->player->_pos.y()>MAP_SIZE) {
-		gs->player->_pos.y() = MAP_SIZE;
-    }
-    if (gs->player->_pos.y()<-MAP_SIZE) {
-		gs->player->_pos.y() = -MAP_SIZE;
-    }
+		//gs->player constraints
+		if (gs->player->_pos.x()>MAP_SIZE) {
+			gs->player->_pos.x() = MAP_SIZE;
+		}
+		if (gs->player->_pos.x()<-MAP_SIZE) {
+			gs->player->_pos.x() = -MAP_SIZE;
+		}
+		if (gs->player->_pos.y()>MAP_SIZE) {
+			gs->player->_pos.y() = MAP_SIZE;
+		}
+		if (gs->player->_pos.y()<-MAP_SIZE) {
+			gs->player->_pos.y() = -MAP_SIZE;
+		}
 
-  //set up the camera
+	  //set up the camera
 
-    gluLookAt(eyex + gs->player->_pos.x(), eyey, eyez - gs->player->_pos.y(), LAx + gs->player->_pos.x(), LAy, LAz - gs->player->_pos.y(), 0, 0, -1);
-    glPushMatrix();
+		gluLookAt(eyex + gs->player->_pos.x(), eyey, eyez - gs->player->_pos.y(), LAx + gs->player->_pos.x(), LAy, LAz - gs->player->_pos.y(), 0, 0, -1);
+	    
+		glPushMatrix(); // Tiles
+			drawTiles();
+		glPushMatrix(); // End Tiles
 
+		glPushMatrix(); // Ocean
+			if(shadeOn){
+				glUseProgram(ShadeProg);
+				glUniform1f(getUniLoc(ShadeProg, "wTime"), ((float)worldtime)*0.03);
+				//glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
+				//glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
+			}
+			glScalef(8.0,1.0,8.0);
+			glTranslatef(0.0,0.0,-7.2);
+			//glEnable(GL_LIGHTING);
+			glDisable(GL_LIGHTING);
+			materials(Blue);
+			glColor3f(0.0,0.0,1.0);
+			RenderOBJModel(&oceanmdl);
+			//drawWater();
+			materials(White);
+			if(shadeOn) glUseProgram(0);
+			glDisable(GL_LIGHTING);
+		glPopMatrix(); // end Ocean
 
-
-	drawTiles();
-	glPushMatrix();
-	if(shadeOn){
-		glUseProgram(ShadeProg);
-		glUniform1f(getUniLoc(ShadeProg, "wTime"), ((float)worldtime)*0.03);
-		//glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
-		//glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
-	}
-	glScalef(8.0,1.0,8.0);
-	glTranslatef(0.0,0.0,-7.2);
-	//glEnable(GL_LIGHTING);
-	glDisable(GL_LIGHTING);
-	materials(Blue);
-	glColor3f(0.0,0.0,1.0);
-	RenderOBJModel(&oceanmdl);
-	//drawWater();
-	materials(White);
-	if(shadeOn) glUseProgram(0);
-	glDisable(GL_LIGHTING);
-
-	glPopMatrix();
-#if 0
-	// volumetric fog
-
-	glPushMatrix();
-		glBegin(GL_QUADS);							// Back Wall
-	 		glFogCoordfEXT(1.0f); glTexCoord2f(0.0f, 0.0f); glVertex3f(-2.5f,-2.5f,-15.0f);
-			glFogCoordfEXT(1.0f); glTexCoord2f(1.0f, 0.0f); glVertex3f( 2.5f,-2.5f,-15.0f);
-			glFogCoordfEXT(1.0f); glTexCoord2f(1.0f, 1.0f); glVertex3f( 2.5f, 2.5f,-15.0f);
-			glFogCoordfEXT(1.0f); glTexCoord2f(0.0f, 1.0f); glVertex3f(-2.5f, 2.5f,-15.0f);
-		glEnd();
-
-
-	glPopMatrix(); // end v fog
-#endif
-
-    glPushMatrix();
-
-	glPushMatrix();
-	gsDisplay();
-	glPopMatrix();
+		glPushMatrix(); // GS display (all game objects should be drawn here)
+			gsDisplay();	
+		glPopMatrix();	// end GS
 
     glPopMatrix();
 
@@ -2127,7 +1986,7 @@ void fnExit1(){
 }
 
 int main( int argc, char** argv ) {
-
+srand (time (NULL));
 
 
 gs = new gamestate();

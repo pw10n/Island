@@ -1,10 +1,15 @@
 #include "enemy.h"
+#include <cstdlib>
+#include <time.h>
+
 #include "types.h"
 #include <math.h>
 #include "collision.h"
 #include "Bin.h"
 #include "mdmodel.h"
 #include "particle.h"
+
+using namespace std;
 
 #define MELEE_AWARE_DIST 7.0
 #define RANGED_AWARE_DIST 8.0
@@ -130,3 +135,52 @@ bool rangedAI::checkLOA(){
 	gs->LarPaCollision(loa,px-6,px+6,pz-6,pz+6); //already know it can't be more than 6 from this
 	return !(loa->active); //if loa->active == true, something's in the way
 }
+
+void spwanEnemyHelperRandPos(playerstate* obj,
+					  uint8_t hp,
+					  uint8_t mp,
+					  uint32_t tick){
+	coord2d_t pos;
+	coord2d_t vel;
+	// TODO fix rand code
+
+	vel.x() = rand()%100 - 50;
+	vel.y() = rand()%100 - 50;
+	pos.x() = rand()%100 - 50;
+	pos.y() = rand()%100 - 50;
+
+
+	spawnEnemyHelper(obj, hp, mp, tick, pos, vel);
+	
+}
+
+void spawnEnemyHelper(playerstate* obj, 
+					  uint8_t hp,
+					  uint8_t mp,
+					  uint32_t tick,
+					  coord2d_t pos, 
+					  coord2d_t vel){
+	obj->_id = 0;
+	obj->_tick = tick;
+	obj->_hp = hp;
+	obj->_mp = mp;
+	obj->_weapon = 0;
+	obj->_state = PSTATE_AI_SEARCHING;
+	obj->_score = 0;
+	obj->_pos = pos;
+	obj->_vel = vel;
+
+	//TODO: this needs to be done in the change pos/vel func
+	obj->body = bbody(obj->_pos.x(),-obj->_pos.y(),1.0,0,BB_CIRC);
+}
+
+
+
+
+
+
+
+
+
+
+
