@@ -121,8 +121,8 @@ public:
 			return;
 		}
 		fbtim = 0;
-		double fbx = -sin(player->_vel.x());
-		double fbz = -cos(player->_vel.x());
+		double fbx = -sin(player->vel().x());
+		double fbz = -cos(player->vel().x());
 		coord2d_t dummy;
 		dummy = player->calcHotSpot(dummy,.6);
 		fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0,fbz/5.0,player->_id);
@@ -144,8 +144,8 @@ public:
 		double dy = (double)y-GH/2.0 + .5;
 		double dz = log((double)y*2.0/GH)/-.159;
 		coord2d_t targ;
-		targ.x() = player->_pos.x() - dz*dx/dy;
-		targ.y() = player->_pos.y() + dz;
+		targ.x() = player->pos().x() - dz*dx/dy;
+		targ.y() = player->pos().y() + dz;
 
 		smit = true;
 		smsrc = new smite_s(targ.x(),-targ.y(),player->_id);
@@ -186,8 +186,8 @@ public:
 		if(rfpar.size()<100&&rfire==0){
 			coord2d_t dummy;
 			dummy = player.calcHotSpot(dummy,.6);
-			double vx = -sin(player._vel.x())*.6;
-			double vz = -cos(player._vel.x())*.6;
+			double vx = -sin(player.vel().x())*.6;
+			double vz = -cos(player.vel().x())*.6;
 			rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
 			if (player._mp>=5 && player._id == 0) {
 				player._mp -= 5;
@@ -205,8 +205,8 @@ public:
 			coord2d_t dummy;
 			dummy = player.calcHotSpot(dummy,.6);
 			for(double d=-.5;d<.6;d+=.1){
-				double vx = -sin(player._vel.x()+d)*.6;
-				double vz = -cos(player._vel.x()+d)*.6;
+				double vx = -sin(player.vel().x()+d)*.6;
+				double vz = -cos(player.vel().x()+d)*.6;
 				rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
 			}
 			if (player._mp>=5 && player._id == 0) {

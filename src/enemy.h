@@ -5,6 +5,10 @@
 #include "playerstate.h"
 #include "stdint.h"
 
+
+#define ENEMYID 100
+extern int eid;
+
 class meleeAI: public playerstate{
 public:
 	double ecc; //eccentricity

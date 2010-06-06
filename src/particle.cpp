@@ -364,7 +364,7 @@ beam::beam(playerstate *pla)
 	play = pla;
 	pid = play->_id;
 	_pos = vec3d_t(play->front.VCENX,.25,play->front.VCENZ);
-	ang = play->_vel.x();
+	ang = play->vel().x();
 	_vel = vec3d_t(-sin(ang)*5,0,-cos(ang)*5);
 	life = 0.0; g = a = 1.0f; b = 0.2f; r = 0.0f;
 	active = true;
@@ -376,7 +376,7 @@ beam::beam(playerstate *pla)
 void beam::move(void)
 {
 	_pos = vec3d_t(play->front.VCENX,.25,play->front.VCENZ);
-	ang = play->_vel.x();
+	ang = play->vel().x();
 	_vel = vec3d_t(-sin(ang)*5,0,-cos(ang)*5);
 	body = bbody(_pos,_pos + _vel,BB_LINE);
 	b += (float)(rand()%3-1)*.1f;

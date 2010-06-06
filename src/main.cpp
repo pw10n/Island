@@ -64,7 +64,7 @@ using namespace std;
 #define TOP_VIEW 0 //Set to 1 to see birds eye view of island
 
 #define PLAYERID 0
-#define ENEMYID 100
+// ENEMYID defined in enemy.h
 #define CRATEID 200
 #define HUTID 300
 #define TREEID 400
@@ -288,11 +288,9 @@ void drawAi(){
 #define AI_BOUNDS_MIN -40.0
 void tickAi(uint32_t time){
 	coord2d_t dummy;
-	/*for(vector<playerstate>::iterator it = others.begin();
-		it != others.end();
-		it=((*it)->_hp<=0)?others.erase(it):it+1)*/
 	for(unsigned int i=0; i<others.size(); ) //i++ is at the end of for loop
 	{
+		
 		if (others[i]->_hp <= 0){
 
 
@@ -303,114 +301,10 @@ void tickAi(uint32_t time){
 			gs->player->_score++;
 			continue;
 		}
-
-
 		if(others[i]->_id >200){
 			printf("corruption found\n");
 		}
-		switch(others[i]->_state){
-			case PSTATE_AI_SEARCHING:
-				// move forward
-
-				if(gs->SmaPlCollision(others[i])) {others[i]->_vel.y() = 0; others[i]->_vel.x() -= 1;}
-				else {others[i]->_vel.y() = .05;}
-
-				others[i]->_pos.x() += (-sin(others[i]->_vel.x()) * others[i]->_vel.y());
-				others[i]->_pos.y() += (cos(others[i]->_vel.x()) * others[i]->_vel.y());
-				others[i]->body = bbody(others[i]->_pos.x(),-others[i]->_pos.y(),1.0,0,BB_CIRC);
-				others[i]->front = bbody(others[i]->calcHotSpot(dummy,.6),.1,BB_CIRC);
-
-
-				//if(others[i]->_vel.y()>0.00) 
-				gs->updatBinLists(others[i],UPDAT);
-
-
-				// check bounds
-				if (others[i]->_pos.x() > AI_BOUNDS_MAX){
-					others[i]->_pos.x() = AI_BOUNDS_MAX;
-					others[i]->_vel.x() += M_PI;
-				}
-				else if (others[i]->_pos.x() < AI_BOUNDS_MIN){
-					others[i]->_pos.x() = AI_BOUNDS_MIN;
-					others[i]->_vel.x() += M_PI;
-				}
-				if (others[i]->_pos.y() > AI_BOUNDS_MAX){
-					others[i]->_pos.y() = AI_BOUNDS_MAX;
-					others[i]->_vel.x() += M_PI;
-				}
-				else if (others[i]->_pos.y() < AI_BOUNDS_MIN){
-					others[i]->_pos.y() = AI_BOUNDS_MIN;
-					others[i]->_vel.x() += M_PI;
-				}
-
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE )
-					others[i]->_state = PSTATE_AI_TARGETING_1;
-				
-
-				break;
-			case PSTATE_AI_TARGETING_1:
-				// if still in range
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE ){
-					coord2d_t pos = others[i]->_pos-gs->player->_pos ;
-					float theta=others[i]->_vel.x();
-					if (pos.x()==0 && pos.x()<0) // handle div by zero case.
-						theta = M_PI/2.0f;
-					else if (pos.y()==0 && pos.x()>0) // handle div by zero case.
-						theta = 3.0f*M_PI/2.0f;
-					else if (pos.y()<0 && pos.x()<0)
-						theta = atan((float)pos.x()/(float)pos.y());
-					else if (pos.y()>0 && pos.x()<=0)
-						theta = atan((float)pos.x()/(float)pos.y())+M_PI;
-					else if (pos.y()<0 && pos.x()>=0)
-						theta = atan((float)pos.x()/(float)pos.y())+2*M_PI;
-					else if (pos.y()>0 && pos.x()>0)
-						theta = atan((float)pos.x()/(float)pos.y())+M_PI;
-						
-					//angle=theta*(180.0f / M_PI);
-					others[i]->_vel.x() = -theta;
-					others[i]->_state = (others[i]->_id>10)?PSTATE_AI_ATACKING:PSTATE_AI_TARGETING_2;
-				}
-				// else : return to searching state
-				else
-					others[i]->_state = PSTATE_AI_SEARCHING;
-				break;
-			case PSTATE_AI_TARGETING_2:
-				// if still in range
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE ){
-					others[i]->_state = PSTATE_AI_TARGETING_3;
-				}
-				// else : return to searching state
-				else
-					others[i]->_state = PSTATE_AI_SEARCHING;
-				break;
-			case PSTATE_AI_TARGETING_3:
-				// if still in range
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE ){
-					
-					others[i]->_state = PSTATE_AI_ATACKING;
-				}
-				// else : return to searching state
-				else
-					others[i]->_state = PSTATE_AI_SEARCHING;
-				break;
-			case PSTATE_AI_ATACKING:
-				// TODO: FIRE
-				{
-					coord2d_t save = others[i]->_vel;
-					others[i]->_vel.x() += (rand() % 10)*0.1f-0.5f;
-					gs->rapid(*others[i]);
-					others[i]->_vel = save;
-				}
-				// if still in rage
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE )
-					others[i]->_state = PSTATE_AI_TARGETING_1;
-				// else : return to searching state
-				else
-					others[i]->_state = PSTATE_AI_SEARCHING;
-				break;
-			default:
-				others[i]->_state = PSTATE_AI_SEARCHING;
-		}
+		
 		i++;
 	}
 }
@@ -1991,12 +1885,12 @@ void fnExit1(){
 }
 
 int main( int argc, char** argv ) {
-srand (time (NULL));
+	srand (time (NULL));
 
 
-gs = new gamestate();
+	gs = new gamestate();
 	// use this for debugging unexpected exits: 
-atexit (fnExit1);
+	//atexit (fnExit1);
 
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks

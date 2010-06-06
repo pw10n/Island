@@ -1,10 +1,22 @@
 #include "playerstate.h"
+#include "gamestate.h"
 #include "mdmodel.h"
 
 extern mdmodel *playerMod;
+extern gamestate *gs;
 
 #define PLYRSTATPAS 0
 #define PLYRSTATATT 1
+
+void colliobj::cPos(coord2d_t pos){
+	_pos = pos;
+	cBBody();
+}
+
+void colliobj::cBBody(){
+	body = bbody(_pos.x(),-_pos.y(),1.0,0,BB_CIRC);
+	gs->updatBinLists(this,UPDAT);
+}
 
 playerstate::playerstate(int time):
 _tick(time), _mp(0),_weapon(0),
@@ -50,6 +62,7 @@ void playerstate::tick(uint32_t time){
 		Animate(&playerMod->md5anim[2],&attAni,WORLD_TIME_RESOLUTION);
 		if(attAni.next_frame==0) _state = PLYRSTATPAS;
 	}
+	cBBody();
 }
 
 coord2d_t playerstate::calcHotSpot(coord2d_t hs, double dist){
@@ -70,4 +83,25 @@ void playerstate::draw(){
 		playerMod->draw((_vel.y()>0)?walAni:idlAni);
 	glPopMatrix();
 	glDisable(GL_LIGHTING);
+}	
+
+
+void playerstate::cBBody(){
+	body = bbody(_pos.x(),-_pos.y(),1.0,0,BB_CIRC);
+	gs->updatBinLists(this,UPDAT);
 }
+
+void playerstate::cVel(coord2d_t vel){
+	_vel = vel;
+}
+void playerstate::cPos(coord2d_t pos){
+	_pos = pos;
+	//cBBody();
+}
+
+void playerstate::cPos(coord2d_t pos, coord2d_t vel){
+	_vel = vel;
+	_pos = pos;
+	cBBody();
+}
+

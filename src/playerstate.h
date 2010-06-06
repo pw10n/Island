@@ -26,12 +26,18 @@ class colliobj{
 	   colliobj(): _id(0), _hp(0) {};
 	  ~colliobj() {}
 
+	  virtual void cBBody();
+	  void cPos(coord2d_t pos); 
+	  coord2d_t pos(){ return _pos; };
 	  virtual int hitWhat(void) const = 0; //returns the HIT_* value; overwritten by subclasses
 	
 	  bool operator==(const colliobj& obj) {return (_id==obj._id);}
 };
 
 class playerstate: public colliobj{
+	
+
+
 public:
 	playerstate(int time);
 	playerstate(const playerstate& other);
@@ -49,6 +55,15 @@ public:
 	bbody front; //used for collision
 
 	coord2d_t calcHotSpot(coord2d_t hs, double dist);
+
+	virtual void cBBody();
+	// Change Velocity
+	virtual void cVel(coord2d_t vel);
+	// Change Position (and Velocity)
+	void cPos(coord2d_t pos); 
+	void cPos(coord2d_t pos, coord2d_t vel);
+
+	coord2d_t vel(){ return _vel; };
 
 	anim_info_t idlAni,walAni,attAni;
 
