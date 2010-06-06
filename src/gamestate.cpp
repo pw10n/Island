@@ -11,6 +11,7 @@ int Bin::checkPaCollision(source *src, bool hitAll){
 		objs.remove_if(killcoto);
 		list<colliobj *>::iterator iter;
 		for(iter=objs.begin();iter!=objs.end();iter++){
+			if((*iter)==NULL) continue;
 			if((*iter)->_id==src->pid) continue;
 			if((*iter)->_id>2000) continue;
 			if(src->_type==PARTICLE_LOA&&(*iter)->_id==0)
@@ -33,6 +34,7 @@ bool Bin::checkPlCollision(playerstate *pla){
 		objs.remove_if(killcoto);
 		list<colliobj *>::iterator iter;
 		for(iter=objs.begin();iter!=objs.end();iter++){
+			if((*iter)==NULL) continue;
 			if((*iter)->_id==pla->_id) continue;
 			if((*iter)->_id>2000) continue;
 			if(collide(pla->front,(*iter)->body)){
@@ -57,6 +59,7 @@ bool Bin::checkObCollision(colliobj *obj,int op){
 		if(op==COLLI){
 			list<colliobj *>::iterator iter;
 			for(iter=objs.begin();iter!=objs.end();iter++){
+				if((*iter)==NULL) continue;
 				if(obj->_id==(*iter)->_id) continue; //don't collide with yourself
 				if((*iter)->_id>2000) continue;
 				if(collide(obj->body,(*iter)->body)){
@@ -264,6 +267,7 @@ double gamestate::b2p(int i){
 
 //This gives quaternary search, splitting the area provided into quarters
 void gamestate::LarPaCollision(source *src, int minx, int maxx, int minz, int maxz){
+	minx = MAX(minx,0); minz = MAX(minz,0); maxx = MIN(maxx,100); maxz = MIN(maxz,100);
 	if (minx>maxx) {int t=minx; minx = maxx; maxx = t;}
 	if (minz>maxz) {int t=minz; minz = maxz; maxz = t;}
 	if(!collide(src->body,bbody(b2p(minx),b2p(minz),b2p(maxx),b2p(maxz),BB_AABB))){
@@ -295,6 +299,7 @@ void gamestate::LarPaCollision(source *src, int minx, int maxx, int minz, int ma
 }
 
 bool gamestate::LarObCollision(colliobj *obj, int minx, int maxx, int minz, int maxz){
+	minx = MAX(minx,0); minz = MAX(minz,0); maxx = MIN(maxx,100); maxz = MIN(maxz,100);
 	if (minx>maxx) {int t=minx; minx = maxx; maxx = t;}
 	if (minz>maxz) {int t=minz; minz = maxz; maxz = t;}
 	if(!collide(obj->body,bbody(b2p(minx),b2p(minz),b2p(maxx),b2p(maxz),BB_AABB))){

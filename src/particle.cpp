@@ -558,3 +558,56 @@ void blood::draw(void)
 	glEnable(GL_LIGHTING);
 	glPopMatrix();
 }
+
+sand::sand(explosion_s * sour)
+{
+	src = sour;
+	float t = (float)(rand()%360);
+	float p = (float)(rand()%5);
+	_pos = vec3d_t(src->_pos);
+	_vel.x() = .6f*DSIN(t)*DCOS(p);
+	_vel.y() = .6f*DSIN(p);
+	_vel.z() = .6f*DCOS(t)*DCOS(p);
+	life = (float)(rand()%6+1);
+	fade = 2.0f/life;
+	r = .875f;
+	g = .75f;
+	b = .6875f;
+	a = 1.0f;
+	active = true;
+	src->subPar += 1;
+}
+
+void sand::move(void)
+{
+	if(src==NULL||!src->active){
+		active = false;
+		return;
+	}
+	life -= fade;
+	if(life<0.0){
+		src->subPar -= 1;
+		active = false;
+		return;
+	}
+	_pos = _pos + _vel;
+	_vel = _vel * .95;
+	if(life<2.0f){
+		a = life;
+	}
+
+}
+
+void sand::draw(void)
+{
+	glColor4f(1.0f,g,b,a*.25);
+	glPushMatrix();
+	glTranslatef(_pos.x(),_pos.y(),_pos.z());
+	float sca = 4.0f/fade;
+	glScalef(sca,.5*sca,sca);
+	//glCallList(PARTLIST);
+	glDisable(GL_LIGHTING);
+	glutSolidSphere(.1,10,10);
+	glDisable(GL_LIGHTING);
+	glPopMatrix();
+}

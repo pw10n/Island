@@ -154,6 +154,7 @@ public:
 	void detonate(source * ws, bool splin){
 		explo = true;
 		exsrc.push_back(new explosion_s(ws->_pos.x(),ws->_pos.z()));
+		for(int i=0;i<100;i++) _pars.push_back(new sand(*(exsrc.end()-1)));
 		if(!splin){
 			for(int i=0;i<200;i++){
 				_pars.push_back(new explosion_p(*(exsrc.end()-1)));
