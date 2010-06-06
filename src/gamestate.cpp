@@ -167,14 +167,14 @@ void gamestate::draw(){
 /*returns true if it needs be culled*/
 bool gamestate::cull2(coord2d_t pos){
 	//return false; 
-	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
-	return ((pos.y()>player->_pos.y()+14.0)||(pos.y()<player->_pos.y()-14.0));
+	if((pos.x()>player->_pos.x()+15.0)||(pos.x()<player->_pos.x()-15.0)) return true;
+	return ((pos.y()>player->_pos.y()+16.0)||(pos.y()<player->_pos.y()-8.0));
 }
 
 bool gamestate::cull3(vec3d_t pos){
 	//return false; 
-	if((pos.x()>player->_pos.x()+14.0)||(pos.x()<player->_pos.x()-14.0)) return true;
-	return ((-pos.z()>player->_pos.y()+14.0)||(-pos.z()<player->_pos.y()-14.0));
+	if((pos.x()>player->_pos.x()+15.0)||(pos.x()<player->_pos.x()-15.0)) return true;
+	return ((-pos.z()>player->_pos.y()+16.0)||(-pos.z()<player->_pos.y()-8.0));
 }
 
 void gamestate::tick(uint32_t time){
@@ -206,7 +206,6 @@ void gamestate::tick(uint32_t time){
 		else
 			++it;
 	}
-
 }
 
 void gamestate::addEnemy(playerstate* e){

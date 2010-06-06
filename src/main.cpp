@@ -244,7 +244,7 @@ void damage(uint8_t *target, int dam){
 bool cull(coord2d_t pos){
 	//return false; 
 	if((pos.x()>gs->player->_pos.x()+14.0)||(pos.x()<gs->player->_pos.x()-14.0)) return true;
-	return ((pos.y()>gs->player->_pos.y()+14.0)||(pos.y()<gs->player->_pos.y()-14.0));
+	return ((pos.y()>gs->player->_pos.y()+16.0)||(pos.y()<gs->player->_pos.y()-8.0));
 }
 
 void drawCharacter();

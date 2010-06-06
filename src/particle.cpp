@@ -33,6 +33,15 @@ fireball_s::fireball_s(double ix,double iz,double ivx,double ivz,uint16_t id)
 	_type = PARTICLE_FIREBALL; //there's no point in having a type argument
 		//it already knows _type is PARTICLE_FIREBALL because we called fireball_s
 	_damage = 10;
+	for(int i=0;i<NUMFBPAR;i++){
+		pars[i] = new fireball_p(this);
+	}
+}
+
+fireball_s::~fireball_s(void){
+	for(int i=0;i<NUMFBPAR;i++){
+		delete pars[i];
+	}
 }
 
 void fireball_s::move(void)
@@ -46,6 +55,9 @@ void fireball_s::move(void)
 		body = bbody(_pos,.15,BB_CIRC);
 	}
 	age++;
+	for(int i=0;i<NUMFBPAR;i++){
+		pars[i]->move();
+	}
 }
 
 void fireball_s::draw(void)
@@ -59,6 +71,9 @@ void fireball_s::draw(void)
 	double sca = (double)MIN(age,15)/100.;
 	glutSolidSphere(sca,10,10);
 	glPopMatrix();
+	for(int i=0;i<NUMFBPAR;i++){
+		pars[i]->draw();
+	}
 	glEnable(GL_LIGHTING);
 }
 
@@ -116,7 +131,8 @@ void fireball_p::refresh(void)
 
 void fireball_p::move(void)
 {
-	if(src==NULL){
+	if(!src){
+		printf("src is inactive.\n");
 		active = false;
 		return;
 	}

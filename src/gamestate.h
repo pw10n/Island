@@ -126,9 +126,6 @@ public:
 		coord2d_t dummy;
 		dummy = player->calcHotSpot(dummy,.6);
 		fbsrc = new fireball_s(dummy.x(),dummy.y(),fbx/5.0,fbz/5.0,player->_id);
-		for(int i=0;i<200;i++){
-			_pars.push_back(new fireball_p(fbsrc));
-		}
 		if (player->_mp>=10) {
 			player->_mp -= 10;
 			
