@@ -156,6 +156,8 @@ struct obj_model_t *rock2mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t))
 
 struct obj_model_t *treemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 
+struct mtl_file *treemtl = (struct mtl_file*) malloc(sizeof(mtl_file));
+
 
 
 gamestate* gs;
@@ -486,12 +488,12 @@ void init_particle(){
 
 void init_dispList(){
 	glNewList(TREELIST,GL_COMPILE);
-	glDisable(GL_LIGHTING);
+	//glDisable(GL_LIGHTING);
 	glPushMatrix();
 		glScalef(1, 1, 1);
-		RenderOBJModel (treemdl);
+		RenderOBJModelt (treemdl, treemtl);
 	glPopMatrix();
-	glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHTING);
 	glEndList();
 
 	glNewList(HUTLIST,GL_COMPILE);
@@ -1456,7 +1458,7 @@ void gsDisplay(){
 }
 
 
-void drawTree(double x, double y, double z) {
+/*void drawTree(double x, double y, double z) {
 
 glDisable(GL_LIGHTING);
 glEnable(GL_TEXTURE_2D);
@@ -1474,7 +1476,7 @@ glPopMatrix();
 glDisable(GL_TEXTURE_2D);
 glEnable(GL_LIGHTING);
 
-}
+}*/
 
 
 
@@ -1581,7 +1583,7 @@ void display() {
 		    //glTranslatef(-1.0,0,-1.0);
 
 
-        drawTree(1, 0, -1);
+        //drawTree(1, 0, -1);
 		    //drawCrates();
 
 //printOpenGLError();
@@ -2272,6 +2274,7 @@ cerr << "INFO: init gamestate.. " << endl;
   init("model/rock_a.obj", rockmdl);
   init("model/planeMesh.obj", &oceanmdl);
   init("model/rock_b.obj", rock2mdl);
+  mtlLoad("model/palm-arecaceae.mtl", treemtl, 4);
 
   init_dispList();
 

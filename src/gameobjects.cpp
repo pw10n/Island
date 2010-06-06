@@ -10,15 +10,15 @@ void goCrate::draw(){
 	float arr2[1] = {1.0};
 	//cerr <<" DEBUG: Drawing a crate..." << endl;
 	glPushMatrix();
-	  glMaterialfv(GL_FRONT, GL_AMBIENT, arr);
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, arr);
-  glMaterialfv(GL_FRONT, GL_SPECULAR, arr);
-  glMaterialfv(GL_FRONT, GL_SHININESS, arr2);
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
-	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	// it'll be 2x2x2 for now
-	glBindTexture(GL_TEXTURE_2D, _tid);
+		  glMaterialfv(GL_FRONT, GL_AMBIENT, arr);
+	  glMaterialfv(GL_FRONT, GL_DIFFUSE, arr);
+	  glMaterialfv(GL_FRONT, GL_SPECULAR, arr);
+	  glMaterialfv(GL_FRONT, GL_SHININESS, arr2);
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_LIGHTING);
+		glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		// it'll be 2x2x2 for now
+		glBindTexture(GL_TEXTURE_2D, _tid);
 	// "front"
 	// if(cull(_pos)) continue;
 	glPushMatrix();
@@ -82,6 +82,8 @@ void goCrate::draw(){
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
+	//glDisable(GL_LIGHTING);
+	//glDisable(GL_TEXTURE_2D);
 }
 
 void Hut::draw(){
