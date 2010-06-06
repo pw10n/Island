@@ -1393,34 +1393,21 @@ void display() {
   glMatrixMode(GL_MODELVIEW);
   
 
-  glPushMatrix();  
+	glPushMatrix(); // push -1
   
   setOrthoProjection();
-  glPushMatrix();
+  glPushMatrix(); //push 0
 
 
   //glLoadIdentity(); not needed
-//printOpenGLError();
+printOpenGLError();
   
 
+	glPushMatrix(); // push 1
     displayHud();
+	
   //glPopMatrix();
   //resetPerspectiveProjection();
-    glPushMatrix();
-
-		//gs->player constraints
-		if (gs->player->_pos.x()>MAP_SIZE) {
-			gs->player->_pos.x() = MAP_SIZE;
-		}
-		if (gs->player->_pos.x()<-MAP_SIZE) {
-			gs->player->_pos.x() = -MAP_SIZE;
-		}
-		if (gs->player->_pos.y()>MAP_SIZE) {
-			gs->player->_pos.y() = MAP_SIZE;
-		}
-		if (gs->player->_pos.y()<-MAP_SIZE) {
-			gs->player->_pos.y() = -MAP_SIZE;
-		}
 
 	  //set up the camera
 
@@ -1429,13 +1416,13 @@ void display() {
 		glPushMatrix(); // Tiles
 			drawTiles();
 		glPushMatrix(); // End Tiles
-		//printOpenGLError();
+
 		glPushMatrix(); // Ocean
 			if(shadeOn){
 				glUseProgram(ShadeProg);
-				//printOpenGLError();
-				glUniform1f(getUniLoc(ShadeProg, "wTime"), ((float)worldtime)*0.03);
-				//printOpenGLError();
+				printOpenGLError();
+				glUniform1f(getUniLoc(ShadeProg, "wtime"), ((float)worldtime)*0.03);
+				printOpenGLError();
 				//glUniform1f(getUniLoc(ShadeProg, "wHeight"), 0.5);
 				//glUniform1f(getUniLoc(ShadeProg, "wTilt"), 0.0);
 			}
@@ -1445,10 +1432,10 @@ void display() {
 			glDisable(GL_LIGHTING);
 
 			//materials(Blue);
-			//printOpenGLError();
+			printOpenGLError();
 			glColor3f(0.0,0.0,1.0);
 			RenderOBJModel(&oceanmdl);
-			//printOpenGLError();
+			printOpenGLError();
 			//drawWater();
 			materials(White);
 			if(shadeOn) glUseProgram(0);
@@ -1457,39 +1444,38 @@ void display() {
 
 		glPushMatrix(); // GS display (all game objects should be drawn here)
 			gsDisplay();	
+
+			printOpenGLError();
 		glPopMatrix();	// end GS
+	glPopMatrix(); // pop 1
+    printOpenGLError();
 
-    glPopMatrix();
-
-    //printOpenGLError();
-
-	  glPushMatrix();
+	  glPushMatrix(); // ai
 	  drawAi();
 
-	  glPopMatrix();
+	  glPopMatrix(); // end ai
 
-      glPushMatrix();
-        glTranslatef(0.0, 0.01, 0.0);
-		    //materials(Sand);
-        //drawGrid();
-		    //glTranslatef(-1.0,0,-1.0);
+	  glPushMatrix(); // tree
+		glTranslatef(0.0, 0.01, 0.0);
+			//materials(Sand);
+		//drawGrid();
+			//glTranslatef(-1.0,0,-1.0);
+			drawTree(1, 0, -1);
+			//drawCrates();
+
+			printOpenGLError();
+			//glutSolidSphere(1.0,10,10);
+			if(gs->beatim>-1) gs->besrc->draw();
+	  glPopMatrix(); // end tree
 
 
-        drawTree(1, 0, -1);
-		    //drawCrates();
-
-//printOpenGLError();
-
-		//glutSolidSphere(1.0,10,10);
-		    if(gs->beatim>-1) gs->besrc->draw();
-      glPopMatrix();
 	  if(gs->smit) drawSmite();
 	  drawRapid();
-    glPopMatrix();
-  glPopMatrix();
+    glPopMatrix(); //pop 0
+  glPopMatrix(); //pop -1
   
   glutSwapBuffers();
-    //printOpenGLError();
+    printOpenGLError();
 }
 
 
@@ -1681,6 +1667,19 @@ void keyboard(unsigned char key, int x, int y ){
 
 void tick(int state) {
 	gs->tick(worldtime);
+			//gs->player constraints
+		if (gs->player->_pos.x()>MAP_SIZE) {
+			gs->player->_pos.x() = MAP_SIZE;
+		}
+		if (gs->player->_pos.x()<-MAP_SIZE) {
+			gs->player->_pos.x() = -MAP_SIZE;
+		}
+		if (gs->player->_pos.y()>MAP_SIZE) {
+			gs->player->_pos.y() = MAP_SIZE;
+		}
+		if (gs->player->_pos.y()<-MAP_SIZE) {
+			gs->player->_pos.y() = -MAP_SIZE;
+		}
 	int coll = 0;
 	//if(gs->SmaPlCollision(gs->player)) vel.y() = 0;
 	//gs->player->change_velocity(vel);
