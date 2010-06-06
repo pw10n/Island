@@ -239,12 +239,15 @@ void explosion_p::move(void)
 
 void explosion_p::draw(void)
 {
-	glColor4f(1.0f,g,b,a);
+	glColor4f(1.0f,g,b,a*.5);
 	glPushMatrix();
 	glTranslatef(_pos.x(),_pos.y(),_pos.z());
-	float sca = 4.0f;
+	float sca = 4.0f/fade;
 	glScalef(sca,sca,sca);
-	glCallList(PARTLIST);
+	//glCallList(PARTLIST);
+	glDisable(GL_LIGHTING);
+	glutSolidSphere(.1,10,10);
+	glDisable(GL_LIGHTING);
 	glPopMatrix();
 }
 

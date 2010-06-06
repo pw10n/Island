@@ -1699,7 +1699,7 @@ void tick(int state) {
 			gs->player->_score++;
 			continue;
 		}
-		if(!cull(others[i]->_pos)||(worldtime%7))
+		//if(!cull(others[i]->_pos)||(worldtime%7))
 			others[i]->tick(worldtime);
 	}
 	if (gs->smit){

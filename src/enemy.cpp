@@ -48,7 +48,9 @@ void meleeAI::tick(uint32_t time){
 		cVel(v);
 		ecc = (double)(rand()%5)/3.0-.75;
 	}
+	bool skip = gs->cull2(_pos);
 	for(; _tick<time; ++_tick){
+		if(skip&&(_tick%6!=0)) continue;
 		if (_vel.y() > DBL_EPSILON){
 			coord2d_t p = pos();
 			p.x() += (-sin(vel().x()) * vel().y());
@@ -119,8 +121,9 @@ void rangedAI::tick(uint32_t time){
 	if(gs->SmaPlCollision(this)) {_vel.y() = -.002; ecc = (double)(rand()%5)/3.0-.75;}
 	if(_vel.y()>0) Animate(&enemyMod->md5anim[1],&walAni,WORLD_TIME_RESOLUTION);//30.0*(time-_tick));
 	else Animate(&enemyMod->md5anim[0],&idlAni,WORLD_TIME_RESOLUTION);
-	
+	bool skip = gs->cull2(_pos);
 	for(; _tick<time; ++_tick){
+		if(skip&&(_tick%6!=0)) continue;
 		if (_vel.y() > DBL_EPSILON){
 			_pos.x() += (-sin(_vel.x()) * _vel.y());
 			_pos.y() += (cos(_vel.x()) * _vel.y());

@@ -155,13 +155,13 @@ public:
 		explo = true;
 		exsrc.push_back(new explosion_s(ws->_pos.x(),ws->_pos.z()));
 		if(!splin){
-			for(int i=0;i<400;i++){
+			for(int i=0;i<200;i++){
 				_pars.push_back(new explosion_p(*(exsrc.end()-1)));
 			}
 		}
 		else{
 			if (ws->_type == PARTICLE_FIREBALL){
-				for(int i=0;i<200;i++){
+				for(int i=0;i<100;i++){
 					_pars.push_back(new explosion_p(*(exsrc.end()-1)));
 				}
 				for(int i=0;i<200;i++){
@@ -176,23 +176,32 @@ public:
 		}
 	}
 
-	void rapid(playerstate& player){
-		if (player._mp<5||rfire>0){
+	void prapid(){
+		if (player->_mp<3||rfire>0){
 			return;
 		}
-		if(rfpar.size()<100&&rfire==0){
-			rfire = 5;
+		if(rfpar.size()<100){
+			rfire = 3;
+			coord2d_t dummy;
+			dummy = player->calcHotSpot(dummy,.6);
+			double vx = -sin(player->vel().x())*.6;
+			double vz = -cos(player->vel().x())*.6;
+			rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,0));
+			if (player->_mp>=3) {
+				player->_mp -= 3;
+				
+			}
+		}
+
+	}
+	void erapid(playerstate& player){
+		if(rfpar.size()<100){
 			coord2d_t dummy;
 			dummy = player.calcHotSpot(dummy,.6);
 			double vx = -sin(player.vel().x())*.6;
 			double vz = -cos(player.vel().x())*.6;
 			rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
-			if (player._mp>=5 && player._id == 0) {
-				player._mp -= 5;
-				
-			}
 		}
-
 	}
 
 	void spread(playerstate& player){

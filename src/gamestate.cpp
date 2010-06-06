@@ -12,6 +12,7 @@ int Bin::checkPaCollision(source *src, bool hitAll){
 		list<colliobj *>::iterator iter;
 		for(iter=objs.begin();iter!=objs.end();iter++){
 			if((*iter)->_id==src->pid) continue;
+			if((*iter)->_id>2000) continue;
 			if(src->_type==PARTICLE_LOA&&(*iter)->_id==0)
 				continue; //LOA is supposed to collide with the player, so we'll ignore that happening
 			if(collide(src->body,(*iter)->body)){
@@ -33,6 +34,7 @@ bool Bin::checkPlCollision(playerstate *pla){
 		list<colliobj *>::iterator iter;
 		for(iter=objs.begin();iter!=objs.end();iter++){
 			if((*iter)->_id==pla->_id) continue;
+			if((*iter)->_id>2000) continue;
 			if(collide(pla->front,(*iter)->body)){
 				return true;
 			}
@@ -56,6 +58,7 @@ bool Bin::checkObCollision(colliobj *obj,int op){
 			list<colliobj *>::iterator iter;
 			for(iter=objs.begin();iter!=objs.end();iter++){
 				if(obj->_id==(*iter)->_id) continue; //don't collide with yourself
+				if((*iter)->_id>2000) continue;
 				if(collide(obj->body,(*iter)->body)){
 					return true;
 				}

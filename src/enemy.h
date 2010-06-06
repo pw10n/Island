@@ -6,7 +6,7 @@
 #include "stdint.h"
 
 
-#define ENEMYID 100
+#define ENEMYID 1000
 extern int eid;
 
 class meleeAI: public playerstate{
