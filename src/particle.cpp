@@ -47,11 +47,11 @@ fireball_s::~fireball_s(void){
 void fireball_s::move(void)
 {
 	if(!active) return;
-	if(age>15){
+	if(age>7){
 		_pos.x() += _vel.x();
 		_pos.z() += _vel.z();
 	}
-	if(age>17){ //waits to keep it from colliding with the user
+	if(age>9){ //waits to keep it from colliding with the user
 		body = bbody(_pos,.15,BB_CIRC);
 	}
 	age++;
@@ -251,6 +251,11 @@ void explosion_p::draw(void)
 rapidfire::rapidfire(double ix, double iz, double ivx, double ivz, uint16_t id)
 {
 	pid = id;
+	if(pid!=0){
+		double ang = atan2(ivz,ivx) + (double)(rand()%9-4)/10.0;
+		ivx = cos(ang)*.6;
+		ivz = sin(ang)*.6;
+	}
 	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t(ivx,0,ivz);
 	life = 0.0; r = a = 1.0f; g = b = 0.0f;
 	active = true; boom = false;
