@@ -11,9 +11,6 @@
 
 using namespace std;
 
-#define MIN(x,y) ((x>y)?y:x)
-#define MAX(x,y) ((x>y)?x:y)
-
 #define MELEE_AWARE_DIST 7.0
 #define RANGED_AWARE_DIST 8.0
 #define RANGED_ATTACK_DIST 6.0
@@ -55,11 +52,6 @@ void meleeAI::tick(uint32_t time){
 			p.y() += (cos(vel().x()) * vel().y());
 			cPos(p);
 		}
-		if(outbounds()){
-			coord2d_t v = vel();
-			v.x() += 3.14;
-			cVel(v);
-		}
 	}
 	body = bbody(pos().x(),-pos().y(),.5,0,BB_CIRC);
 	coord2d_t dummy;
@@ -100,7 +92,7 @@ void rangedAI::tick(uint32_t time){
 		_vel.y() = .000;
 		if(cooldown==0){
 			if(checkLOA()){
-				gs->erapid(*this);
+				gs->rapid(*this);
 				cooldown = 5;
 			}
 			else{
@@ -124,11 +116,6 @@ void rangedAI::tick(uint32_t time){
 		if (_vel.y() > DBL_EPSILON){
 			_pos.x() += (-sin(_vel.x()) * _vel.y());
 			_pos.y() += (cos(_vel.x()) * _vel.y());
-		}
-		if(outbounds()){
-			coord2d_t v = vel();
-			v.x() += 3.14;
-			cVel(v);
 		}
 	}
 	if(cooldown<0) cooldown = 0;
@@ -154,9 +141,7 @@ void rangedAI::draw(){
 bool rangedAI::checkLOA(){
 	lineOfAtt *loa = new lineOfAtt(_pos,gs->player->_pos,_id);
 	int px = _pos.x()+50; int pz = -_pos.y()+50;
-	int pxa = MAX(px+6,100); int pxi = MIN(px-6,0);
-	int pza = MAX(pz+6,100); int pzi = MIN(pz-6,0);
-	gs->LarPaCollision(loa,pxi,pxa,pzi,pza); //already know it can't be more than 6 from this
+	gs->LarPaCollision(loa,px-6,px+6,pz-6,pz+6); //already know it can't be more than 6 from this
 	return !(loa->active); //if loa->active == true, something's in the way
 }
 

@@ -252,7 +252,7 @@ void drawCharacter();
 
 
 void init_ai(){
-	for(int i=0; i<100; ++i){
+	for(int i=0; i<20; ++i){
 		playerstate* temp;
 
 		//playerstate temp(0);
@@ -1621,7 +1621,7 @@ void keyboard(unsigned char key, int x, int y ){
       exit( EXIT_SUCCESS );
       break;
 	case 'a': case 'A' :
-		gs->prapid();
+		gs->rapid(*gs->player);
 		break;
 	case 'w': case 'W' :
 		gs->spread(*gs->player);
@@ -1699,8 +1699,7 @@ void tick(int state) {
 			gs->player->_score++;
 			continue;
 		}
-		if(!cull(others[i]->_pos)||(worldtime%7))
-			others[i]->tick(worldtime);
+		others[i]->tick(worldtime);
 	}
 	if (gs->smit){
 		gs->smsrc->move();
