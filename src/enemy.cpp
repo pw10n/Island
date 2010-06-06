@@ -23,39 +23,48 @@ extern gamestate *gs;
 
 void meleeAI::tick(uint32_t time){
 	if(_pos.distanceTo((*gs->player)._pos) > MELEE_AWARE_DIST){ //unaware
-		_vel.x() += (double)(rand()%10-5)/5.0;
-		_vel.y() = .004;
+		coord2d_t v = vel();
+		v.x() += (double)(rand()%10-5)/5.0;
+		v.y() = .004;
+		cVel(v);
 	}
 	else { //aware
-		_vel.x() = atan2(_pos.x()-gs->player->_pos.x(),gs->player->_pos.y()-_pos.y())+ecc;
+		coord2d_t v = vel();
+		v.x() = atan2(_pos.x()-gs->player->_pos.x(),gs->player->_pos.y()-_pos.y())+ecc;
 		if(collide(front,gs->player->body)){
-			_vel.y() = 0;
+			v.y() = 0;
 			//attack (blood particles?)
 		}else{
-			_vel.y() = .004;
+			v.y() = .004;
 		}
+		cVel(v);
 	}
 	if(gs->SmaPlCollision(this)&&!collide(front,gs->player->body)){
-		_vel.y() = -.002;
+		coord2d_t v = vel();
+		v.y() = -.002;
+		cVel(v);
 		ecc = (double)(rand()%5)/3.0-.75;
 	}
 	for(; _tick<time; ++_tick){
 		if (_vel.y() > DBL_EPSILON){
-			_pos.x() += (-sin(_vel.x()) * _vel.y());
-			_pos.y() += (cos(_vel.x()) * _vel.y());
+			coord2d_t p = pos();
+			p.x() += (-sin(vel().x()) * vel().y());
+			p.y() += (cos(vel().x()) * vel().y());
+			cPos(p);
 		}
 	}
-	body = bbody(_pos.x(),-_pos.y(),.5,0,BB_CIRC);
+	body = bbody(pos().x(),-pos().y(),.5,0,BB_CIRC);
 	coord2d_t dummy;
 	front = bbody(this->calcHotSpot(dummy,.6),.1,BB_CIRC);
 	gs->updatBinLists(this,UPDAT);
 	if(_vel.y()>0) Animate(&enemyMod->md5anim[1],&walAni,WORLD_TIME_RESOLUTION);
 	else Animate(&enemyMod->md5anim[0],&idlAni,WORLD_TIME_RESOLUTION);
+	//cBBody();
 }
 
 void meleeAI::draw(){
 	glPushMatrix();
-	glTranslatef(_pos.x(), .6, -_pos.y());
+	glTranslatef(pos().x(), .6, -pos().y());
     glRotatef(_vel.x()*180.0/3.1415, 0, 1, 0);
     glRotatef(180,0,1,0);
 	//if(_state == PLYRSTATATT)
@@ -114,7 +123,7 @@ void rangedAI::tick(uint32_t time){
 	coord2d_t dummy;
 	front = bbody(this->calcHotSpot(dummy,.6),.1,BB_CIRC);
 	gs->updatBinLists(this,UPDAT);
-	
+	//cBBody();
 }
 
 void rangedAI::draw(){
@@ -160,7 +169,7 @@ void spawnEnemyHelper(playerstate* obj,
 					  uint32_t tick,
 					  coord2d_t pos, 
 					  coord2d_t vel){
-	obj->_id = 0;
+	obj->_id = ENEMYID+(eid++);
 	obj->_tick = tick;
 	obj->_hp = hp;
 	obj->_mp = mp;
@@ -170,8 +179,8 @@ void spawnEnemyHelper(playerstate* obj,
 	obj->_pos = pos;
 	obj->_vel = vel;
 
-	//TODO: this needs to be done in the change pos/vel func
-	obj->body = bbody(obj->_pos.x(),-obj->_pos.y(),1.0,0,BB_CIRC);
+	
+	
 }
 
 

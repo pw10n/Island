@@ -33,6 +33,15 @@ fireball_s::fireball_s(double ix,double iz,double ivx,double ivz,uint16_t id)
 	_type = PARTICLE_FIREBALL; //there's no point in having a type argument
 		//it already knows _type is PARTICLE_FIREBALL because we called fireball_s
 	_damage = 10;
+	for(int i=0;i<NUMFBPAR;i++){
+		pars[i] = new fireball_p(this);
+	}
+}
+
+fireball_s::~fireball_s(void){
+	for(int i=0;i<NUMFBPAR;i++){
+		delete pars[i];
+	}
 }
 
 void fireball_s::move(void)
@@ -46,6 +55,12 @@ void fireball_s::move(void)
 		body = bbody(_pos,.15,BB_CIRC);
 	}
 	age++;
+	for(int i=0;i<NUMFBPAR;i++){
+		pars[i]->move();
+	}
+	if(age==50){
+		active = false;
+	}
 }
 
 void fireball_s::draw(void)
@@ -59,6 +74,9 @@ void fireball_s::draw(void)
 	double sca = (double)MIN(age,15)/100.;
 	glutSolidSphere(sca,10,10);
 	glPopMatrix();
+	for(int i=0;i<NUMFBPAR;i++){
+		pars[i]->draw();
+	}
 	glEnable(GL_LIGHTING);
 }
 
@@ -116,7 +134,8 @@ void fireball_p::refresh(void)
 
 void fireball_p::move(void)
 {
-	if(src==NULL){
+	if(!src){
+		printf("src is inactive.\n");
 		active = false;
 		return;
 	}
@@ -364,7 +383,7 @@ beam::beam(playerstate *pla)
 	play = pla;
 	pid = play->_id;
 	_pos = vec3d_t(play->front.VCENX,.25,play->front.VCENZ);
-	ang = play->_vel.x();
+	ang = play->vel().x();
 	_vel = vec3d_t(-sin(ang)*5,0,-cos(ang)*5);
 	life = 0.0; g = a = 1.0f; b = 0.2f; r = 0.0f;
 	active = true;
@@ -376,7 +395,7 @@ beam::beam(playerstate *pla)
 void beam::move(void)
 {
 	_pos = vec3d_t(play->front.VCENX,.25,play->front.VCENZ);
-	ang = play->_vel.x();
+	ang = play->vel().x();
 	_vel = vec3d_t(-sin(ang)*5,0,-cos(ang)*5);
 	body = bbody(_pos,_pos + _vel,BB_LINE);
 	b += (float)(rand()%3-1)*.1f;
@@ -420,13 +439,18 @@ void smite_s::move(void)
 
 void smite_s::draw(void)
 {
-	glColor4f(1,1,1,1);
+	glDisable(GL_LIGHTING);
+	glColor4f(1,1,1,.25);
 	glPushMatrix();
 	glTranslatef(_pos.x(),.1,_pos.z());
-	float sca = 4.0f;
+	/*float sca = 4.0f;
 	glScalef(sca,3.0f*sca,sca);
-	glCallList(PARTLIST);
+	glCallList(PARTLIST);*/
+	float sca = (2.0f-life)/16.0f;
+	glRotatef(90,-1,0,0);
+	gluCylinder(gluNewQuadric(), sca, sca, 5, 12, 36);
 	glPopMatrix();
+	glEnable(GL_LIGHTING);
 }
 
 smite_p::smite_p(smite_s * sour)

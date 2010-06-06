@@ -1,0 +1,9 @@
+/Users/prentice/work/school/csc476/shader/lightmap_release.cpp:492: error: variable or field 'FindInvTBN' declared void
+/Users/prentice/work/school/csc476/shader/lightmap_release.cpp:492: error: 'vec3d_t' was not declared in this scope
+/Users/prentice/work/school/csc476/shader/lightmap_release.cpp:492: error: 'coord2d_t' was not declared in this scope
+/Users/prentice/work/school/csc476/shader/lightmap_release.cpp:492: error: 'vec3d_t' was not declared in this scope
+/Users/prentice/work/school/csc476/shader/lightmap_release.cpp:492: error: 'InvNormal' was not declared in this scope
+/Users/prentice/work/school/csc476/shader/lightmap_release.cpp:493: error: 'vec3d_t' was not declared in this scope
+/Users/prentice/work/school/csc476/shader/lightmap_release.cpp:493: error: 'InvBinormal' was not declared in this scope
+/Users/prentice/work/school/csc476/shader/lightmap_release.cpp:493: error: 'vec3d_t' was not declared in this scope
+/Users/prentice/work/school/csc476/shader/lightmap_release.cpp:493: error: 'InvTangent' was not declared in this scope

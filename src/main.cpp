@@ -64,7 +64,7 @@ using namespace std;
 #define TOP_VIEW 0 //Set to 1 to see birds eye view of island
 
 #define PLAYERID 0
-#define ENEMYID 100
+// ENEMYID defined in enemy.h
 #define CRATEID 200
 #define HUTID 300
 #define TREEID 400
@@ -246,7 +246,7 @@ void damage(uint8_t *target, int dam){
 bool cull(coord2d_t pos){
 	//return false; 
 	if((pos.x()>gs->player->_pos.x()+14.0)||(pos.x()<gs->player->_pos.x()-14.0)) return true;
-	return ((pos.y()>gs->player->_pos.y()+14.0)||(pos.y()<gs->player->_pos.y()-14.0));
+	return ((pos.y()>gs->player->_pos.y()+16.0)||(pos.y()<gs->player->_pos.y()-8.0));
 }
 
 void drawCharacter();
@@ -290,11 +290,9 @@ void drawAi(){
 #define AI_BOUNDS_MIN -40.0
 void tickAi(uint32_t time){
 	coord2d_t dummy;
-	/*for(vector<playerstate>::iterator it = others.begin();
-		it != others.end();
-		it=((*it)->_hp<=0)?others.erase(it):it+1)*/
 	for(unsigned int i=0; i<others.size(); ) //i++ is at the end of for loop
 	{
+		
 		if (others[i]->_hp <= 0){
 
 
@@ -305,114 +303,10 @@ void tickAi(uint32_t time){
 			gs->player->_score++;
 			continue;
 		}
-
-
 		if(others[i]->_id >200){
 			printf("corruption found\n");
 		}
-		switch(others[i]->_state){
-			case PSTATE_AI_SEARCHING:
-				// move forward
-
-				if(gs->SmaPlCollision(others[i])) {others[i]->_vel.y() = 0; others[i]->_vel.x() -= 1;}
-				else {others[i]->_vel.y() = .05;}
-
-				others[i]->_pos.x() += (-sin(others[i]->_vel.x()) * others[i]->_vel.y());
-				others[i]->_pos.y() += (cos(others[i]->_vel.x()) * others[i]->_vel.y());
-				others[i]->body = bbody(others[i]->_pos.x(),-others[i]->_pos.y(),1.0,0,BB_CIRC);
-				others[i]->front = bbody(others[i]->calcHotSpot(dummy,.6),.1,BB_CIRC);
-
-
-				//if(others[i]->_vel.y()>0.00) 
-				gs->updatBinLists(others[i],UPDAT);
-
-
-				// check bounds
-				if (others[i]->_pos.x() > AI_BOUNDS_MAX){
-					others[i]->_pos.x() = AI_BOUNDS_MAX;
-					others[i]->_vel.x() += M_PI;
-				}
-				else if (others[i]->_pos.x() < AI_BOUNDS_MIN){
-					others[i]->_pos.x() = AI_BOUNDS_MIN;
-					others[i]->_vel.x() += M_PI;
-				}
-				if (others[i]->_pos.y() > AI_BOUNDS_MAX){
-					others[i]->_pos.y() = AI_BOUNDS_MAX;
-					others[i]->_vel.x() += M_PI;
-				}
-				else if (others[i]->_pos.y() < AI_BOUNDS_MIN){
-					others[i]->_pos.y() = AI_BOUNDS_MIN;
-					others[i]->_vel.x() += M_PI;
-				}
-
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE )
-					others[i]->_state = PSTATE_AI_TARGETING_1;
-				
-
-				break;
-			case PSTATE_AI_TARGETING_1:
-				// if still in range
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE ){
-					coord2d_t pos = others[i]->_pos-gs->player->_pos ;
-					float theta=others[i]->_vel.x();
-					if (pos.x()==0 && pos.x()<0) // handle div by zero case.
-						theta = M_PI/2.0f;
-					else if (pos.y()==0 && pos.x()>0) // handle div by zero case.
-						theta = 3.0f*M_PI/2.0f;
-					else if (pos.y()<0 && pos.x()<0)
-						theta = atan((float)pos.x()/(float)pos.y());
-					else if (pos.y()>0 && pos.x()<=0)
-						theta = atan((float)pos.x()/(float)pos.y())+M_PI;
-					else if (pos.y()<0 && pos.x()>=0)
-						theta = atan((float)pos.x()/(float)pos.y())+2*M_PI;
-					else if (pos.y()>0 && pos.x()>0)
-						theta = atan((float)pos.x()/(float)pos.y())+M_PI;
-						
-					//angle=theta*(180.0f / M_PI);
-					others[i]->_vel.x() = -theta;
-					others[i]->_state = (others[i]->_id>10)?PSTATE_AI_ATACKING:PSTATE_AI_TARGETING_2;
-				}
-				// else : return to searching state
-				else
-					others[i]->_state = PSTATE_AI_SEARCHING;
-				break;
-			case PSTATE_AI_TARGETING_2:
-				// if still in range
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE ){
-					others[i]->_state = PSTATE_AI_TARGETING_3;
-				}
-				// else : return to searching state
-				else
-					others[i]->_state = PSTATE_AI_SEARCHING;
-				break;
-			case PSTATE_AI_TARGETING_3:
-				// if still in range
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE ){
-					
-					others[i]->_state = PSTATE_AI_ATACKING;
-				}
-				// else : return to searching state
-				else
-					others[i]->_state = PSTATE_AI_SEARCHING;
-				break;
-			case PSTATE_AI_ATACKING:
-				// TODO: FIRE
-				{
-					coord2d_t save = others[i]->_vel;
-					others[i]->_vel.x() += (rand() % 10)*0.1f-0.5f;
-					gs->rapid(*others[i]);
-					others[i]->_vel = save;
-				}
-				// if still in rage
-				if(others[i]->_pos.distanceTo((*gs->player)._pos) < MIN_AI_DISTANCE )
-					others[i]->_state = PSTATE_AI_TARGETING_1;
-				// else : return to searching state
-				else
-					others[i]->_state = PSTATE_AI_SEARCHING;
-				break;
-			default:
-				others[i]->_state = PSTATE_AI_SEARCHING;
-		}
+		
 		i++;
 	}
 }
@@ -695,12 +589,12 @@ void drawAniPlayer(bool walk){
    glDisable(GL_LIGHTING);
 }
 
-void drawFireball() {
-	gs->fbsrc->draw();
-	/*for(uint32_t i=0;i<gs->fbpar.size();i++){
-		gs->fbpar[i]->draw();
-	}*/
-}
+//void drawFireball() {
+//	gs->fbsrc->draw();
+//	/*for(uint32_t i=0;i<gs->fbpar.size();i++){
+//		gs->fbpar[i]->draw();
+//	}*/
+//}
 
 //void drawExplosion() {
 //	//gs->exsrc->draw();
@@ -1563,6 +1457,12 @@ void display() {
 			glDisable(GL_LIGHTING);
 		glPopMatrix(); // end Ocean
 
+		glPushMatrix();
+	  drawAi();
+
+	  glPopMatrix();
+	  materials(ModeMat);
+
 		glPushMatrix(); // GS display (all game objects should be drawn here)
 			gsDisplay();	
 		glPopMatrix();	// end GS
@@ -1571,10 +1471,6 @@ void display() {
 
     //printOpenGLError();
 
-	  glPushMatrix();
-	  drawAi();
-
-	  glPopMatrix();
 
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
@@ -1733,7 +1629,7 @@ void keyboard(unsigned char key, int x, int y ){
 		gs->spread(*gs->player);
 		break;
 	case 's': case 'S' :
-		if(gs->fbtim<0) {gs->spawnFireball();}
+		gs->spawnFireball();
 		break;
 	case 'f': case 'F' :
 		gs->beatim = 5;
@@ -1807,74 +1703,11 @@ void tick(int state) {
 		}
 		others[i]->tick(worldtime);
 	}
-	gs->rfire = (gs->rfire+1)%5;
-	if (gs->fbtim>-1){
-		gs->fbtim++;
-		gs->fbsrc->move();
-		//for(uint32_t i=0;i<gs->fbpar.size();i++){
-		//	gs->fbpar[i]->move();
-		//	if(gs->fbpar[i]->life<0.0f){
-		//		//gs->fbpar[i] = new fireball_p(fbsrc);
-		//		gs->fbpar[i]->refresh();
-		//	}
-		//}
-		if(gs->fbtim<15){
-			gs->fbsrc->_pos.x() = gs->player->front.VCENX;
-			gs->fbsrc->_pos.z() = gs->player->front.VCENZ;
-			gs->fbsrc->_vel.x() = -sin(gs->player->_vel.x())/5.0;
-			gs->fbsrc->_vel.z() = -cos(gs->player->_vel.x())/5.0;
-		}
-	}
-	if(gs->fbtim>50){
-		gs->fbtim=-1;
-		gs->fbsrc->active = false;
-		//for(uint32_t i=0;i<gs->fbpar.size();i++) delete gs->fbpar[i];
-		//gs->fbpar.clear();
-		gs->detonate(gs->fbsrc,false);
-		delete gs->fbsrc;
-		gs->explo = true;
-	}
-
-	else if(gs->fbtim>-1&&(coll = gs->SmaPaCollision(gs->fbsrc))){
-		gs->fbtim=-1;
-		gs->fbsrc->active = false;
-		//for(uint32_t i=0;i<gs->fbpar.size();i++) delete gs->fbpar[i];
-		//gs->fbpar.clear();
-		gs->detonate(gs->fbsrc,(coll==HIT_CRATE)); //if gs->fbtim less than 50, fb must have collided with something
-		delete gs->fbsrc;
-		gs->explo = true;
-	}
-	if (gs->explo){
-		gs->exsrc->move();
-		/*for(int i=gs->expar.size()-1;i>-1;i--){
-			gs->expar[i]->move();
-			if(gs->expar[i]->life<0.0f){
-				delete gs->expar[i];
-				gs->expar.erase(gs->expar.begin()+i);
-			}
-		}*/
-
-		gs->LarPaCollision(gs->exsrc,0,100,0,100);
-
-		//if(gs->expar.empty()){
-		if(gs->exsrc->subPar<1){
-			gs->explo = false;
-			delete gs->exsrc;
-		}
-	}
 	if (gs->smit){
 		gs->smsrc->move();
-		/*for(int i=gs->smpar.size()-1;i>-1;i--){
-			gs->smpar[i]->move();
-			if(gs->smpar[i]->life<0.0f){
-				delete gs->smpar[i];
-				gs->smpar.erase(gs->smpar.begin()+i);
-			}
-		}*/
 
 		gs->LarPaCollision(gs->smsrc,0,100,0,100);
 
-		//if(gs->smpar.empty()){
 		if(gs->smsrc->subPar<1){
 			gs->smit = false;
 			delete gs->smsrc;
@@ -1993,12 +1826,12 @@ void fnExit1(){
 }
 
 int main( int argc, char** argv ) {
-srand (time (NULL));
+	srand (time (NULL));
 
 
-gs = new gamestate();
+	gs = new gamestate();
 	// use this for debugging unexpected exits: 
-atexit (fnExit1);
+	//atexit (fnExit1);
 
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks

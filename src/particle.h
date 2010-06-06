@@ -1,4 +1,6 @@
 #pragma once
+#include "collision.h"
+#include "playerstate.h"
 #define PARTLIST 1
 #define PARTICLE_TEXTURE 1
 #define PARTICLE_FIREBALL 0
@@ -7,8 +9,10 @@
 #define PARTICLE_EXPLOSION 3
 #define PARTICLE_SMITE 4
 #define PARTICLE_LOA 5
-#include "collision.h"
-#include "playerstate.h"
+
+#define NUMFBPAR 100
+
+class fireball_p;
 
 
 class particle
@@ -42,10 +46,11 @@ public:
 class fireball_s : public source
 {
 public:
-	//float vx,vz; //Cartesian velocity
 	int age; //used for time-based changes
+	fireball_p *pars[NUMFBPAR];
 
 	fireball_s(double,double,double,double,uint16_t);
+	~fireball_s(void);
 	void move(void);
 	void draw(void);
 };
