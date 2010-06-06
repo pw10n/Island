@@ -1455,6 +1455,12 @@ void display() {
 			glDisable(GL_LIGHTING);
 		glPopMatrix(); // end Ocean
 
+		glPushMatrix();
+	  drawAi();
+
+	  glPopMatrix();
+	  materials(ModeMat);
+
 		glPushMatrix(); // GS display (all game objects should be drawn here)
 			gsDisplay();	
 		glPopMatrix();	// end GS
@@ -1463,10 +1469,6 @@ void display() {
 
     //printOpenGLError();
 
-	  glPushMatrix();
-	  drawAi();
-
-	  glPopMatrix();
 
       glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);

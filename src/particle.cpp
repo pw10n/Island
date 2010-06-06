@@ -420,13 +420,18 @@ void smite_s::move(void)
 
 void smite_s::draw(void)
 {
-	glColor4f(1,1,1,1);
+	glDisable(GL_LIGHTING);
+	glColor4f(1,1,1,.25);
 	glPushMatrix();
 	glTranslatef(_pos.x(),.1,_pos.z());
-	float sca = 4.0f;
+	/*float sca = 4.0f;
 	glScalef(sca,3.0f*sca,sca);
-	glCallList(PARTLIST);
+	glCallList(PARTLIST);*/
+	float sca = (2.0f-life)/16.0f;
+	glRotatef(90,-1,0,0);
+	gluCylinder(gluNewQuadric(), sca, sca, 5, 12, 36);
 	glPopMatrix();
+	glEnable(GL_LIGHTING);
 }
 
 smite_p::smite_p(smite_s * sour)
