@@ -150,7 +150,13 @@ void gamestate::draw(){
 				(*it)->draw();
 				
 	}
-	if(fbtim>-1) fbsrc->draw();
+	for(vector<fireball_s *>::iterator it = fbsrc.begin();
+		it != fbsrc.end(); it++){
+			//cerr << "DEBUG: calling particle draw method" << endl;
+			if(!cull3((*it)->_pos))
+				(*it)->draw();
+				
+	}
 	if(smit) smsrc->draw();
 	for(vector<particle*>::iterator it = _pars.begin();
 		it != _pars.end(); it++){
@@ -206,6 +212,34 @@ void gamestate::tick(uint32_t time){
 		else
 			++it;
 	}
+	int coll;
+	if(fbtim>0) fbtim--;
+	for(vector<fireball_s *>::iterator it = fbsrc.begin(); it!=fbsrc.end();){
+		(*it)->move();
+		if(!(*it)->active){
+			detonate((*it),false);
+			delete (*it);
+			it=fbsrc.erase(it);
+		}
+		else if(coll = SmaPaCollision((*it))){
+			detonate((*it),(coll==HIT_CRATE)); //if gs->fbtim less than 50, fb must have collided with something
+			delete (*it);
+			it=fbsrc.erase(it);
+		}
+		else
+			++it;
+	}
+	for(vector<explosion_s *>::iterator it = exsrc.begin(); it!=exsrc.end();){
+		(*it)->move();
+		LarPaCollision((*it),0,100,0,100);
+		if(!(*it)->active){
+			delete (*it);
+			it=exsrc.erase(it);
+		}
+		else
+			++it;
+	}
+	if(rfire>0) rfire--;
 }
 
 void gamestate::addEnemy(playerstate* e){

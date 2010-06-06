@@ -58,6 +58,9 @@ void fireball_s::move(void)
 	for(int i=0;i<NUMFBPAR;i++){
 		pars[i]->move();
 	}
+	if(age==50){
+		active = false;
+	}
 }
 
 void fireball_s::draw(void)

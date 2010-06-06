@@ -587,12 +587,12 @@ void drawAniPlayer(bool walk){
    glDisable(GL_LIGHTING);
 }
 
-void drawFireball() {
-	gs->fbsrc->draw();
-	/*for(uint32_t i=0;i<gs->fbpar.size();i++){
-		gs->fbpar[i]->draw();
-	}*/
-}
+//void drawFireball() {
+//	gs->fbsrc->draw();
+//	/*for(uint32_t i=0;i<gs->fbpar.size();i++){
+//		gs->fbpar[i]->draw();
+//	}*/
+//}
 
 //void drawExplosion() {
 //	//gs->exsrc->draw();
@@ -1627,7 +1627,7 @@ void keyboard(unsigned char key, int x, int y ){
 		gs->spread(*gs->player);
 		break;
 	case 's': case 'S' :
-		if(gs->fbtim<0) {gs->spawnFireball();}
+		gs->spawnFireball();
 		break;
 	case 'f': case 'F' :
 		gs->beatim = 5;
@@ -1701,74 +1701,11 @@ void tick(int state) {
 		}
 		others[i]->tick(worldtime);
 	}
-	gs->rfire = (gs->rfire+1)%5;
-	if (gs->fbtim>-1){
-		gs->fbtim++;
-		gs->fbsrc->move();
-		//for(uint32_t i=0;i<gs->fbpar.size();i++){
-		//	gs->fbpar[i]->move();
-		//	if(gs->fbpar[i]->life<0.0f){
-		//		//gs->fbpar[i] = new fireball_p(fbsrc);
-		//		gs->fbpar[i]->refresh();
-		//	}
-		//}
-		if(gs->fbtim<15){
-			gs->fbsrc->_pos.x() = gs->player->front.VCENX;
-			gs->fbsrc->_pos.z() = gs->player->front.VCENZ;
-			gs->fbsrc->_vel.x() = -sin(gs->player->_vel.x())/5.0;
-			gs->fbsrc->_vel.z() = -cos(gs->player->_vel.x())/5.0;
-		}
-	}
-	if(gs->fbtim>50){
-		gs->fbtim=-1;
-		gs->fbsrc->active = false;
-		//for(uint32_t i=0;i<gs->fbpar.size();i++) delete gs->fbpar[i];
-		//gs->fbpar.clear();
-		gs->detonate(gs->fbsrc,false);
-		delete gs->fbsrc;
-		gs->explo = true;
-	}
-
-	else if(gs->fbtim>-1&&(coll = gs->SmaPaCollision(gs->fbsrc))){
-		gs->fbtim=-1;
-		gs->fbsrc->active = false;
-		//for(uint32_t i=0;i<gs->fbpar.size();i++) delete gs->fbpar[i];
-		//gs->fbpar.clear();
-		gs->detonate(gs->fbsrc,(coll==HIT_CRATE)); //if gs->fbtim less than 50, fb must have collided with something
-		delete gs->fbsrc;
-		gs->explo = true;
-	}
-	if (gs->explo){
-		gs->exsrc->move();
-		/*for(int i=gs->expar.size()-1;i>-1;i--){
-			gs->expar[i]->move();
-			if(gs->expar[i]->life<0.0f){
-				delete gs->expar[i];
-				gs->expar.erase(gs->expar.begin()+i);
-			}
-		}*/
-
-		gs->LarPaCollision(gs->exsrc,0,100,0,100);
-
-		//if(gs->expar.empty()){
-		if(gs->exsrc->subPar<1){
-			gs->explo = false;
-			delete gs->exsrc;
-		}
-	}
 	if (gs->smit){
 		gs->smsrc->move();
-		/*for(int i=gs->smpar.size()-1;i>-1;i--){
-			gs->smpar[i]->move();
-			if(gs->smpar[i]->life<0.0f){
-				delete gs->smpar[i];
-				gs->smpar.erase(gs->smpar.begin()+i);
-			}
-		}*/
 
 		gs->LarPaCollision(gs->smsrc,0,100,0,100);
 
-		//if(gs->smpar.empty()){
 		if(gs->smsrc->subPar<1){
 			gs->smit = false;
 			delete gs->smsrc;
