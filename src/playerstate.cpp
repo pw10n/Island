@@ -105,3 +105,9 @@ void playerstate::cPos(coord2d_t pos, coord2d_t vel){
 	cBBody();
 }
 
+bool playerstate::outbounds(){
+	if(_pos.x()>50.0||_pos.x()<-50.0) return true;
+	if(_pos.y()>50.0||_pos.y()<-50.0) return true;
+	return false;
+}
+
