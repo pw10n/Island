@@ -193,6 +193,10 @@ void gamestate::tick(uint32_t time){
 	if(GSSTATE_ACTIVE != _state)
 		return;
 
+	player->tick(time);
+	updatBinLists(player,UPDAT);
+
+
 	uint32_t delta_time = time - _tick;
 	_tick = time;
 	

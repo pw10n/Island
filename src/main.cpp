@@ -294,28 +294,6 @@ void drawAi(){
 #define MIN_AI_DISTANCE 7.0
 #define AI_BOUNDS_MAX 40.0
 #define AI_BOUNDS_MIN -40.0
-void tickAi(uint32_t time){
-	coord2d_t dummy;
-	for(unsigned int i=0; i<others.size(); ) //i++ is at the end of for loop
-	{
-		
-		if (others[i]->_hp <= 0){
-
-
-			gs->updatBinLists(others[i],REMOV);
-			delete others[i];
-			others.erase(others.begin()+i);
-
-			gs->player->_score++;
-			continue;
-		}
-		if(others[i]->_id >200){
-			printf("corruption found\n");
-		}
-		
-		i++;
-	}
-}
 
 
 //////////////////////////////////////////
@@ -1337,6 +1315,10 @@ glDisable(GL_LIGHTING);
 
 
 void display() {
+
+
+	// time here is for calculating framerate...
+	// DO NOT USE this for worldtime / ticks.
   static int frame=0;
   static int lasttime=0;
   
@@ -1349,6 +1331,8 @@ void display() {
     lasttime = time;
     frame = 0;
   }
+	/////////////////////////////////////// fps calc end //
+
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1356,20 +1340,17 @@ void display() {
   glMatrixMode(GL_MODELVIEW);
   
 
-  glPushMatrix();  
-  
+  glPushMatrix();  // ortho 
   setOrthoProjection();
-  glPushMatrix();
-
-
+  glPushMatrix(); // ortho + 1
   //glLoadIdentity(); not needed
 //printOpenGLError();
-  
 
     displayHud();
+
   //glPopMatrix();
-  //resetPerspectiveProjection();
-    glPushMatrix();
+  resetPerspectiveProjection();
+    glPushMatrix(); // ortho + 2
 
 		//gs->player constraints
 		if (gs->player->_pos.x()>MAP_SIZE) {
@@ -1391,7 +1372,7 @@ void display() {
 	    
 		glPushMatrix(); // Tiles
 			drawTiles();
-		glPushMatrix(); // End Tiles
+		glPopMatrix(); // End Tiles
 		//printOpenGLError();
 		glPushMatrix(); // Ocean
 			if(shadeOn){
@@ -1418,17 +1399,17 @@ void display() {
 			glDisable(GL_LIGHTING);
 		glPopMatrix(); // end Ocean
 
-		glPushMatrix();
+		glPushMatrix(); // push ai
 	  drawAi();
 
-	  glPopMatrix();
+	  glPopMatrix(); // pop ai
 	  materials(ModeMat);
 
 		glPushMatrix(); // GS display (all game objects should be drawn here)
 			gsDisplay();	
 		glPopMatrix();	// end GS
 
-    glPopMatrix();
+    glPopMatrix(); // pop ortho + 2
 
     //printOpenGLError();
 
@@ -1450,8 +1431,8 @@ void display() {
       glPopMatrix();
 	  if(gs->smit) drawSmite();
 	  drawRapid();
-    glPopMatrix();
-  glPopMatrix();
+    glPopMatrix(); // pop ortho  + 1
+  glPopMatrix(); // pop ortho
   
   glutSwapBuffers();
     //printOpenGLError();
@@ -1546,10 +1527,6 @@ void processMouseActiveMotion(int x, int y) {
 	else if (y>0 && x>0)
 		theta = atan((float)x/(float)y)+M_PI;
 		
-
-
-
-
 
 	angle=theta*(180.0f / M_PI);
 	//myX += -sin(theta);
@@ -1647,12 +1624,7 @@ void keyboard(unsigned char key, int x, int y ){
 void tick(int state) {
 	gs->tick(worldtime);
 	int coll = 0;
-	//if(gs->SmaPlCollision(gs->player)) vel.y() = 0;
-	//gs->player->change_velocity(vel);
-	//gs->player->_vel = vel;
-	gs->player->tick(worldtime);
-	gs->updatBinLists(gs->player,UPDAT);
-	//tickAi(worldtime);
+
 	for(unsigned int i=0;i<others.size();i++){
 		if(others[i]->_hp==0){
 			gs->updatBinLists(others[i],REMOV);
@@ -1662,8 +1634,8 @@ void tick(int state) {
 			gs->player->_score++;
 			continue;
 		}
-		//if(!cull(others[i]->_pos)||(worldtime%7))
-			others[i]->tick(worldtime);
+
+		others[i]->tick(worldtime);
 	}
 	if (gs->smit){
 		gs->smsrc->move();
@@ -1702,23 +1674,7 @@ void tick(int state) {
 
 
 		gs->LarPaCollision(gs->besrc,0,100,0,100);
-
 	}
-	/*for(vector<objectstate*>::iterator it = crates.begin();
-		it != crates.end();
-		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){*/
-	/*
-	for(unsigned int i=0; i<crates.size();){
-
-		if(crates[i]->_hp == 0) {
-			gs->updatBinLists(crates[i],REMOV);
-			delete crates[i];
-			crates.erase(crates.begin()+i);
-		}
-		else i++;
-
-	}
-	*/
 
    Animate(&playerMod->md5anim[0],&idlAnim,WORLD_TIME_RESOLUTION);
    Animate(&playerMod->md5anim[1],&walAnim,WORLD_TIME_RESOLUTION);
@@ -1778,8 +1734,6 @@ void mana(int pass) {
 	}
 	glutTimerFunc(1000, mana,0);
 }
-
-
 
 
 
@@ -2020,7 +1974,6 @@ cerr << "INFO: init gamestate.. " << endl;
 
 		}
 
-
 		palmTree *tree = new palmTree(textures[0], treemdl);
 		tree->_pos.x() = rand()%100-50;
 		tree->_pos.y() = rand()%100-50;
@@ -2036,19 +1989,6 @@ cerr << "INFO: init gamestate.. " << endl;
 		bush->_hp = 10;
 		bush->_id = VEGID + (vid++);
 		gs->addObject(bush);
-
-
-
-
-
-
-
-		
-		
-		
-		
-
-
   }
   //for(int i=0;i<10;i++) {
 
