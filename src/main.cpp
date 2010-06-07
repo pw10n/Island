@@ -144,6 +144,11 @@ materialStruct Sand = {
 	{0.0, 0.0, 0.0, 1.0},
 	{0.0}
 };
+
+void init_ai();
+void init_lighting();
+void initModel();
+
 //coord2d_t vel;
 //playerstate* gs->player;
 vector<playerstate*> others;
@@ -258,6 +263,97 @@ bool cull(coord2d_t pos){
 void drawCharacter();
 
 
+// leave menu
+void EnterGameMode(){
+	 gs->start(0);
+
+	gs->player = new playerstate(worldtime);
+	gs->player->_hp = 100;
+	gs->player->_mp = 200;
+	gs->player->_pos.x() = 0;
+	gs->player->_pos.y() = 0;
+	gs->fbtim = -1;
+	gs->explo = false;
+	gs->smit = false;
+
+
+	for(int i = 0; i < 100; i++){  
+
+	  /* uses gamestate object crate:
+	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
+	  temp->_hp = 10;
+	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
+	  gs->_objects.push_back(temp);
+	  */
+	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
+
+		if (i > 70) {
+		goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
+		crt->_pos.x() = rand()%100-50;
+		crt->_pos.y() = rand()%100-50;
+		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		crt->_hp = 10;
+		crt->_id = CRATEID + (cid++);
+		gs->addObject(crt);
+
+		Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
+		hut->_pos.x() = rand()%100-50;
+		hut->_pos.y() = rand()%100-50;
+		hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
+		hut->_hp = 100;
+		hut->_id = HUTID + (hid++);
+		gs->addObject(hut);
+
+		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
+		rck2->_pos.x() = rand()%100-50;
+		rck2->_pos.y() = rand()%100-50;
+		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
+		rck2->_hp = 10;
+		rck2->_id = ROCKID + (rid2++);
+		gs->addObject(rck2);
+
+
+		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rand()%90, rockmdl);
+		rck->_pos.x() = rand()%100-50;
+		rck->_pos.y() = rand()%100-50;
+		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
+		rck->_hp = 10;
+		rck->_id = ROCKID + (rid++);
+		gs->addObject(rck);
+
+		}
+
+		palmTree *tree = new palmTree(textures[0], treemdl);
+		tree->_pos.x() = rand()%100-50;
+		tree->_pos.y() = rand()%100-50;
+		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
+		tree->_hp = 10;
+		tree->_id = TREEID + (tid++);
+		gs->addObject(tree);
+
+		veg *bush = new veg(textures[0], rand()%90, vegmdl);
+		bush->_pos.x() = rand()%100-50;
+		bush->_pos.y() = rand()%100-50;
+		bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
+		bush->_hp = 10;
+		bush->_id = VEGID + (vid++);
+		gs->addObject(bush);
+	}
+
+	cerr << "INFO: init lighting.. " << endl;
+	init_lighting();
+
+	cerr << "INFO: init ai.. " << endl;
+	init_ai();
+
+	cerr << "INFO: init model.. " << endl;
+	initModel();
+}
+
+// return to menu
+void ExitGameMode(){
+	
+}
 
 void init_ai(){
 	for(int i=0; i<50; ++i){
@@ -1349,7 +1445,7 @@ void display() {
     displayHud();
 
   //glPopMatrix();
-  resetPerspectiveProjection();
+  // resetPerspectiveProjection();
     glPushMatrix(); // ortho + 2
 
 		//gs->player constraints
@@ -1372,7 +1468,7 @@ void display() {
 	    
 		glPushMatrix(); // Tiles
 			drawTiles();
-		glPopMatrix(); // End Tiles
+		glPushMatrix(); // End Tiles
 		//printOpenGLError();
 		glPushMatrix(); // Ocean
 			if(shadeOn){
@@ -1799,16 +1895,6 @@ int main( int argc, char** argv ) {
 	LAz = 0;//shift;
 
 
-	gs->player = new playerstate(worldtime);
-	gs->player->_hp = 100;
-	gs->player->_mp = 200;
-	gs->player->_pos.x() = 0;
-	gs->player->_pos.y() = 0;
-	gs->fbtim = -1;
-	gs->explo = false;
-	gs->smit = false;
-
-	srand(time(NULL));
 
 	//register glut callback functions
 	glutDisplayFunc( display );
@@ -1833,25 +1919,15 @@ int main( int argc, char** argv ) {
 #endif 
 
 
-	cerr << "INFO: init lighting.. " << endl;
-
-  init_lighting();
-
-  cerr << "INFO: init ai.. " << endl;
-
-  init_ai();
-
-  cerr << "INFO: init model.. " << endl;
-
-  initModel();
 
 
-cerr << "INFO: init gamestate.. " << endl;
+
+//cerr << "INFO: init gamestate.. " << endl;
 
   
 
 
-  gs->start(0);
+  
   
 
   //glEnable(GL_LIGHTING);
@@ -1914,103 +1990,6 @@ cerr << "INFO: init gamestate.. " << endl;
   rock2Tex = BindTextureBMP((char *)"textures/rock2.bmp", true); //13
   textures.push_back(rock2Tex);
 
-  /*unsigned int bgaTexture;
-  bgaTexture = BindTextureBMP((char *)"textures/bg_attack.bmp", false); //10
-  textures.push_back(bgaTexture);*/
-
-
-  /*unsigned int shellTexture;
-  shellTexture = BindTextureBMP((char *)"textures/shell.bmp", true); //13
-  textures.push_back(shellTexture);*/
-
-  /*unsigned int shellTexture2;
-  shellTexture2 = BindTextureBMP((char *)"textures/shell2.bmp", true); //14
-  textures.push_back(shellTexture2);*/
-
-
-  for(int i = 0; i < 100; i++){  
-
-	  /* uses gamestate object crate:
-	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
-	  temp->_hp = 10;
-	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
-      gs->_objects.push_back(temp);
-	  */
-	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
-
-	    if (i > 70) {
-		goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
-		crt->_pos.x() = rand()%100-50;
-		crt->_pos.y() = rand()%100-50;
-		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
-		crt->_hp = 10;
-		crt->_id = CRATEID + (cid++);
-		gs->addObject(crt);
-
-		Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
-		hut->_pos.x() = rand()%100-50;
-		hut->_pos.y() = rand()%100-50;
-		hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
-		hut->_hp = 100;
-		hut->_id = HUTID + (hid++);
-		gs->addObject(hut);
-
-		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
-		rck2->_pos.x() = rand()%100-50;
-		rck2->_pos.y() = rand()%100-50;
-		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
-		rck2->_hp = 10;
-		rck2->_id = ROCKID + (rid2++);
-		gs->addObject(rck2);
-
-
-		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rand()%90, rockmdl);
-		rck->_pos.x() = rand()%100-50;
-		rck->_pos.y() = rand()%100-50;
-		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
-		rck->_hp = 10;
-		rck->_id = ROCKID + (rid++);
-		gs->addObject(rck);
-
-		}
-
-		palmTree *tree = new palmTree(textures[0], treemdl);
-		tree->_pos.x() = rand()%100-50;
-		tree->_pos.y() = rand()%100-50;
-		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
-		tree->_hp = 10;
-		tree->_id = TREEID + (tid++);
-		gs->addObject(tree);
-
-		veg *bush = new veg(textures[0], rand()%90, vegmdl);
-		bush->_pos.x() = rand()%100-50;
-		bush->_pos.y() = rand()%100-50;
-		bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
-		bush->_hp = 10;
-		bush->_id = VEGID + (vid++);
-		gs->addObject(bush);
-  }
-  //for(int i=0;i<10;i++) {
-
-	 // /* uses gamestate object crate:
-	 // // TODO: This code does NOT belong here.
-	 // double px = gs->_objects[i]->_pos.x();
-	 // double pz = -(gs->_objects[i]->_pos.y());
-
-	 // //gs->_objects[i]->_id = CRATEID + (cid++);
-	 // gs->_objects[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
-	 // */
-
-
-	 // double px = crates[i]->_pos.x();
-	 // double pz = -(crates[i]->_pos.y());
-
-
-	 // crates[i]->_id = CRATEID + (cid++);
-
-	 // crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
-  //}
-
 
   init("model/palmTree.obj", treemdl);
   init("model/afro hut.obj", hutmdl);
@@ -2022,6 +2001,9 @@ cerr << "INFO: init gamestate.. " << endl;
   mtlLoad("model/palm-arecaceae.mtl", treemtl, 4);
   mtlLoad("model/veg.mtl", vegmtl, 4);
   //mtlLoad("model/log.mtl", logmtl, 3);
+
+
+	EnterGameMode();
 
   init_dispList();
 
