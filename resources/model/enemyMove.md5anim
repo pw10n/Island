@@ -8,100 +8,100 @@ numAnimatedComponents 570
 
 hierarchy {
 	"hip"	-1 63 0	//
-	"back lower"	0 63 6	// hip
-	"back upper"	1 63 12	// back lower
+	"back_lower"	0 63 6	// hip
+	"back_upper"	1 63 12	// back lower
 	"neck"	2 63 18	// back upper
 	"head"	3 63 24	// neck
 	"jaw"	4 63 30	// head
-	"lip lower IK"	5 63 36	// jaw
-	"lip lower center"	6 63 42	// lip lower IK
-	"mouth L"	4 63 48	// head
-	"mouth R"	4 63 54	// head
-	"eye L"	4 63 60	// head
-	"eye R"	4 63 66	// head
+	"lip_lower_IK"	5 63 36	// jaw
+	"lip_lower_center"	6 63 42	// lip lower IK
+	"mouth_L"	4 63 48	// head
+	"mouth_R"	4 63 54	// head
+	"eye_L"	4 63 60	// head
+	"eye_R"	4 63 66	// head
 	"look"	4 63 72	// head
-	"blink R"	4 63 78	// head
-	"brow L outer"	4 63 84	// head
-	"brow L inner"	4 63 90	// head
-	"brow R outer"	4 63 96	// head
-	"brow R inner"	4 63 102	// head
-	"blink L"	4 63 108	// head
-	"lip upper IK"	4 63 114	// head
-	"lip upper center"	19 63 120	// lip upper IK
+	"blink_R"	4 63 78	// head
+	"brow_L_outer"	4 63 84	// head
+	"brow_L_inner"	4 63 90	// head
+	"brow_R_outer"	4 63 96	// head
+	"brow_R_inner"	4 63 102	// head
+	"blink_L"	4 63 108	// head
+	"lip_upper_IK"	4 63 114	// head
+	"lip_upper_center"	19 63 120	// lip upper IK
 	"chest"	2 63 126	// back upper
-	"shoulder L"	2 63 132	// back upper
-	"arm L"	22 63 138	// shoulder L
-	"forearm L"	23 63 144	// arm L
-	"hand L"	24 63 150	// forearm L
-	"finger 2 L 1"	25 63 156	// hand L
-	"finger 2 L 2"	26 63 162	// finger 2 L 1
-	"finger 2 L 3"	27 63 168	// finger 2 L 2
-	"finger 1 L 1"	25 63 174	// hand L
-	"finger 1 L 2"	29 63 180	// finger 1 L 1
-	"finger 1 L 3"	30 63 186	// finger 1 L 2
-	"finger 3 L 1"	25 63 192	// hand L
-	"finger 3 L 2"	32 63 198	// finger 3 L 1
-	"finger 3 L 3"	33 63 204	// finger 3 L 2
-	"finger 4 L 1"	25 63 210	// hand L
-	"finger 4 L 2"	35 63 216	// finger 4 L 1
-	"finger 4 L 3"	36 63 222	// finger 4 L 2
-	"thumb L 1"	25 63 228	// hand L
-	"thumb L 2"	38 63 234	// thumb L 1
-	"thumb L 3"	39 63 240	// thumb L 2
-	"grab L IK"	24 63 246	// forearm L
-	"grab L"	41 63 252	// grab L IK
-	"bicep L IK"	23 63 258	// arm L
-	"bicep L"	43 63 264	// bicep L IK
-	"deltoid L IK"	22 63 270	// shoulder L
-	"deltoid L"	45 63 276	// deltoid L IK
-	"shoulder R"	2 63 282	// back upper
-	"deltoid R IK"	47 63 288	// shoulder R
-	"deltoid R"	48 63 294	// deltoid R IK
-	"arm R"	47 63 300	// shoulder R
-	"forearm R"	50 63 306	// arm R
-	"grab R IK"	51 63 312	// forearm R
-	"grab R"	52 63 318	// grab R IK
-	"hand R"	51 63 324	// forearm R
-	"finger 2 R 1"	54 63 330	// hand R
-	"finger 2 R 2"	55 63 336	// finger 2 R 1
-	"finger 2 R 3"	56 63 342	// finger 2 R 2
-	"finger 1 R 1"	54 63 348	// hand R
-	"finger 1 R 2"	58 63 354	// finger 1 R 1
-	"finger 1 R 3"	59 63 360	// finger 1 R 2
-	"finger 3 R 1"	54 63 366	// hand R
-	"finger 3 R 2"	61 63 372	// finger 3 R 1
-	"finger 3 R 3"	62 63 378	// finger 3 R 2
-	"finger 4 R 1"	54 63 384	// hand R
-	"finger 4 R 2"	64 63 390	// finger 4 R 1
-	"finger 4 R 3"	65 63 396	// finger 4 R 2
-	"thumb R 1"	54 63 402	// hand R
-	"thumb R 2"	67 63 408	// thumb R 1
-	"thumb R 3"	68 63 414	// thumb R 2
-	"bicep R IK"	50 63 420	// arm R
-	"bicep R"	70 63 426	// bicep R IK
-	"leg L"	0 63 432	// hip
-	"foreleg L"	72 63 438	// leg L
-	"foot L"	73 63 444	// foreleg L
-	"toes L"	74 63 450	// foot L
-	"calf L IK"	73 63 456	// foreleg L
-	"calf L"	76 63 462	// calf L IK
-	"hamstring L IK"	72 63 468	// leg L
-	"hamstring L"	78 63 474	// hamstring L IK
-	"leg R"	0 63 480	// hip
-	"foreleg R"	80 63 486	// leg R
-	"foot R"	81 63 492	// foreleg R
-	"toes R"	82 63 498	// foot R
-	"calf R IK"	81 63 504	// foreleg R
-	"calf R"	84 63 510	// calf R IK
-	"hamstring R IK"	80 63 516	// leg R
-	"hamstring R"	86 63 522	// hamstring R IK
-	"glute L IK"	0 63 528	// hip
-	"glute L"	88 63 534	// glute L IK
-	"glute R IK"	0 63 540	// hip
-	"glute R"	90 63 546	// glute R IK
+	"shoulder_L"	2 63 132	// back upper
+	"arm_L"	22 63 138	// shoulder L
+	"forearm_L"	23 63 144	// arm L
+	"hand_L"	24 63 150	// forearm L
+	"finger_2_L_1"	25 63 156	// hand L
+	"finger_2_L_2"	26 63 162	// finger 2 L 1
+	"finger_2_L_3"	27 63 168	// finger 2 L 2
+	"finger_1_L_1"	25 63 174	// hand L
+	"finger_1_L_2"	29 63 180	// finger 1 L 1
+	"finger_1_L_3"	30 63 186	// finger 1 L 2
+	"finger_3_L_1"	25 63 192	// hand L
+	"finger_3_L_2"	32 63 198	// finger 3 L 1
+	"finger_3_L_3"	33 63 204	// finger 3 L 2
+	"finger_4_L_1"	25 63 210	// hand L
+	"finger_4_L_2"	35 63 216	// finger 4 L 1
+	"finger_4_L_3"	36 63 222	// finger 4 L 2
+	"thumb_L_1"	25 63 228	// hand L
+	"thumb_L_2"	38 63 234	// thumb L 1
+	"thumb_L_3"	39 63 240	// thumb L 2
+	"grab_L_IK"	24 63 246	// forearm L
+	"grab_L"	41 63 252	// grab L IK
+	"bicep_L_IK"	23 63 258	// arm L
+	"bicep_L"	43 63 264	// bicep L IK
+	"deltoid_L_IK"	22 63 270	// shoulder L
+	"deltoid_L"	45 63 276	// deltoid L IK
+	"shoulder_R"	2 63 282	// back upper
+	"deltoid_R_IK"	47 63 288	// shoulder R
+	"deltoid_R"	48 63 294	// deltoid R IK
+	"arm_R"	47 63 300	// shoulder R
+	"forearm_R"	50 63 306	// arm R
+	"grab_R_IK"	51 63 312	// forearm R
+	"grab_R"	52 63 318	// grab R IK
+	"hand_R"	51 63 324	// forearm R
+	"finger_2_R_1"	54 63 330	// hand R
+	"finger_2_R_2"	55 63 336	// finger 2 R 1
+	"finger_2_R_3"	56 63 342	// finger 2 R 2
+	"finger_1_R_1"	54 63 348	// hand R
+	"finger_1_R_2"	58 63 354	// finger 1 R 1
+	"finger_1_R_3"	59 63 360	// finger 1 R 2
+	"finger_3_R_1"	54 63 366	// hand R
+	"finger_3_R_2"	61 63 372	// finger 3 R 1
+	"finger_3_R_3"	62 63 378	// finger 3 R 2
+	"finger_4_R_1"	54 63 384	// hand R
+	"finger_4_R_2"	64 63 390	// finger 4 R 1
+	"finger_4_R_3"	65 63 396	// finger 4 R 2
+	"thumb_R_1"	54 63 402	// hand R
+	"thumb_R_2"	67 63 408	// thumb R 1
+	"thumb_R_3"	68 63 414	// thumb R 2
+	"bicep_R_IK"	50 63 420	// arm R
+	"bicep_R"	70 63 426	// bicep R IK
+	"leg_L"	0 63 432	// hip
+	"foreleg_L"	72 63 438	// leg L
+	"foot_L"	73 63 444	// foreleg L
+	"toes_L"	74 63 450	// foot L
+	"calf_L_IK"	73 63 456	// foreleg L
+	"calf_L"	76 63 462	// calf L IK
+	"hamstring_L_IK"	72 63 468	// leg L
+	"hamstring_L"	78 63 474	// hamstring L IK
+	"leg_R"	0 63 480	// hip
+	"foreleg_R"	80 63 486	// leg R
+	"foot_R"	81 63 492	// foreleg R
+	"toes_R"	82 63 498	// foot R
+	"calf_R_IK"	81 63 504	// foreleg R
+	"calf_R"	84 63 510	// calf R IK
+	"hamstring_R_IK"	80 63 516	// leg R
+	"hamstring_R"	86 63 522	// hamstring R IK
+	"glute_L_IK"	0 63 528	// hip
+	"glute_L"	88 63 534	// glute L IK
+	"glute_R_IK"	0 63 540	// hip
+	"glute_R"	90 63 546	// glute R IK
 	"abdomen"	0 63 552	// hip
-	"skirt front"	0 63 558	// hip
-	"skirt back"	0 63 564	// hip
+	"skirt_front"	0 63 558	// hip
+	"skirt_back"	0 63 564	// hip
 }
 
 bounds {
