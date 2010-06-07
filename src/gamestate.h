@@ -152,6 +152,11 @@ public:
 			rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,player._id));
 		}
 	}
+	void splinterSpray(coord2d_t cen){
+		for(int i=0;i<100;i++){
+			_pars.push_back(new splinter(vec3d_t(cen.x(),.5,-cen.y())));
+		}
+	}
 };
 
 

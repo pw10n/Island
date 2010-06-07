@@ -1513,7 +1513,7 @@ void processMousePassiveMotion(int x, int y) {
 	//float theta = 0;
 	x -= gs->GW/2;
 	x *= .5;
-	y -= gs->GH/2 - 50;
+	y -= gs->GH/2;// - 50;
 	
 	//        0  dir
 	//        | /
@@ -1549,7 +1549,7 @@ void processMouseActiveMotion(int x, int y) {
 	//float theta = 0;
 	x -= gs->GW/2;
 	x *= .5;
-	y -= gs->GH/2 - 50;
+	y -= gs->GH/2;// - 50;
 	
 	//        0  dir
 	//        | /
@@ -1670,7 +1670,7 @@ void tick(int state) {
 
 		gs->LarPaCollision(gs->smsrc,0,100,0,100);
 
-		if(gs->smsrc->subPar<1){
+		if(!gs->smsrc->active){
 			gs->smit = false;
 			delete gs->smsrc;
 		}

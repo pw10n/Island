@@ -55,7 +55,7 @@ void playerstate::tick(uint32_t time){
 	}
 	body = bbody(_pos.x(),-_pos.y(),1,0,BB_CIRC);
 	coord2d_t dummy;
-	front = bbody(this->calcHotSpot(dummy,.6),.1,BB_CIRC);
+	front = bbody(this->calcHotSpot(dummy,.3),.1,BB_CIRC);
 	Animate(&playerMod->md5anim[0],&idlAni,WORLD_TIME_RESOLUTION);
 	Animate(&playerMod->md5anim[1],&walAni,WORLD_TIME_RESOLUTION);
 	if(_state == PLYRSTATATT){
@@ -81,6 +81,10 @@ void playerstate::draw(){
 		playerMod->draw(attAni);
 	else
 		playerMod->draw((_vel.y()>0)?walAni:idlAni);
+	glPopMatrix();
+	glPushMatrix();
+	glTranslatef(front.vala,0,front.valb);
+	glutWireSphere(front.valc,10,10);
 	glPopMatrix();
 	glDisable(GL_LIGHTING);
 }	

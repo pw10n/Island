@@ -200,10 +200,13 @@ void gamestate::tick(uint32_t time){
 	if(SmaPlCollision(player)) 
 		player->_vel.y() = 0;
 	player->tick(time);
-
+	int coll;
 	for(vector<objectstate*>::iterator it = _objects.begin(); it!=_objects.end();){
 		if((*it)->_hp == 0){
 			updatBinLists((*it), REMOV);
+			coll = (*it)->hitWhat();
+			if(coll==HIT_CRATE||coll==HIT_TREE||coll==HIT_HUT) //finding odd hit detection here
+				splinterSpray((*it)->_pos);
 			delete (*it);
 			it=_objects.erase(it);
 		}
@@ -220,7 +223,6 @@ void gamestate::tick(uint32_t time){
 		else
 			++it;
 	}
-	int coll;
 	for(vector<fireball_s *>::iterator it = fbsrc.begin(); it!=fbsrc.end();){
 		(*it)->move();
 		if(!(*it)->active){

@@ -177,7 +177,6 @@ explosion_s::explosion_s(double ix, double iz)
 	_damage = 1;
 	_damfrac = 3;
 	_tock = 0;
-	subPar = 0;
 }
 
 void explosion_s::move(void)
@@ -187,6 +186,7 @@ void explosion_s::move(void)
 	body = bbody(_pos,(double)life,BB_CIRC);
 	_tock++;
 	_damage = (_tock%_damfrac)?0:1;
+	if(life<0) active = false;
 }
 
 void explosion_s::draw(void)
@@ -198,9 +198,8 @@ void explosion_s::draw(void)
 	glPopMatrix();
 }
 
-explosion_p::explosion_p(explosion_s * sour)
+explosion_p::explosion_p(explosion_s * src)
 {
-	src = sour;
 	float t = (float)(rand()%360);
 	float p = (float)(rand()%90);
 	_pos = vec3d_t(src->_pos);
@@ -211,18 +210,12 @@ explosion_p::explosion_p(explosion_s * sour)
 	fade = 2.0f/life;
 	r = g = a = 1.0f; b = 0.0f;
 	active = true;
-	src->subPar += 1;
 }
 
 void explosion_p::move(void)
 {
-	if(src==NULL||!src->active){
-		active = false;
-		return;
-	}
 	life -= fade;
 	if(life<0.0){
-		src->subPar -= 1;
 		active = false;
 		return;
 	}
@@ -309,9 +302,8 @@ void rapidfire::draw(void)
 	glPopMatrix();
 }
 
-splinter::splinter(explosion_s * sour)
+splinter::splinter(explosion_s * src)
 {
-	src = sour;
 	float t = (float)(rand()%360);
 	float p = (float)(rand()%90);
 	float v = (float)(rand()%8+1)/10.0f;
@@ -327,13 +319,10 @@ splinter::splinter(explosion_s * sour)
 	spv = (float)(rand()%15);
 	r = .5f; g = .25f; b = 0; a = 1.0f;
 	active = true;
-	src->subPar += 1;
-	unatt = false;
 }
 
 splinter::splinter(vec3d_t inpos)
 {
-	src = NULL; //we'll be ignoring src
 	float t = (float)(rand()%360);
 	float p = (float)(rand()%90);
 	float v = (float)(rand()%8+1)/10.0f;
@@ -349,18 +338,12 @@ splinter::splinter(vec3d_t inpos)
 	spv = (float)(rand()%15);
 	r = .5f; g = .25f; b = 0; a = 1.0f;
 	active = true;
-	unatt = true;
 }
 
 void splinter::move(void)
 {
-	if(!unatt&&(src==NULL||!src->active)){
-		active = false;
-		return;
-	}
 	life -= fade;
 	if(life<0.0){
-		if(!unatt) src->subPar -= 1;
 		active = false;
 		return;
 	}
@@ -436,13 +419,13 @@ smite_s::smite_s(double ix, double iz, uint16_t id)
 	body = bbody(_pos,.25,BB_CIRC);
 	_type = PARTICLE_SMITE;
 	_damage = 50;
-	subPar = 0;
 }
 
 void smite_s::move(void)
 {
 	if(!active) return;
 	life -= fade;
+	if(life<0.0) active = false;
 }
 
 void smite_s::draw(void)
@@ -461,9 +444,8 @@ void smite_s::draw(void)
 	glEnable(GL_LIGHTING);
 }
 
-smite_p::smite_p(smite_s * sour)
+smite_p::smite_p(smite_s * src)
 {
-	src = sour;
 	float t = (float)(rand()%360);
 	_pos = vec3d_t(src->_pos);
 	_pos.x() += .25*DSIN(t);
@@ -475,18 +457,12 @@ smite_p::smite_p(smite_s * sour)
 	b = a = 1.0f;
 	r = g = (float)(rand()%128)/128.0f;
 	active = true;
-	src->subPar += 1;
 }
 
 void smite_p::move(void)
 {
-	if(src==NULL||!src->active){
-		active = false;
-		return;
-	}
 	life -= fade;
 	if(life<0.0){
-		src->subPar -= 1;
 		active = false;
 		return;
 	}
@@ -559,9 +535,8 @@ void blood::draw(void)
 	glPopMatrix();
 }
 
-sand::sand(explosion_s * sour)
+sand::sand(explosion_s * src)
 {
-	src = sour;
 	float t = (float)(rand()%360);
 	float p = (float)(rand()%5);
 	_pos = vec3d_t(src->_pos);
@@ -575,18 +550,12 @@ sand::sand(explosion_s * sour)
 	b = .6875f;
 	a = 1.0f;
 	active = true;
-	src->subPar += 1;
 }
 
 void sand::move(void)
 {
-	if(src==NULL||!src->active){
-		active = false;
-		return;
-	}
 	life -= fade;
 	if(life<0.0){
-		src->subPar -= 1;
 		active = false;
 		return;
 	}

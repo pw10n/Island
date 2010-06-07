@@ -116,7 +116,7 @@ void initAttacks(void){
 	gs->_attacks[3].func = spread; 
 
 	icon = BindTextureBMP((char *)"textures/smite.bmp", true); //8
-	gs->_attacks.push_back(attack(icon,50,50));
+	gs->_attacks.push_back(attack(icon,50,25));
 	gs->_attacks[4].func = smiteEm;
 }
 

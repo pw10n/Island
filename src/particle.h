@@ -71,7 +71,6 @@ class explosion_s : public source
 public:
 	int _damfrac; //"divides" the damage so explosions aren't insanely powerful
 	int _tock;
-	int subPar; //number of particles attached to this
 
 	explosion_s(double,double);
 	void move(void);
@@ -81,8 +80,6 @@ public:
 class explosion_p : public particle
 {
 public:
-	explosion_s *src; //Origin point for the effect
-
 	explosion_p(explosion_s *);
 	void move(void);
 	void draw(void);
@@ -102,8 +99,6 @@ class splinter : public particle
 {
 public:
 	float roh,rov,sph,spv; //ROtation/SPin; horizontal/vertical
-	explosion_s *src;
-	bool unatt; //if true, this is not attached to an explosion_s
 
 	splinter(explosion_s *);
 	splinter(vec3d_t);
@@ -125,8 +120,6 @@ public:
 class smite_s : public source
 {
 public:
-	int subPar; //number of particles attached to this
-
 	smite_s(double,double, uint16_t);
 	void move(void);
 	void draw(void);
@@ -135,8 +128,6 @@ public:
 class smite_p : public particle
 {
 public:
-	smite_s *src; //Origin point for the effect
-
 	smite_p(smite_s *);
 	void move(void);
 	void draw(void);
@@ -162,8 +153,6 @@ public:
 class sand : public particle
 {
 public:
-	explosion_s *src; //Origin point for the effect
-
 	sand(explosion_s *);
 	void move(void);
 	void draw(void);
