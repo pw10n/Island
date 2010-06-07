@@ -248,6 +248,95 @@ bool cull(coord2d_t pos){
 void drawCharacter();
 
 
+// leave menu
+void EnterGameMode(){
+	 gs->start(0);
+
+	gs->player = new playerstate(worldtime);
+	gs->player->_hp = 100;
+	gs->player->_mp = 200;
+	gs->player->_pos.x() = 0;
+	gs->player->_pos.y() = 0;
+	gs->fbtim = -1;
+	gs->explo = false;
+	gs->smit = false;
+
+
+	for(int i = 0; i < 100; i++){  
+
+	  /* uses gamestate object crate:
+	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
+	  temp->_hp = 10;
+	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
+	  gs->_objects.push_back(temp);
+	  */
+	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
+
+
+
+		palmTree *tree = new palmTree(0, treemdl);
+		tree->_pos.x() = rand()%100-50;
+		tree->_pos.y() = rand()%100-50;
+		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
+		tree->_hp = 10;
+		tree->_id = TREEID + (tid++);
+		gs->addObject(tree);
+
+	}
+
+	for(int i = 0; i < 100; i++){ 
+		if (i>70) {
+			goCrate *crt = new goCrate(crateTex);
+			crt->_pos.x() = rand()%100-50;
+			crt->_pos.y() = rand()%100-50;
+			crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+			crt->_hp = 10;
+			crt->_id = CRATEID + (cid++);
+			gs->addObject(crt);
+
+			Hut *hut = new Hut(hutTex, hutmdl);
+			hut->_pos.x() = rand()%100-50;
+			hut->_pos.y() = rand()%100-50;
+			hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
+			hut->_hp = 100;
+			hut->_id = HUTID + (hid++);
+			gs->addObject(hut);
+
+			rock2 *rck2 = new rock2(rock2Tex, rand()%90, rock2mdl);
+			rck2->_pos.x() = rand()%100-50;
+			rck2->_pos.y() = rand()%100-50;
+			rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
+			rck2->_hp = 10;
+			rck2->_id = ROCKID + (rid2++);
+			gs->addObject(rck2);
+
+			veg *bush = new veg(0, rand()%90, vegmdl);
+			bush->_pos.x() = rand()%100-50;
+			bush->_pos.y() = rand()%100-50;
+			bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
+			bush->_hp = 10;
+			bush->_id = VEGID + (vid++);
+			gs->addObject(bush);
+		}
+
+	
+
+	}
+
+	cerr << "INFO: init lighting.. " << endl;
+	init_lighting();
+
+	cerr << "INFO: init ai.. " << endl;
+	init_ai();
+
+	cerr << "INFO: init model.. " << endl;
+	initModel();
+}
+
+// return to menu
+void ExitGameMode(){
+	
+}
 
 void init_ai(){
 	for(int i=0; i<50; ++i){
@@ -401,6 +490,8 @@ void init_dispList(){
 	glEnable(GL_LIGHTING);
 	glEndList();
 
+
+
 	glNewList(ROCKLIST,GL_COMPILE);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
@@ -415,6 +506,10 @@ void init_dispList(){
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
 	glEndList();
+
+
+
+
 
 	glNewList(ROCK2LIST,GL_COMPILE);
 	glDisable(GL_LIGHTING);
@@ -1304,7 +1399,7 @@ glPushMatrix();
 	//glScalef(.009, .009, .009); rocks
 	glScalef(.5, .5, .5);
 	//RenderOBJModel (plantemdl);
-    //RenderOBJModelt (plantemdl, textures[13], textures[14]);
+    //RenderOBJModelt (logmdl, logmtl);
 glPopMatrix();
 glDisable(GL_TEXTURE_2D);
 glEnable(GL_LIGHTING);
@@ -1876,6 +1971,8 @@ cerr << "INFO: init gamestate.. " << endl;
   rockTex = BindTextureBMP((char *)"textures/rock.bmp", true); //7
 
   rock2Tex = BindTextureBMP((char *)"textures/rock2.bmp", true); //8
+
+  initAttacks(void);
 
   /*unsigned int bgaTexture;
   bgaTexture = BindTextureBMP((char *)"textures/bg_attack.bmp", false); //10

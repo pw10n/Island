@@ -495,6 +495,11 @@ RenderOBJModel (struct obj_model_t *mdl)
 {
   int i, j;
 
+
+  
+
+  //glDisable(GL_LIGHTING);
+
   //printf("%d\n", mdl->num_faces);
   for (i = 0; i < mdl->num_faces; ++i)
   {
@@ -503,14 +508,8 @@ RenderOBJModel (struct obj_model_t *mdl)
     glBegin (mdl->faces[i].type);
 	for (j = 0; j < mdl->faces[i].num_elems; ++j)
 	{
-		/*printf("test4 %d\n", mdl->texCoords[mdl->faces[i].uvw_indices[j]].uvw);
-		if (i==100) {
-			printf("test4 %d\n", mdl->texCoords[mdl->faces[i].uvw_indices[j]].uvw);
 
-		}*/
-		/*printf("i=%d j=%d %d/", i, j, mdl->faces[i].vert_indices[j]);
-		printf("%d/", mdl->faces[i].uvw_indices[j]);
-		printf("%d\n", mdl->faces[i].norm_indices[j]);*/
+
 
 	  if (mdl->has_texCoords) {
 		  //printf("test2 %d\n", i);
@@ -527,6 +526,10 @@ RenderOBJModel (struct obj_model_t *mdl)
 	}
 	glEnd();
     }
+
+  
+
+
 }
 
 
