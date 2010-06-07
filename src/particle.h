@@ -158,3 +158,13 @@ public:
 	void move(void);
 	void draw(void);
 };
+
+class sand : public particle
+{
+public:
+	explosion_s *src; //Origin point for the effect
+
+	sand(explosion_s *);
+	void move(void);
+	void draw(void);
+};

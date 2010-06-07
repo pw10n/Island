@@ -22,7 +22,7 @@
 #define VBCO valb
 #define VCCO valc
 #define VDCO vald
-#define LINELEN .05 //this is assuming lines will have uniform length
+#define LINELEN .5 //this is assuming lines will have uniform length
 
 //longer line than BB_LINE. use the same V* defines
 #define BB_LLINE 3

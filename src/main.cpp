@@ -254,7 +254,7 @@ void drawCharacter();
 
 
 void init_ai(){
-	for(int i=0; i<20; ++i){
+	for(int i=0; i<50; ++i){
 		playerstate* temp;
 
 		//playerstate temp(0);
@@ -456,44 +456,6 @@ void pos_light() {
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 }
 
-
-//void smiteEm(int x, int y){
-//	if (gs->player->_mp<50) {
-//		return;
-//	}
-//	gs->player->_mp -= 50;
-//	//first calc target position
-//	double rx = ((double)x-gs->GW/2.0)/2.0;
-//	double lx = ((double)x-gs->GW/2.0-71.0)/2.0;
-//	double by = (double)y-gs->GH/2.0;
-//	double ty = (double)y-gs->GH/2.0-50.0;
-//	//double bth = atan2(by,rx); //one unit near from gs->player
-//	//double cth = atan2(ty,rx); //position of gs->player
-//	//double lth = atan2(ty,lx); //one unit left from gs->player
-//	double mb = by/rx;
-//	double mc = ty/rx;
-//	double ml = ty/lx;
-//	coord2d_t targ;
-//	if(rx==0.0&&ty==0.0) //this is where the gs->player is.
-//		targ = gs->player->_pos;
-//	else if(ml!=mc){
-//		targ.x() = 1.0/(mb-mc) + gs->player->_pos.x();
-//		targ.y() = -mc/(mb-mc) + gs->player->_pos.y() -1.0;
-//	}
-//	else{
-//		targ.x() = ml/(mc-ml) + gs->player->_pos.x();
-//		targ.y() = mc*ml/(mc-ml) + gs->player->_pos.y();
-//	}
-//
-//	gs->smit = true;
-//	smsrc = new smite_s(targ.x(),-targ.y(),gs->player->_id);
-//	for(int i=0;i<400;i++){
-//		gs->smpar.push_back(new smite_p(smsrc));
-//	}
-//}
-
-
-
 void reshape(int w, int h) {
   gs->GW = w;
   gs->GH = h;
@@ -518,11 +480,6 @@ void reshape(int w, int h) {
   
   glutPostRedisplay();
 }
-
-
-
-
-
 
 void drawGrid() {
   int rows = 50;
@@ -588,20 +545,6 @@ void drawAniPlayer(bool walk){
    glPopMatrix();
    glDisable(GL_LIGHTING);
 }
-
-//void drawFireball() {
-//	gs->fbsrc->draw();
-//	/*for(uint32_t i=0;i<gs->fbpar.size();i++){
-//		gs->fbpar[i]->draw();
-//	}*/
-//}
-
-//void drawExplosion() {
-//	//gs->exsrc->draw();
-//	for(uint32_t i=0;i<gs->expar.size();i++){
-//		gs->expar[i]->draw();
-//	}
-//}
 
 void drawSmite() {
 	gs->smsrc->draw();
@@ -1623,7 +1566,7 @@ void keyboard(unsigned char key, int x, int y ){
       exit( EXIT_SUCCESS );
       break;
 	case 'a': case 'A' :
-		gs->rapid(*gs->player);
+		gs->prapid();
 		break;
 	case 'w': case 'W' :
 		gs->spread(*gs->player);
@@ -1701,7 +1644,8 @@ void tick(int state) {
 			gs->player->_score++;
 			continue;
 		}
-		others[i]->tick(worldtime);
+		//if(!cull(others[i]->_pos)||(worldtime%7))
+			others[i]->tick(worldtime);
 	}
 	if (gs->smit){
 		gs->smsrc->move();

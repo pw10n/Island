@@ -47,11 +47,11 @@ fireball_s::~fireball_s(void){
 void fireball_s::move(void)
 {
 	if(!active) return;
-	if(age>15){
+	if(age>7){
 		_pos.x() += _vel.x();
 		_pos.z() += _vel.z();
 	}
-	if(age>17){ //waits to keep it from colliding with the user
+	if(age>9){ //waits to keep it from colliding with the user
 		body = bbody(_pos,.15,BB_CIRC);
 	}
 	age++;
@@ -239,18 +239,26 @@ void explosion_p::move(void)
 
 void explosion_p::draw(void)
 {
-	glColor4f(1.0f,g,b,a);
+	glColor4f(1.0f,g,b,a*.5);
 	glPushMatrix();
 	glTranslatef(_pos.x(),_pos.y(),_pos.z());
-	float sca = 4.0f;
+	float sca = 4.0f/fade;
 	glScalef(sca,sca,sca);
-	glCallList(PARTLIST);
+	//glCallList(PARTLIST);
+	glDisable(GL_LIGHTING);
+	glutSolidSphere(.1,10,10);
+	glDisable(GL_LIGHTING);
 	glPopMatrix();
 }
 
 rapidfire::rapidfire(double ix, double iz, double ivx, double ivz, uint16_t id)
 {
 	pid = id;
+	if(pid!=0){
+		double ang = atan2(ivz,ivx) + (double)(rand()%9-4)/10.0;
+		ivx = cos(ang)*.6;
+		ivz = sin(ang)*.6;
+	}
 	_pos = vec3d_t(ix,.1,iz); _vel = vec3d_t(ivx,0,ivz);
 	life = 0.0; r = a = 1.0f; g = b = 0.0f;
 	active = true; boom = false;
@@ -548,5 +556,58 @@ void blood::draw(void)
 	glDisable(GL_LIGHTING);
 	glutSolidSphere(.05,5,5);
 	glEnable(GL_LIGHTING);
+	glPopMatrix();
+}
+
+sand::sand(explosion_s * sour)
+{
+	src = sour;
+	float t = (float)(rand()%360);
+	float p = (float)(rand()%5);
+	_pos = vec3d_t(src->_pos);
+	_vel.x() = .6f*DSIN(t)*DCOS(p);
+	_vel.y() = .6f*DSIN(p);
+	_vel.z() = .6f*DCOS(t)*DCOS(p);
+	life = (float)(rand()%6+1);
+	fade = 2.0f/life;
+	r = .875f;
+	g = .75f;
+	b = .6875f;
+	a = 1.0f;
+	active = true;
+	src->subPar += 1;
+}
+
+void sand::move(void)
+{
+	if(src==NULL||!src->active){
+		active = false;
+		return;
+	}
+	life -= fade;
+	if(life<0.0){
+		src->subPar -= 1;
+		active = false;
+		return;
+	}
+	_pos = _pos + _vel;
+	_vel = _vel * .95;
+	if(life<2.0f){
+		a = life;
+	}
+
+}
+
+void sand::draw(void)
+{
+	glColor4f(1.0f,g,b,a*.25);
+	glPushMatrix();
+	glTranslatef(_pos.x(),_pos.y(),_pos.z());
+	float sca = 4.0f/fade;
+	glScalef(sca,.5*sca,sca);
+	//glCallList(PARTLIST);
+	glDisable(GL_LIGHTING);
+	glutSolidSphere(.1,10,10);
+	glDisable(GL_LIGHTING);
 	glPopMatrix();
 }

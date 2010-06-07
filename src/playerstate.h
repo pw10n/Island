@@ -70,4 +70,6 @@ public:
 	virtual void draw();
 	virtual void tick(uint32_t time);
 	int hitWhat(void) const {return HIT_PLAYER;};
+
+	bool outbounds();
 };

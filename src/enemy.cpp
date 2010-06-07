@@ -11,6 +11,9 @@
 
 using namespace std;
 
+#define MIN(x,y) ((x>y)?y:x)
+#define MAX(x,y) ((x>y)?x:y)
+
 #define MELEE_AWARE_DIST 7.0
 #define RANGED_AWARE_DIST 8.0
 #define RANGED_ATTACK_DIST 6.0
@@ -45,12 +48,19 @@ void meleeAI::tick(uint32_t time){
 		cVel(v);
 		ecc = (double)(rand()%5)/3.0-.75;
 	}
+	bool skip = gs->cull2(_pos);
 	for(; _tick<time; ++_tick){
+		if(skip&&(_tick%6!=0)) continue;
 		if (_vel.y() > DBL_EPSILON){
 			coord2d_t p = pos();
 			p.x() += (-sin(vel().x()) * vel().y());
 			p.y() += (cos(vel().x()) * vel().y());
 			cPos(p);
+		}
+		if(outbounds()){
+			coord2d_t v = vel();
+			v.x() += 3.14;
+			cVel(v);
 		}
 	}
 	body = bbody(pos().x(),-pos().y(),.5,0,BB_CIRC);
@@ -92,7 +102,7 @@ void rangedAI::tick(uint32_t time){
 		_vel.y() = .000;
 		if(cooldown==0){
 			if(checkLOA()){
-				gs->rapid(*this);
+				gs->erapid(*this);
 				cooldown = 5;
 			}
 			else{
@@ -111,11 +121,17 @@ void rangedAI::tick(uint32_t time){
 	if(gs->SmaPlCollision(this)) {_vel.y() = -.002; ecc = (double)(rand()%5)/3.0-.75;}
 	if(_vel.y()>0) Animate(&enemyMod->md5anim[1],&walAni,WORLD_TIME_RESOLUTION);//30.0*(time-_tick));
 	else Animate(&enemyMod->md5anim[0],&idlAni,WORLD_TIME_RESOLUTION);
-	
+	bool skip = gs->cull2(_pos);
 	for(; _tick<time; ++_tick){
+		if(skip&&(_tick%6!=0)) continue;
 		if (_vel.y() > DBL_EPSILON){
 			_pos.x() += (-sin(_vel.x()) * _vel.y());
 			_pos.y() += (cos(_vel.x()) * _vel.y());
+		}
+		if(outbounds()){
+			coord2d_t v = vel();
+			v.x() += 3.14;
+			cVel(v);
 		}
 	}
 	if(cooldown<0) cooldown = 0;
@@ -141,7 +157,9 @@ void rangedAI::draw(){
 bool rangedAI::checkLOA(){
 	lineOfAtt *loa = new lineOfAtt(_pos,gs->player->_pos,_id);
 	int px = _pos.x()+50; int pz = -_pos.y()+50;
-	gs->LarPaCollision(loa,px-6,px+6,pz-6,pz+6); //already know it can't be more than 6 from this
+	int pxa = MAX(px+6,100); int pxi = MIN(px-6,0);
+	int pza = MAX(pz+6,100); int pzi = MIN(pz-6,0);
+	gs->LarPaCollision(loa,pxi,pxa,pzi,pza); //already know it can't be more than 6 from this
 	return !(loa->active); //if loa->active == true, something's in the way
 }
 
