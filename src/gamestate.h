@@ -8,6 +8,7 @@
 //#include "Bin.h" don't need anymore
 #include "playerstate.h"
 #include "particle.h"
+#include "attack.h"
 
 using namespace std;
 
