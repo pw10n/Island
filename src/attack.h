@@ -24,3 +24,4 @@ void rapid(int x, int y);//dummy x,y
 void spread(int x, int y);//dummy x,y
 void genCrate(int x, int y);
 void initAttacks(void);
+void loadAttacks(void);

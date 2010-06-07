@@ -197,7 +197,9 @@ void gamestate::tick(uint32_t time){
 	_tick = time;
 	
 	//TODO: do stuff
-	if(SmaPlCollision(player)) player->_vel.y() = 0;
+	if(SmaPlCollision(player)) 
+		player->_vel.y() = 0;
+	player->tick(time);
 
 	for(vector<objectstate*>::iterator it = _objects.begin(); it!=_objects.end();){
 		if((*it)->_hp == 0){

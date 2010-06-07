@@ -21,6 +21,7 @@
 #include "shader.h"
 #include "GLSL_helper.h"
 #include "enemy.h"
+#include "attack.h"
 
 
 //#include "md5mesh.cpp"
@@ -208,7 +209,7 @@ float fps;
 
 
 
-vector<unsigned int> textures;
+unsigned int partTex, crateTex, tileTex, waterTex, woodTex, palmTex, hutTex, rockTex, rock2Tex;
 
 vector<objectstate*> crates;
 
@@ -218,7 +219,6 @@ mdmodel* playerMod;
 mdmodel* enemyMod;
 struct anim_info_t idlAnim, walAnim, eneAnim;
 
-unsigned int hutTex, rockTex, rock2Tex;
 
 #if 0
 // Variables Necessary For FogCoordfEXT
@@ -270,26 +270,28 @@ void EnterGameMode(){
 	gs->player = new playerstate(worldtime);
 	gs->player->_hp = 100;
 	gs->player->_mp = 200;
-	gs->player->_pos.x() = 0;
-	gs->player->_pos.y() = 0;
+	gs->player->_pos.x() = 0.00;
+	gs->player->_pos.y() = 0.00;
 	gs->fbtim = -1;
 	gs->explo = false;
 	gs->smit = false;
+	loadAttacks();
+	gs->updatBinLists(gs->player,UPDAT);
 
 
 	for(int i = 0; i < 100; i++){  
 
 	  /* uses gamestate object crate:
-	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
+	  goCrate *temp = new goCrate(crateTex);
 	  temp->_hp = 10;
 	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
 	  gs->_objects.push_back(temp);
 	  */
-	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
+	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), crateTex);
 
 
 
-		palmTree *tree = new palmTree(textures[0], treemdl);
+		palmTree *tree = new palmTree(0, treemdl);
 		tree->_pos.x() = rand()%100-50;
 		tree->_pos.y() = rand()%100-50;
 		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
@@ -301,7 +303,7 @@ void EnterGameMode(){
 
 	for(int i = 0; i < 100; i++){ 
 		if (i>70) {
-			goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
+			goCrate *crt = new goCrate(crateTex);
 			crt->_pos.x() = rand()%100-50;
 			crt->_pos.y() = rand()%100-50;
 			crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
@@ -309,7 +311,7 @@ void EnterGameMode(){
 			crt->_id = CRATEID + (cid++);
 			gs->addObject(crt);
 
-			Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
+			Hut *hut = new Hut(hutTex, hutmdl);
 			hut->_pos.x() = rand()%100-50;
 			hut->_pos.y() = rand()%100-50;
 			hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
@@ -317,7 +319,7 @@ void EnterGameMode(){
 			hut->_id = HUTID + (hid++);
 			gs->addObject(hut);
 
-			rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
+			rock2 *rck2 = new rock2(rock2Tex, rand()%90, rock2mdl);
 			rck2->_pos.x() = rand()%100-50;
 			rck2->_pos.y() = rand()%100-50;
 			rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
@@ -325,7 +327,7 @@ void EnterGameMode(){
 			rck2->_id = ROCKID + (rid2++);
 			gs->addObject(rck2);
 
-			veg *bush = new veg(textures[0], rand()%90, vegmdl);
+			veg *bush = new veg(0, rand()%90, vegmdl);
 			bush->_pos.x() = rand()%100-50;
 			bush->_pos.y() = rand()%100-50;
 			bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
@@ -432,21 +434,21 @@ void init_particle(){
 	glNewList(PARTLIST,GL_COMPILE);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
+	glBindTexture(GL_TEXTURE_2D, partTex);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0.1f,0.1f,0);
 	glTexCoord2d(0,1); glVertex3f(-0.1f,0.1f,0);
 	glTexCoord2d(1,0); glVertex3f(0.1f,-0.1f,0);
 	glTexCoord2d(0,0); glVertex3f(-0.1f,-0.1f,0);
 	glEnd();
-	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
+	glBindTexture(GL_TEXTURE_2D, partTex);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0.1f,0,0.1f);
 	glTexCoord2d(0,1); glVertex3f(-0.1f,0,0.1f);
 	glTexCoord2d(1,0); glVertex3f(0.1f,0,-0.1f);
 	glTexCoord2d(0,0); glVertex3f(-0.1f,0,-0.1f);
 	glEnd();
-	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
+	glBindTexture(GL_TEXTURE_2D, partTex);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0,0.1f,0.1f);
 	glTexCoord2d(0,1); glVertex3f(0,-0.1f,0.1f);
@@ -696,7 +698,7 @@ void drawCrates(){
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	// it'll be 2x2x2 for now
-	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	glBindTexture(GL_TEXTURE_2D, crateTex);
 	// "front"
 	for(unsigned int i = 0; i < crates.size(); i++){
 		if(cull(crates[i]->_pos)) continue;
@@ -781,7 +783,7 @@ void drawBox(unsigned int texture) {
 
 	  glEnable(GL_TEXTURE_2D);
 	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
+	  glBindTexture(GL_TEXTURE_2D, texture);
 
 	  glBegin(GL_QUADS);
 	  glTexCoord2f (0.0, 0.0);
@@ -854,7 +856,7 @@ void drawUIBar(int texture) {
 	  glEnable(GL_TEXTURE_2D);
 	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
+	  glBindTexture(GL_TEXTURE_2D, texture);
 
 	  glBegin(GL_QUADS);
 	  glTexCoord2f (0.0, 0.0);
@@ -891,7 +893,7 @@ void drawUIHBar(int texture) {
 
 	  glEnable(GL_TEXTURE_2D);
 	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
+	  glBindTexture(GL_TEXTURE_2D, texture);
 
 	  glBegin(GL_QUADS);
 	  glTexCoord2f (0.0, 0.0);
@@ -954,7 +956,7 @@ void draw_circle() {
 
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, textures[7]);
+	glBindTexture(GL_TEXTURE_2D, gs->_attacks[3]._iconNum);
 
     glBegin(GL_QUADS);
 	glTexCoord2f (0.0, 0.0);
@@ -1044,12 +1046,12 @@ void displayHud(){
 
 	glPushMatrix();  //UI bar that covers icons
 	glTranslatef(40, gs->GH-360, -.01);
-	drawUIBar(8);
+	drawUIBar(woodTex);
 	glPopMatrix();
 
 	glPushMatrix();  //UI bar that Health bars
 	glTranslatef(gs->GW-60, gs->GH-95, -.01);
-	drawUIHBar(9);
+	drawUIHBar(palmTex);
 	glPopMatrix();
 
 	glColor3f(.5, 0.0, 0.0);
@@ -1080,27 +1082,27 @@ void displayHud(){
 
 	glPushMatrix();  //rapid fire (a)
 	glTranslatef(25, gs->GH-240, 0);
-	drawBox(5);
+	drawBox(gs->_attacks[gs->player->_ability[0]]._iconNum);
 	glPopMatrix();
 
     glPushMatrix();  //fireball (s)
 	glTranslatef(25, gs->GH-300, 0);
-	drawBox(4);
+	drawBox(gs->_attacks[gs->player->_ability[1]]._iconNum);
 	glPopMatrix();
 
 	glPushMatrix();  //crate (d)
 	glTranslatef(25, gs->GH-360, 0);
-	drawBox(6);
+	drawBox(gs->_attacks[gs->player->_ability[2]]._iconNum);
 	glPopMatrix();
 
 	glPushMatrix(); //(f)
 	glTranslatef(25, gs->GH-420, 0);
-	drawBox(0);
+	drawBox(gs->_attacks[gs->player->_ability[3]]._iconNum);
 	glPopMatrix();
 
 	glPushMatrix(); //(g) 
 	glTranslatef(25, gs->GH-480, 0);
-	drawBox(10);
+	drawBox(gs->_attacks[gs->player->_ability[4]]._iconNum);
 	glPopMatrix();
 
 
@@ -1125,7 +1127,7 @@ glPushMatrix();
 
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D, textures[2]);
+  glBindTexture(GL_TEXTURE_2D, tileTex);
 
   glBegin(GL_QUADS);
 
@@ -1153,7 +1155,7 @@ void waterTile() {
 
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D, textures[3]);
+  glBindTexture(GL_TEXTURE_2D, waterTex);
   glBegin(GL_QUADS);
 
 
@@ -1244,7 +1246,7 @@ void drawWater() {
 
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D, textures[3]);
+  glBindTexture(GL_TEXTURE_2D, waterTex);
 
   for(int i=MAP_SIZE; i<MAP_SIZE+20; i+=2){
 	  for(int j=-MAP_SIZE; j<MAP_SIZE; j+=2){
@@ -1669,19 +1671,22 @@ void keyboard(unsigned char key, int x, int y ){
       exit( EXIT_SUCCESS );
       break;
 	case 'a': case 'A' :
-		gs->prapid();
+		//gs->prapid();
+		gs->_attacks[gs->player->_ability[0]].fire(x,y);
 		break;
 	case 'w': case 'W' :
-		gs->spread(*gs->player);
+		gs->_attacks[gs->player->_ability[3]].fire(x,y);
 		break;
 	case 's': case 'S' :
-		gs->spawnFireball();
+		//gs->spawnFireball();
+		gs->_attacks[gs->player->_ability[1]].fire(x,y);
 		break;
 	case 'f': case 'F' :
 		gs->beatim = 5;
 		break;
 	case 'g': case 'G' :
-		if(!gs->smit) gs->smiteEm(x,y);
+		//if(!gs->smit) gs->smiteEm(x,y);
+		gs->_attacks[gs->player->_ability[4]].fire(x,y);
 		break;
 	case 'c': gs->player->_mp = 200;
 		break;
@@ -1703,27 +1708,7 @@ void keyboard(unsigned char key, int x, int y ){
 		//printf("sizeof exsrc: %d\n", sizeof(*exsrc));
 		break;
 	case 'd': case 'D' :
-
-		//TODO: refactor with new gamestate code
-
-		if (gs->player->_mp>=25) {
-			//goCrate *temp = new goCrate(0, 10, OBJECTSTATE_CRATE, coord2d_t(gs->player->_pos.x() + (-sin(gs->player->_vel.x()) * dist),(gs->player->_pos.y() + (cos(gs->player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
-			goCrate* crt = new goCrate(textures[OBJECTSTATE_CRATE]);
-			
-			crt->_pos.x() = gs->player->_pos.x() + (-sin(gs->player->_vel.x()) * dist);
-			crt->_pos.y() = gs->player->_pos.y() + (cos(gs->player->_vel.x()) * dist);
-			double px = crt->_pos.x();
-			double pz = -(crt->_pos.y());
-			crt->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
-
-			crt->_id = CRATEID + (cid++);
-			crt->_hp = 10;
-
-			gs->addObject(crt);
-
-			gs->player->_mp -= 25;
-
-		}
+		gs->_attacks[gs->player->_ability[2]].fire(x,y);
 		break;
 
   }
@@ -1800,10 +1785,7 @@ void tick(int state) {
 }
 
 void initModel(){
-   unsigned int rupTexture; 
-  rupTexture = BindTextureBMP((char *)"textures/rupee2.bmp", false);
-  textures.push_back(rupTexture);
-   //playerMod = new mdmodel("rupee.md5mesh",NULL,rupTexture);
+   unsigned int rupTexture = BindTextureBMP((char *)"textures/rupee2.bmp", false);
    playerMod = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
    enemyMod = new mdmodel("model/characterModel.md5mesh","model/characterModelIdle.md5anim",rupTexture);
    initAnimInfo(&gs->player->idlAni,0);
@@ -1816,8 +1798,6 @@ void initModel(){
       initAnimInfo(&gs->player->attAni,2);
       gs->player->attAni.max_time = 1.0/playerMod->md5anim[2].frameRate;
    }
-   //enemyMod = new mdmodel("model/rupee.md5mesh",NULL,rupTexture);
-   //initAnimInfo(&eneAnim,0);
    double imt = 1.0/enemyMod->md5anim[0].frameRate;
    double wmt = 0;
    if(enemyMod->loadAnim("model/characterModelRunning2.md5anim")!=-1){
@@ -1945,62 +1925,25 @@ int main( int argc, char** argv ) {
   //glEnable(GL_LIGHTING);
 
 	// loading textures
-	// clearing the vector
-	// Prentice says a vector is overkill for holding textures, but I'll do it for now
-	textures.clear();
-	unsigned int crateTexture;
 
-	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
-	crateTexture = BindTextureBMP((char *)"textures/crate.bmp", false); //0
-	textures.push_back(crateTexture);
-	unsigned int partTexture = init_particletex(); //1
-	textures.push_back(partTexture);
+	crateTex = BindTextureBMP((char *)"textures/crate.bmp", false); //0
+	partTex = init_particletex(); //1
 
-  unsigned int tileTexture; 
-  tileTexture = BindTextureBMP((char *)"textures/images.bmp", true); //2
-  textures.push_back(tileTexture);
+  tileTex = BindTextureBMP((char *)"textures/images.bmp", true); //2
 
-  unsigned int waterTexture;
-  waterTexture = BindTextureBMP((char *)"textures/water.bmp", true); //3
-  textures.push_back(waterTexture);
+  waterTex = BindTextureBMP((char *)"textures/water.bmp", true); //3
 
-  unsigned int fireTexture;
-  fireTexture = BindTextureBMP((char *)"textures/fireball.bmp", true); //4
-  textures.push_back(fireTexture);
+  woodTex = BindTextureBMP((char *)"textures/wood3.bmp", true); //4
 
-  unsigned int rapidTexture;
-  rapidTexture = BindTextureBMP((char *)"textures/rapid1.bmp", true); //5
-  textures.push_back(rapidTexture);
+  palmTex = BindTextureBMP((char *)"textures/palm.bmp", true); //5
 
-  unsigned int crate1Texture;
-  crate1Texture = BindTextureBMP((char *)"textures/crate1.bmp", true); //6
-  textures.push_back(crate1Texture);
+  hutTex = BindTextureBMP((char *)"textures/hut.bmp", true); //6
 
-  unsigned int fistTexture;
-  fistTexture = BindTextureBMP((char *)"textures/fist.bmp", true); //7
-  textures.push_back(fistTexture);
+  rockTex = BindTextureBMP((char *)"textures/rock.bmp", true); //7
 
-  unsigned int noxTexture;
-  noxTexture = BindTextureBMP((char *)"textures/wood3.bmp", true); //8
-  textures.push_back(noxTexture);
+  rock2Tex = BindTextureBMP((char *)"textures/rock2.bmp", true); //8
 
-  unsigned int patternTexture;
-  patternTexture = BindTextureBMP((char *)"textures/palm.bmp", true); //9
-  textures.push_back(patternTexture);
-
-  unsigned int blastTexture;
-  blastTexture = BindTextureBMP((char *)"textures/smite.bmp", true); //10
-  textures.push_back(blastTexture);
- 
-  hutTex = BindTextureBMP((char *)"textures/hut.bmp", true); //11
-  textures.push_back(hutTex);
-
-
-  rockTex = BindTextureBMP((char *)"textures/rock.bmp", true); //12
-  textures.push_back(rockTex);
-
-  rock2Tex = BindTextureBMP((char *)"textures/rock2.bmp", true); //13
-  textures.push_back(rock2Tex);
+  initAttacks();
 
 
   init("model/palmTree.obj", treemdl);

@@ -118,8 +118,10 @@ void initAttacks(void){
 	icon = BindTextureBMP((char *)"textures/smite.bmp", true); //8
 	gs->_attacks.push_back(attack(icon,50,50));
 	gs->_attacks[4].func = smiteEm;
+}
 
 	//just here until we setup attack selection
+void loadAttacks(void){
 	for(int i=0;i<5;i++)
 		PLA->_ability[i] = i;
 }
