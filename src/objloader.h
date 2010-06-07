@@ -21,7 +21,22 @@ struct obj_model_t
 };
 
 
+struct mtl_file {
+struct mtl *mtl;
+int materials;
+};
 
+struct mtl {
+  char name[256];
+  //struct mtl_name *name;
+  float ns;
+  float ka[3];
+  float kd[3];
+  float ks[3];
+  float ni;
+  float d;
+  int illum;
+};
 
 void init (const char *filename, obj_model_t *objfile);
 void cleanup (obj_model_t objfile);
