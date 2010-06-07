@@ -27,7 +27,8 @@ class objectstate;
 #define HIT_HUT 3
 #define HIT_TREE 4
 #define HIT_ROCK 5
-#define HIT_ROCK2 6
+#define HIT_VEG 6
+
 
 #define PSTATE_AI_SEARCHING 11
 #define PSTATE_AI_TARGETING_1 12

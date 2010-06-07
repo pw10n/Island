@@ -70,6 +70,7 @@ using namespace std;
 #define TREEID 400
 #define ROCKID 500
 #define ROCKID2 600
+#define VEGID 600
 
 bool shadeOn; //are shaders on?
 
@@ -83,6 +84,7 @@ int tid = 0;
 int rid = 0;
 int rid2 = 0;
 int eid = 0;
+int vid = 0;
 
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
@@ -155,8 +157,12 @@ struct obj_model_t *shellmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t))
 struct obj_model_t *rock2mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 
 struct obj_model_t *treemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+struct obj_model_t *vegmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
+struct obj_model_t *logmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 
 struct mtl_file *treemtl = (struct mtl_file*) malloc(sizeof(mtl_file));
+struct mtl_file *vegmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
+struct mtl_file *logmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
 
 
 
@@ -434,6 +440,17 @@ void init_dispList(){
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
 	glEndList();
+
+	glNewList(VEGLIST,GL_COMPILE);
+	//glDisable(GL_LIGHTING);
+	glPushMatrix();
+		glScalef(.5, .5, .5);
+		RenderOBJModelt (vegmdl, vegmtl);
+	glPopMatrix();
+	//glEnable(GL_LIGHTING);
+	glEndList();
+
+
 }
 
 //initialization calls for opengl for static light
@@ -1295,25 +1312,26 @@ void gsDisplay(){
 }
 
 
-/*void drawTree(double x, double y, double z) {
+void drawTree(double x, double y, double z) {
 
-glDisable(GL_LIGHTING);
-glEnable(GL_TEXTURE_2D);
-glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+glEnable(GL_LIGHTING);
+
+//glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 //glBindTexture(GL_TEXTURE_2D, textures[13]);
 
-glColor3f(1,1,1);
+//glColor3f(1,1,1);
 glPushMatrix();
     glTranslatef(x, y, z);
 	//glScalef(.009, .009, .009); rocks
-	glScalef(.5, .5, .5);
+	glScalef(1, 1, 1);
 	//RenderOBJModel (plantemdl);
-    //RenderOBJModelt (plantemdl, textures[13], textures[14]);
+    RenderOBJModelt (treemdl, treemtl);
 glPopMatrix();
-glDisable(GL_TEXTURE_2D);
-glEnable(GL_LIGHTING);
 
-}*/
+glDisable(GL_LIGHTING);
+
+}
 
 
 
@@ -1422,7 +1440,7 @@ void display() {
 		    //glTranslatef(-1.0,0,-1.0);
 
 
-        //drawTree(1, 0, -1);
+        drawTree(0, 0, 0);
 		    //drawCrates();
 
 //printOpenGLError();
@@ -1831,7 +1849,7 @@ int main( int argc, char** argv ) {
 	gs->player->_hp = 100;
 	gs->player->_mp = 200;
 	gs->player->_pos.x() = 0;
-	gs->player->_pos.y() = 35;
+	gs->player->_pos.y() = 0;
 	gs->fbtim = -1;
 	gs->explo = false;
 	gs->smit = false;
@@ -1956,7 +1974,7 @@ cerr << "INFO: init gamestate.. " << endl;
   textures.push_back(shellTexture2);*/
 
 
-  for(int i = 0; i < 20; i++){  
+  for(int i = 0; i < 100; i++){  
 
 	  /* uses gamestate object crate:
 	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
@@ -1966,54 +1984,62 @@ cerr << "INFO: init gamestate.. " << endl;
 	  */
 	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
 
-	    if (i > 10) {
+	    if (i > 70) {
 		goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
-		crt->_pos.x() = rand()%30-15;
-		crt->_pos.y() = 35 + rand()%30-15;
+		crt->_pos.x() = rand()%100-50;
+		crt->_pos.y() = rand()%100-50;
 		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
 		crt->_hp = 10;
 		crt->_id = CRATEID + (cid++);
 		gs->addObject(crt);
-	    }
 
-		if (i > 10) {
 		Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
-		hut->_pos.x() = rand()%30-15;
-		hut->_pos.y() = 35 +rand()%30-15;
+		hut->_pos.x() = rand()%100-50;
+		hut->_pos.y() = rand()%100-50;
 		hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
 		hut->_hp = 100;
 		hut->_id = HUTID + (hid++);
 		gs->addObject(hut);
+
+		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
+		rck2->_pos.x() = rand()%100-50;
+		rck2->_pos.y() = rand()%100-50;
+		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
+		rck2->_hp = 10;
+		rck2->_id = ROCKID + (rid2++);
+		gs->addObject(rck2);
+
+
+		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rand()%90, rockmdl);
+		rck->_pos.x() = rand()%100-50;
+		rck->_pos.y() = rand()%100-50;
+		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
+		rck->_hp = 10;
+		rck->_id = ROCKID + (rid++);
+		gs->addObject(rck);
+
 		}
 
 
 		palmTree *tree = new palmTree(textures[0], treemdl);
-		tree->_pos.x() = rand()%30-15;
-		tree->_pos.y() = 35 +rand()%30-15;
+		tree->_pos.x() = rand()%100-50;
+		tree->_pos.y() = rand()%100-50;
 		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
 		tree->_hp = 10;
 		tree->_id = TREEID + (tid++);
 		gs->addObject(tree);
 
-		if (i > 10) {
-		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rand()%90, rockmdl);
-		rck->_pos.x() = rand()%30-15;
-		rck->_pos.y() = 35 +rand()%30-15;
-		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
-		rck->_hp = 10;
-		rck->_id = ROCKID + (rid++);
-		gs->addObject(rck);
-		}
+		veg *bush = new veg(textures[0], rand()%90, vegmdl);
+		bush->_pos.x() = rand()%100-50;
+		bush->_pos.y() = rand()%100-50;
+		bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
+		bush->_hp = 10;
+		bush->_id = VEGID + (vid++);
+		gs->addObject(bush);
 
-		if (i > 10) {
-		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
-		rck2->_pos.x() = rand()%30-15;
-		rck2->_pos.y() = 35 +rand()%30-15;
-		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
-		rck2->_hp = 10;
-		rck2->_id = ROCKID + (rid2++);
-		gs->addObject(rck2);
-		}
+
+
+
 
 
 
@@ -2051,7 +2077,11 @@ cerr << "INFO: init gamestate.. " << endl;
   init("model/rock_a.obj", rockmdl);
   init("model/planeMesh.obj", &oceanmdl);
   init("model/rock_b.obj", rock2mdl);
+  init("model/veg.obj", vegmdl);
+  init("model/log.obj", logmdl);
   mtlLoad("model/palm-arecaceae.mtl", treemtl, 4);
+  mtlLoad("model/veg.mtl", vegmtl, 4);
+  mtlLoad("model/log.mtl", logmtl, 3);
 
   init_dispList();
 

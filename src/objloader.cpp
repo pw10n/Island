@@ -657,9 +657,9 @@ RenderOBJModelt (struct obj_model_t *mdl, struct mtl_file *mtlfile)
   GLfloat specular[4];
   GLfloat shininess[1];
 
-  if (hasname) {
+  //if (hasname) {
 	  glEnable(GL_LIGHTING);
-  }
+  //}
   //printf("%d\n", mdl->num_faces);
   for (i = 0; i < mdl->num_faces; ++i)
   {

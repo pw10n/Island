@@ -1,0 +1,43 @@
+# Blender3D MTL File: 
+# Material Count: 4
+newmtl metall_vase
+Ns 90.196078
+Ka 0.000000 0.000000 0.000000
+Kd 0.286720 0.286720 0.286720
+Ks 0.125000 0.125000 0.125000
+Ni 1.000000
+d 1.000000
+illum 2
+
+
+newmtl vagetable_vase
+Ns 90.196078
+Ka 0.000000 0.000000 0.000000
+Kd 0.071680 0.071680 0.071680
+Ks 0.125000 0.125000 0.125000
+Ni 1.000000
+d 1.000000
+illum 2
+
+
+newmtl Grass_grass_texture.j_grass_texture.jpg
+Ns 90.196078
+Ka 0.000000 0.000000 0.000000
+Kd 0.188534 0.357497 0.127426
+Ks 0.125000 0.125000 0.125000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd grass_texture.jpg
+
+
+newmtl Grass.trunk
+Ns 90.196078
+Ka 0.000000 0.000000 0.000000
+Kd 0.144565 0.182714 0.050196
+Ks 0.125000 0.125000 0.125000
+Ni 1.000000
+d 1.000000
+illum 2
+
+

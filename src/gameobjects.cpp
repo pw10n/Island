@@ -156,3 +156,15 @@ void rock2::draw(){
 	glEnable(GL_LIGHTING);*/
 }
 
+void veg::draw(){
+
+	glPushMatrix();
+		glTranslatef(_pos.x(),0,-_pos.y());
+
+		glRotatef(angle, 0, 1, 0);
+
+		glCallList(VEGLIST);
+	glPopMatrix();
+
+}
+
