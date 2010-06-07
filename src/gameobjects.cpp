@@ -109,7 +109,7 @@ void palmTree::draw(){
 	//glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	//glBindTexture(GL_TEXTURE_2D, _tid);
 
-	glColor3f(1,1,1);
+	//glColor3f(1,1,1);
 	glPushMatrix();
 		glTranslatef(_pos.x(),0,-_pos.y());
 		//glScalef(1, 1, 1);
