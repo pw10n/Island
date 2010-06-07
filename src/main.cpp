@@ -287,41 +287,7 @@ void EnterGameMode(){
 	  */
 	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
 
-		if (i > 70) {
-		goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
-		crt->_pos.x() = rand()%100-50;
-		crt->_pos.y() = rand()%100-50;
-		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
-		crt->_hp = 10;
-		crt->_id = CRATEID + (cid++);
-		gs->addObject(crt);
 
-		Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
-		hut->_pos.x() = rand()%100-50;
-		hut->_pos.y() = rand()%100-50;
-		hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
-		hut->_hp = 100;
-		hut->_id = HUTID + (hid++);
-		gs->addObject(hut);
-
-		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
-		rck2->_pos.x() = rand()%100-50;
-		rck2->_pos.y() = rand()%100-50;
-		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
-		rck2->_hp = 10;
-		rck2->_id = ROCKID + (rid2++);
-		gs->addObject(rck2);
-
-
-		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rand()%90, rockmdl);
-		rck->_pos.x() = rand()%100-50;
-		rck->_pos.y() = rand()%100-50;
-		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
-		rck->_hp = 10;
-		rck->_id = ROCKID + (rid++);
-		gs->addObject(rck);
-
-		}
 
 		palmTree *tree = new palmTree(textures[0], treemdl);
 		tree->_pos.x() = rand()%100-50;
@@ -331,13 +297,45 @@ void EnterGameMode(){
 		tree->_id = TREEID + (tid++);
 		gs->addObject(tree);
 
-		veg *bush = new veg(textures[0], rand()%90, vegmdl);
-		bush->_pos.x() = rand()%100-50;
-		bush->_pos.y() = rand()%100-50;
-		bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
-		bush->_hp = 10;
-		bush->_id = VEGID + (vid++);
-		gs->addObject(bush);
+	}
+
+	for(int i = 0; i < 100; i++){ 
+		if (i>70) {
+			goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
+			crt->_pos.x() = rand()%100-50;
+			crt->_pos.y() = rand()%100-50;
+			crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+			crt->_hp = 10;
+			crt->_id = CRATEID + (cid++);
+			gs->addObject(crt);
+
+			Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
+			hut->_pos.x() = rand()%100-50;
+			hut->_pos.y() = rand()%100-50;
+			hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
+			hut->_hp = 100;
+			hut->_id = HUTID + (hid++);
+			gs->addObject(hut);
+
+			rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
+			rck2->_pos.x() = rand()%100-50;
+			rck2->_pos.y() = rand()%100-50;
+			rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
+			rck2->_hp = 10;
+			rck2->_id = ROCKID + (rid2++);
+			gs->addObject(rck2);
+
+			veg *bush = new veg(textures[0], rand()%90, vegmdl);
+			bush->_pos.x() = rand()%100-50;
+			bush->_pos.y() = rand()%100-50;
+			bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
+			bush->_hp = 10;
+			bush->_id = VEGID + (vid++);
+			gs->addObject(bush);
+		}
+
+	
+
 	}
 
 	cerr << "INFO: init lighting.. " << endl;
@@ -485,6 +483,8 @@ void init_dispList(){
 	glEnable(GL_LIGHTING);
 	glEndList();
 
+
+
 	glNewList(ROCKLIST,GL_COMPILE);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
@@ -499,6 +499,10 @@ void init_dispList(){
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
 	glEndList();
+
+
+
+
 
 	glNewList(ROCK2LIST,GL_COMPILE);
 	glDisable(GL_LIGHTING);
@@ -1405,7 +1409,7 @@ glPushMatrix();
 	//glScalef(.009, .009, .009); rocks
 	glScalef(100, 100, 100);
 	//RenderOBJModel (plantemdl);
-    RenderOBJModelt (logmdl, logmtl);
+    //RenderOBJModelt (logmdl, logmtl);
 glPopMatrix();
 
 glDisable(GL_LIGHTING);

@@ -128,8 +128,8 @@ void palmTree::draw(){
 }
 
 void rock::draw(){
-	/*glDisable(GL_LIGHTING);
-	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
+	/*glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, _tid);*/
 
@@ -141,8 +141,8 @@ void rock::draw(){
 		//RenderOBJModel (mdl);
 		glCallList(ROCKLIST);
 	glPopMatrix();
-	/*glDisable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);*/
+	/*glDisable(GL_TEXTURE_2D);*/
+	glEnable(GL_LIGHTING);
 }
 
 void rock2::draw(){
