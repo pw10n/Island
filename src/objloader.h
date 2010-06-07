@@ -41,4 +41,5 @@ struct mtl {
 void init (const char *filename, obj_model_t *objfile);
 void cleanup (obj_model_t objfile);
 void RenderOBJModel (struct obj_model_t *mdl);
-void RenderOBJModelt (struct obj_model_t *mdl, int tex1, int tex2);
+void RenderOBJModelt (struct obj_model_t *mdl, struct mtl_file *mtlfile);
+int mtlLoad (const char *filename, struct mtl_file *mtlfile, int materials);
