@@ -6,7 +6,6 @@
 #define HUTLIST 3
 #define ROCKLIST 4
 #define ROCK2LIST 5
-#define VEGLIST 6
 
 using namespace std;
 
@@ -58,16 +57,5 @@ public:
 	struct obj_model_t *mdl;
 	void draw();
 	int hitWhat(void) const {return HIT_ROCK;};
-};
-
-class veg : public objectstate{
-public:
-	veg(unsigned int texture, int angle, struct obj_model_t *mdl):objectstate(),_tid(texture), angle(angle), mdl(mdl) {};
-	unsigned int _tid;
-	int angle;
-
-	struct obj_model_t *mdl;
-	void draw();
-	int hitWhat(void) const {return HIT_VEG;};
 };
 
