@@ -21,6 +21,8 @@
 #include "shader.h"
 #include "GLSL_helper.h"
 #include "enemy.h"
+//#include <SDL.h>
+
 
 
 //#include "md5mesh.cpp"
@@ -1849,7 +1851,7 @@ void fnExit1(){
 	system("pause");
 }
 
-int main( int argc, char** argv ) {
+int main(int argc, char **argv) {
 	srand (time (NULL));
 
 
