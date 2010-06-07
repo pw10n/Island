@@ -52,6 +52,12 @@
 
 
 using namespace std;
+void EnterGameMode();
+void ExitGameMode();
+int menutex0;
+int menutex1;
+int menuchoice=0;
+
 
 #define WORLD_TIME_RESOLUTION 30
 #define HIT_CRATE 1
@@ -263,97 +269,6 @@ bool cull(coord2d_t pos){
 void drawCharacter();
 
 
-// leave menu
-void EnterGameMode(){
-	 gs->start(0);
-
-	gs->player = new playerstate(worldtime);
-	gs->player->_hp = 100;
-	gs->player->_mp = 200;
-	gs->player->_pos.x() = 0;
-	gs->player->_pos.y() = 0;
-	gs->fbtim = -1;
-	gs->explo = false;
-	gs->smit = false;
-
-
-	for(int i = 0; i < 100; i++){  
-
-	  /* uses gamestate object crate:
-	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
-	  temp->_hp = 10;
-	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
-	  gs->_objects.push_back(temp);
-	  */
-	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
-
-		if (i > 70) {
-		goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
-		crt->_pos.x() = rand()%100-50;
-		crt->_pos.y() = rand()%100-50;
-		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
-		crt->_hp = 10;
-		crt->_id = CRATEID + (cid++);
-		gs->addObject(crt);
-
-		Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
-		hut->_pos.x() = rand()%100-50;
-		hut->_pos.y() = rand()%100-50;
-		hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
-		hut->_hp = 100;
-		hut->_id = HUTID + (hid++);
-		gs->addObject(hut);
-
-		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
-		rck2->_pos.x() = rand()%100-50;
-		rck2->_pos.y() = rand()%100-50;
-		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
-		rck2->_hp = 10;
-		rck2->_id = ROCKID + (rid2++);
-		gs->addObject(rck2);
-
-
-		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rand()%90, rockmdl);
-		rck->_pos.x() = rand()%100-50;
-		rck->_pos.y() = rand()%100-50;
-		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
-		rck->_hp = 10;
-		rck->_id = ROCKID + (rid++);
-		gs->addObject(rck);
-
-		}
-
-		palmTree *tree = new palmTree(textures[0], treemdl);
-		tree->_pos.x() = rand()%100-50;
-		tree->_pos.y() = rand()%100-50;
-		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
-		tree->_hp = 10;
-		tree->_id = TREEID + (tid++);
-		gs->addObject(tree);
-
-		veg *bush = new veg(textures[0], rand()%90, vegmdl);
-		bush->_pos.x() = rand()%100-50;
-		bush->_pos.y() = rand()%100-50;
-		bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
-		bush->_hp = 10;
-		bush->_id = VEGID + (vid++);
-		gs->addObject(bush);
-	}
-
-	cerr << "INFO: init lighting.. " << endl;
-	init_lighting();
-
-	cerr << "INFO: init ai.. " << endl;
-	init_ai();
-
-	cerr << "INFO: init model.. " << endl;
-	initModel();
-}
-
-// return to menu
-void ExitGameMode(){
-	
-}
 
 void init_ai(){
 	for(int i=0; i<50; ++i){
@@ -1435,7 +1350,7 @@ void display() {
 
   glMatrixMode(GL_MODELVIEW);
   
-
+  if(gs && gs->_state == GSSTATE_ACTIVE){
   glPushMatrix();  // ortho 
   setOrthoProjection();
   glPushMatrix(); // ortho + 1
@@ -1532,6 +1447,29 @@ void display() {
   
   glutSwapBuffers();
     //printOpenGLError();
+  }else{
+  glPushMatrix();
+
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D, menuchoice?menutex1:menutex0);
+
+  glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 1.0);
+	glVertex3f(-2.0,1.5,-3.0);
+	glTexCoord2f(0.0,0.0);
+	glVertex3f(-2.0,-1.5,-3.0);
+	glTexCoord2f(1.0,0.0);
+	glVertex3f(2.0,-1.5,-3.0);
+	glTexCoord2f(1.0,1.0);
+	glVertex3f(2.0,1.5,-3.0);
+  glEnd();
+
+  glDisable(GL_TEXTURE_2D);
+
+  glPopMatrix();
+  glutSwapBuffers();
+  }
 }
 
 
@@ -1637,6 +1575,27 @@ void processMouseActiveMotion(int x, int y) {
   glutPostRedisplay();
 
 }
+
+void menuKeyboardS(int key, int x, int y ){
+  switch( key ) {
+	  case GLUT_KEY_UP:
+			menuchoice = 0;
+		  break;
+	  case GLUT_KEY_DOWN:
+		  menuchoice = 1;
+		  break;
+  }
+  glutPostRedisplay();
+}
+void menuKeyboard(unsigned char key, int x, int y){
+	if(13 == key){ // reutrn key
+		if(menuchoice == 1)
+			exit(0);
+		else if(menuchoice == 0)
+			EnterGameMode();
+	}
+}
+
 
 void keyboard(unsigned char key, int x, int y ){
   float dist = 3.0;
@@ -1831,6 +1790,106 @@ void mana(int pass) {
 	glutTimerFunc(1000, mana,0);
 }
 
+// leave menu
+void EnterGameMode(){
+	 gs->start(0);
+
+	gs->player = new playerstate(worldtime);
+	gs->player->_hp = 100;
+	gs->player->_mp = 200;
+	gs->player->_pos.x() = 0;
+	gs->player->_pos.y() = 0;
+	gs->fbtim = -1;
+	gs->explo = false;
+	gs->smit = false;
+
+
+	for(int i = 0; i < 100; i++){  
+
+	  /* uses gamestate object crate:
+	  goCrate *temp = new goCrate(textures[OBJECTSTATE_CRATE]);
+	  temp->_hp = 10;
+	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
+	  gs->_objects.push_back(temp);
+	  */
+	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), textures[OBJECTSTATE_CRATE]);
+
+		if (i > 70) {
+		goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
+		crt->_pos.x() = rand()%100-50;
+		crt->_pos.y() = rand()%100-50;
+		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		crt->_hp = 10;
+		crt->_id = CRATEID + (cid++);
+		gs->addObject(crt);
+
+		Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
+		hut->_pos.x() = rand()%100-50;
+		hut->_pos.y() = rand()%100-50;
+		hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
+		hut->_hp = 100;
+		hut->_id = HUTID + (hid++);
+		gs->addObject(hut);
+
+		rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
+		rck2->_pos.x() = rand()%100-50;
+		rck2->_pos.y() = rand()%100-50;
+		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
+		rck2->_hp = 10;
+		rck2->_id = ROCKID + (rid2++);
+		gs->addObject(rck2);
+
+
+		rock *rck = new rock(textures[OBJECTSTATE_ROCK], rand()%90, rockmdl);
+		rck->_pos.x() = rand()%100-50;
+		rck->_pos.y() = rand()%100-50;
+		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
+		rck->_hp = 10;
+		rck->_id = ROCKID + (rid++);
+		gs->addObject(rck);
+
+		}
+
+		palmTree *tree = new palmTree(textures[0], treemdl);
+		tree->_pos.x() = rand()%100-50;
+		tree->_pos.y() = rand()%100-50;
+		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
+		tree->_hp = 10;
+		tree->_id = TREEID + (tid++);
+		gs->addObject(tree);
+
+		veg *bush = new veg(textures[0], rand()%90, vegmdl);
+		bush->_pos.x() = rand()%100-50;
+		bush->_pos.y() = rand()%100-50;
+		bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
+		bush->_hp = 10;
+		bush->_id = VEGID + (vid++);
+		gs->addObject(bush);
+	}
+
+	cerr << "INFO: init lighting.. " << endl;
+	init_lighting();
+
+	cerr << "INFO: init ai.. " << endl;
+	init_ai();
+
+	cerr << "INFO: init model.. " << endl;
+	initModel();
+gs->besrc = new beam(gs->player); //only need one beam right now, so might as well initialize it now
+	glutMouseFunc(mouse);
+	glutKeyboardFunc( keyboard );
+	glutPassiveMotionFunc(processMousePassiveMotion);
+	glutMotionFunc(processMouseActiveMotion);
+	glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
+	glutTimerFunc(1000, mana,0);
+	glEnable(GL_DEPTH_TEST);
+
+}
+
+// return to menu
+void ExitGameMode(){
+	
+}
 
 
 void fnExit1(){
@@ -1899,13 +1958,8 @@ int main( int argc, char** argv ) {
 	//register glut callback functions
 	glutDisplayFunc( display );
 	glutReshapeFunc( reshape );
-	glutMouseFunc(mouse);
-	glutKeyboardFunc( keyboard );
-	glutPassiveMotionFunc(processMousePassiveMotion);
-	glutMotionFunc(processMouseActiveMotion);
-	glutTimerFunc(WORLD_TIME_RESOLUTION,&tick,0);
-	glutTimerFunc(1000, mana,0);
-	glEnable(GL_DEPTH_TEST);
+	glutSpecialFunc( menuKeyboardS );
+	glutKeyboardFunc( menuKeyboard );
 
 #if 0
 	// Set Up Fog 
@@ -1989,8 +2043,8 @@ int main( int argc, char** argv ) {
 
   rock2Tex = BindTextureBMP((char *)"textures/rock2.bmp", true); //13
   textures.push_back(rock2Tex);
-
-
+	menutex0 = BindTextureBMP((char *)"textures/menu_new.bmp", false); 
+menutex1 = BindTextureBMP((char *)"textures/menu_quit.bmp", false);
   init("model/palmTree.obj", treemdl);
   init("model/afro hut.obj", hutmdl);
   init("model/rock_a.obj", rockmdl);
@@ -2003,7 +2057,7 @@ int main( int argc, char** argv ) {
   //mtlLoad("model/log.mtl", logmtl, 3);
 
 
-	EnterGameMode();
+	//EnterGameMode();
 
   init_dispList();
 
@@ -2016,7 +2070,7 @@ int main( int argc, char** argv ) {
 
 
   
-	gs->besrc = new beam(gs->player); //only need one beam right now, so might as well initialize it now
+	
 
 	cerr << "INFO: Init glew... ";
 	if(GLEW_OK!=glewInit()){
