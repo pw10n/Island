@@ -193,10 +193,6 @@ void gamestate::tick(uint32_t time){
 	if(GSSTATE_ACTIVE != _state)
 		return;
 
-	player->tick(time);
-	updatBinLists(player,UPDAT);
-
-
 	uint32_t delta_time = time - _tick;
 	_tick = time;
 	
@@ -223,7 +219,6 @@ void gamestate::tick(uint32_t time){
 			++it;
 	}
 	int coll;
-	if(fbtim>0) fbtim--;
 	for(vector<fireball_s *>::iterator it = fbsrc.begin(); it!=fbsrc.end();){
 		(*it)->move();
 		if(!(*it)->active){
@@ -249,7 +244,8 @@ void gamestate::tick(uint32_t time){
 		else
 			++it;
 	}
-	if(rfire>0) rfire--;
+	for(unsigned int i=0;i<5;i++)
+		_attacks[player->_ability[i]]._tick();
 }
 
 void gamestate::addEnemy(playerstate* e){
