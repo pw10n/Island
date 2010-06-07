@@ -1324,9 +1324,9 @@ glEnable(GL_LIGHTING);
 glPushMatrix();
     glTranslatef(x, y, z);
 	//glScalef(.009, .009, .009); rocks
-	glScalef(1, 1, 1);
+	glScalef(100, 100, 100);
 	//RenderOBJModel (plantemdl);
-    RenderOBJModelt (treemdl, treemtl);
+    RenderOBJModelt (logmdl, logmtl);
 glPopMatrix();
 
 glDisable(GL_LIGHTING);
@@ -2078,13 +2078,12 @@ cerr << "INFO: init gamestate.. " << endl;
   init("model/planeMesh.obj", &oceanmdl);
   init("model/rock_b.obj", rock2mdl);
   init("model/veg.obj", vegmdl);
-  init("model/log.obj", logmdl);
+  //init("model/log.obj", logmdl);
   mtlLoad("model/palm-arecaceae.mtl", treemtl, 4);
   mtlLoad("model/veg.mtl", vegmtl, 4);
-  mtlLoad("model/log.mtl", logmtl, 3);
+  //mtlLoad("model/log.mtl", logmtl, 3);
 
   init_dispList();
-
 
   //init("model/conch.obj", plantemdl);
   //init("model/hut.obj", mdl);
