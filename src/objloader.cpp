@@ -750,9 +750,9 @@ init (const char *filename, obj_model_t *objfile)
   glClearColor (0.5f, 0.5f, 0.5f, 1.0f);
   glShadeModel (GL_SMOOTH);
 
-  glEnable (GL_DEPTH_TEST);
-  glEnable (GL_LIGHTING);
-  glEnable (GL_LIGHT0);
+  //glEnable (GL_DEPTH_TEST);
+  //glEnable (GL_LIGHTING);
+  //glEnable (GL_LIGHT0);
 
   glLightfv (GL_LIGHT0, GL_POSITION, lightpos);
 
