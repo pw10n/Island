@@ -18,31 +18,7 @@ struct obj_model_t
   struct obj_texCoord_t *texCoords;  /* tex. coord. list */
   struct obj_normal_t *normals;      /* normal vector list */
   struct obj_face_t *faces;          /* model's polygons */
-  struct mtl_name *name;
 };
-
-
-struct mtl_file {
-	struct mtl *mtl;
-	int materials;
-};
-
-struct mtl {
-  char name[256];
-  //struct mtl_name *name;
-  float ns;
-  float ka[3];
-  float kd[3];
-  float ks[3];
-  float ni;
-  float d;
-  int illum;
-};
-
-
-
-
-
 
 
 
@@ -50,5 +26,4 @@ struct mtl {
 void init (const char *filename, obj_model_t *objfile);
 void cleanup (obj_model_t objfile);
 void RenderOBJModel (struct obj_model_t *mdl);
-void RenderOBJModelt (struct obj_model_t *mdl, struct mtl_file *mtlfile);
-int mtlLoad (const char *filename, struct mtl_file *mtlfile, int materials);
+void RenderOBJModelt (struct obj_model_t *mdl, int tex1, int tex2);

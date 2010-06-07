@@ -72,7 +72,6 @@ using namespace std;
 #define TREEID 400
 #define ROCKID 500
 #define ROCKID2 600
-#define VEGID 600
 
 bool shadeOn; //are shaders on?
 
@@ -86,7 +85,6 @@ int tid = 0;
 int rid = 0;
 int rid2 = 0;
 int eid = 0;
-int vid = 0;
 
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
@@ -146,11 +144,6 @@ materialStruct Sand = {
 	{0.0, 0.0, 0.0, 1.0},
 	{0.0}
 };
-
-void init_ai();
-void init_lighting();
-void initModel();
-
 //coord2d_t vel;
 //playerstate* gs->player;
 vector<playerstate*> others;
@@ -164,12 +157,6 @@ struct obj_model_t *shellmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t))
 struct obj_model_t *rock2mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 
 struct obj_model_t *treemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-struct obj_model_t *vegmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-struct obj_model_t *logmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-
-struct mtl_file *treemtl = (struct mtl_file*) malloc(sizeof(mtl_file));
-struct mtl_file *vegmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
-struct mtl_file *logmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
 
 
 
@@ -210,7 +197,7 @@ float fps;
 
 
 
-vector<unsigned int> textures;
+unsigned int partTex, crateTex, tileTex, waterTex, woodTex, palmTex, hutTex, rockTex, rock2Tex;
 
 vector<objectstate*> crates;
 
@@ -219,8 +206,6 @@ vector<objectstate*> crates;
 mdmodel* playerMod;
 mdmodel* enemyMod;
 struct anim_info_t idlAnim, walAnim, eneAnim;
-
-unsigned int hutTex, rockTex, rock2Tex;
 
 #if 0
 // Variables Necessary For FogCoordfEXT
@@ -291,7 +276,7 @@ void EnterGameMode(){
 
 
 
-		palmTree *tree = new palmTree(textures[0], treemdl);
+		palmTree *tree = new palmTree(0, treemdl);
 		tree->_pos.x() = rand()%100-50;
 		tree->_pos.y() = rand()%100-50;
 		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
@@ -303,7 +288,7 @@ void EnterGameMode(){
 
 	for(int i = 0; i < 100; i++){ 
 		if (i>70) {
-			goCrate *crt = new goCrate(textures[OBJECTSTATE_CRATE]);
+			goCrate *crt = new goCrate(crateTex);
 			crt->_pos.x() = rand()%100-50;
 			crt->_pos.y() = rand()%100-50;
 			crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
@@ -311,7 +296,7 @@ void EnterGameMode(){
 			crt->_id = CRATEID + (cid++);
 			gs->addObject(crt);
 
-			Hut *hut = new Hut(textures[OBJECTSTATE_HUT], hutmdl);
+			Hut *hut = new Hut(hutTex, hutmdl);
 			hut->_pos.x() = rand()%100-50;
 			hut->_pos.y() = rand()%100-50;
 			hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
@@ -319,7 +304,7 @@ void EnterGameMode(){
 			hut->_id = HUTID + (hid++);
 			gs->addObject(hut);
 
-			rock2 *rck2 = new rock2(textures[OBJECTSTATE_ROCK2], rand()%90, rock2mdl);
+			rock2 *rck2 = new rock2(rock2Tex, rand()%90, rock2mdl);
 			rck2->_pos.x() = rand()%100-50;
 			rck2->_pos.y() = rand()%100-50;
 			rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
@@ -327,7 +312,7 @@ void EnterGameMode(){
 			rck2->_id = ROCKID + (rid2++);
 			gs->addObject(rck2);
 
-			veg *bush = new veg(textures[0], rand()%90, vegmdl);
+			veg *bush = new veg(0, rand()%90, vegmdl);
 			bush->_pos.x() = rand()%100-50;
 			bush->_pos.y() = rand()%100-50;
 			bush->body = bbody(bush->_pos.x()-.2,-bush->_pos.y()-.2,bush->_pos.x()+.2,-bush->_pos.y()+.2,BB_AABB);
@@ -390,6 +375,28 @@ void drawAi(){
 #define MIN_AI_DISTANCE 7.0
 #define AI_BOUNDS_MAX 40.0
 #define AI_BOUNDS_MIN -40.0
+void tickAi(uint32_t time){
+	coord2d_t dummy;
+	for(unsigned int i=0; i<others.size(); ) //i++ is at the end of for loop
+	{
+		
+		if (others[i]->_hp <= 0){
+
+
+			gs->updatBinLists(others[i],REMOV);
+			delete others[i];
+			others.erase(others.begin()+i);
+
+			gs->player->_score++;
+			continue;
+		}
+		if(others[i]->_id >200){
+			printf("corruption found\n");
+		}
+		
+		i++;
+	}
+}
 
 
 //////////////////////////////////////////
@@ -434,21 +441,21 @@ void init_particle(){
 	glNewList(PARTLIST,GL_COMPILE);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
+	glBindTexture(GL_TEXTURE_2D, partTex);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0.1f,0.1f,0);
 	glTexCoord2d(0,1); glVertex3f(-0.1f,0.1f,0);
 	glTexCoord2d(1,0); glVertex3f(0.1f,-0.1f,0);
 	glTexCoord2d(0,0); glVertex3f(-0.1f,-0.1f,0);
 	glEnd();
-	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
+	glBindTexture(GL_TEXTURE_2D, partTex);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0.1f,0,0.1f);
 	glTexCoord2d(0,1); glVertex3f(-0.1f,0,0.1f);
 	glTexCoord2d(1,0); glVertex3f(0.1f,0,-0.1f);
 	glTexCoord2d(0,0); glVertex3f(-0.1f,0,-0.1f);
 	glEnd();
-	glBindTexture(GL_TEXTURE_2D, textures[PARTICLE_TEXTURE]);
+	glBindTexture(GL_TEXTURE_2D, partTex);
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2d(1,1); glVertex3f(0,0.1f,0.1f);
 	glTexCoord2d(0,1); glVertex3f(0,-0.1f,0.1f);
@@ -462,12 +469,12 @@ void init_particle(){
 
 void init_dispList(){
 	glNewList(TREELIST,GL_COMPILE);
-	//glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
 	glPushMatrix();
 		glScalef(1, 1, 1);
-		RenderOBJModelt (treemdl, treemtl);
+		RenderOBJModel (treemdl);
 	glPopMatrix();
-	//glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHTING);
 	glEndList();
 
 	glNewList(HUTLIST,GL_COMPILE);
@@ -520,17 +527,6 @@ void init_dispList(){
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
 	glEndList();
-
-	glNewList(VEGLIST,GL_COMPILE);
-	//glDisable(GL_LIGHTING);
-	glPushMatrix();
-		glScalef(.5, .5, .5);
-		RenderOBJModelt (vegmdl, vegmtl);
-	glPopMatrix();
-	//glEnable(GL_LIGHTING);
-	glEndList();
-
-
 }
 
 //initialization calls for opengl for static light
@@ -698,7 +694,7 @@ void drawCrates(){
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	// it'll be 2x2x2 for now
-	glBindTexture(GL_TEXTURE_2D, textures[OBJECTSTATE_CRATE]);
+	glBindTexture(GL_TEXTURE_2D, crateTex);
 	// "front"
 	for(unsigned int i = 0; i < crates.size(); i++){
 		if(cull(crates[i]->_pos)) continue;
@@ -783,7 +779,7 @@ void drawBox(unsigned int texture) {
 
 	  glEnable(GL_TEXTURE_2D);
 	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
+	  glBindTexture(GL_TEXTURE_2D, texture);
 
 	  glBegin(GL_QUADS);
 	  glTexCoord2f (0.0, 0.0);
@@ -856,7 +852,7 @@ void drawUIBar(int texture) {
 	  glEnable(GL_TEXTURE_2D);
 	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
+	  glBindTexture(GL_TEXTURE_2D, texture);
 
 	  glBegin(GL_QUADS);
 	  glTexCoord2f (0.0, 0.0);
@@ -893,7 +889,7 @@ void drawUIHBar(int texture) {
 
 	  glEnable(GL_TEXTURE_2D);
 	  glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	  glBindTexture(GL_TEXTURE_2D, textures[texture]);
+	  glBindTexture(GL_TEXTURE_2D, texture);
 
 	  glBegin(GL_QUADS);
 	  glTexCoord2f (0.0, 0.0);
@@ -956,7 +952,7 @@ void draw_circle() {
 
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, textures[7]);
+	glBindTexture(GL_TEXTURE_2D, gs->_attacks[3]._iconNum);
 
     glBegin(GL_QUADS);
 	glTexCoord2f (0.0, 0.0);
@@ -976,11 +972,8 @@ void draw_circle() {
 }
 
 void displayHud(){
-
 	char buff[40];
 		/* BEGIN HUD */
-    setOrthoProjection();//push2
-    glPushMatrix(); // ortho + 1 //push 3
 	glDisable(GL_LIGHTING);
 	//materials(Red);
 	glColor3f(1.0, 0.0, 0.0);
@@ -1024,11 +1017,11 @@ void displayHud(){
 
 	//materials(Gray);
 	glColor3f(0.7, 0.7, 0.7); //fist
-	glPushMatrix();//1
+	glPushMatrix();
 	glTranslatef(40, gs->GH-40, 0);
 	draw_circle2();
 	draw_circle();
-	glPopMatrix();//1
+	glPopMatrix();
 
 	/*glColor3f(0.7, 0.7, 0.7);
 	glPushMatrix();
@@ -1046,12 +1039,12 @@ void displayHud(){
 
 	glPushMatrix();  //UI bar that covers icons
 	glTranslatef(40, gs->GH-360, -.01);
-	drawUIBar(8);
+	drawUIBar(woodTex);
 	glPopMatrix();
 
 	glPushMatrix();  //UI bar that Health bars
 	glTranslatef(gs->GW-60, gs->GH-95, -.01);
-	drawUIHBar(9);
+	drawUIHBar(palmTex);
 	glPopMatrix();
 
 	glColor3f(.5, 0.0, 0.0);
@@ -1082,27 +1075,27 @@ void displayHud(){
 
 	glPushMatrix();  //rapid fire (a)
 	glTranslatef(25, gs->GH-240, 0);
-	drawBox(5);
+	drawBox(gs->_attacks[gs->player->_ability[0]]._iconNum);
 	glPopMatrix();
 
     glPushMatrix();  //fireball (s)
 	glTranslatef(25, gs->GH-300, 0);
-	drawBox(4);
+	drawBox(gs->_attacks[gs->player->_ability[1]]._iconNum);
 	glPopMatrix();
 
 	glPushMatrix();  //crate (d)
 	glTranslatef(25, gs->GH-360, 0);
-	drawBox(6);
+	drawBox(gs->_attacks[gs->player->_ability[2]]._iconNum);
 	glPopMatrix();
 
 	glPushMatrix(); //(f)
 	glTranslatef(25, gs->GH-420, 0);
-	drawBox(0);
+	drawBox(gs->_attacks[gs->player->_ability[3]]._iconNum);
 	glPopMatrix();
 
 	glPushMatrix(); //(g) 
 	glTranslatef(25, gs->GH-480, 0);
-	drawBox(10);
+	drawBox(gs->_attacks[gs->player->_ability[4]]._iconNum);
 	glPopMatrix();
 
 
@@ -1121,13 +1114,12 @@ glEnable(GL_LIGHTING);
 }
 
 void drawTiles(){
-glPushMatrix();
   glDisable(GL_LIGHTING);
   glColor3f(1, 1, 1);
 
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D, textures[2]);
+  glBindTexture(GL_TEXTURE_2D, tileTex);
 
   glBegin(GL_QUADS);
 
@@ -1144,7 +1136,6 @@ glPushMatrix();
 
   glDisable(GL_TEXTURE_2D);
   glEnable(GL_LIGHTING);
-glPopMatrix();
 
 }
 
@@ -1155,7 +1146,7 @@ void waterTile() {
 
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D, textures[3]);
+  glBindTexture(GL_TEXTURE_2D, waterTex);
   glBegin(GL_QUADS);
 
 
@@ -1246,7 +1237,7 @@ void drawWater() {
 
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D, textures[3]);
+  glBindTexture(GL_TEXTURE_2D, waterTex);
 
   for(int i=MAP_SIZE; i<MAP_SIZE+20; i+=2){
 	  for(int j=-MAP_SIZE; j<MAP_SIZE; j+=2){
@@ -1399,22 +1390,21 @@ void gsDisplay(){
 
 void drawTree(double x, double y, double z) {
 
-
-glEnable(GL_LIGHTING);
-
-//glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+glDisable(GL_LIGHTING);
+glEnable(GL_TEXTURE_2D);
+glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 //glBindTexture(GL_TEXTURE_2D, textures[13]);
 
-//glColor3f(1,1,1);
+glColor3f(1,1,1);
 glPushMatrix();
     glTranslatef(x, y, z);
 	//glScalef(.009, .009, .009); rocks
-	glScalef(100, 100, 100);
+	glScalef(.5, .5, .5);
 	//RenderOBJModel (plantemdl);
     //RenderOBJModelt (logmdl, logmtl);
 glPopMatrix();
-
-glDisable(GL_LIGHTING);
+glDisable(GL_TEXTURE_2D);
+glEnable(GL_LIGHTING);
 
 }
 
@@ -1422,10 +1412,6 @@ glDisable(GL_LIGHTING);
 
 
 void display() {
-
-
-	// time here is for calculating framerate...
-	// DO NOT USE this for worldtime / ticks.
   static int frame=0;
   static int lasttime=0;
   
@@ -1438,8 +1424,6 @@ void display() {
     lasttime = time;
     frame = 0;
   }
-	/////////////////////////////////////// fps calc end //
-
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1447,18 +1431,20 @@ void display() {
   glMatrixMode(GL_MODELVIEW);
   
 
-  glPushMatrix();  // ortho     //push1
+  glPushMatrix();  
+  
+  setOrthoProjection();
+  glPushMatrix();
+
 
   //glLoadIdentity(); not needed
 //printOpenGLError();
+  
 
     displayHud();
-
   //glPopMatrix();
-
   //resetPerspectiveProjection();
-    //glPushMatrix(); // ortho + 2  //still at one push
-
+    glPushMatrix();
 
 		//gs->player constraints
 		if (gs->player->_pos.x()>MAP_SIZE) {
@@ -1478,11 +1464,11 @@ void display() {
 
 		gluLookAt(eyex + gs->player->_pos.x(), eyey, eyez - gs->player->_pos.y(), LAx + gs->player->_pos.x(), LAy, LAz - gs->player->_pos.y(), 0, 0, -1);
 	    
-
+		glPushMatrix(); // Tiles
 			drawTiles();
-
+		glPushMatrix(); // End Tiles
 		//printOpenGLError();
-		glPushMatrix(); // Ocean 
+		glPushMatrix(); // Ocean
 			if(shadeOn){
 				glUseProgram(ShadeProg);
 				//printOpenGLError();
@@ -1507,42 +1493,40 @@ void display() {
 			glDisable(GL_LIGHTING);
 		glPopMatrix(); // end Ocean
 
-		glPushMatrix(); // push ai
+		glPushMatrix();
 	  drawAi();
 
-	  glPopMatrix(); // pop ai
+	  glPopMatrix();
 	  materials(ModeMat);
 
 		glPushMatrix(); // GS display (all game objects should be drawn here)
 			gsDisplay();	
 		glPopMatrix();	// end GS
 
-
- // pop ortho + 2
+    glPopMatrix();
 
     //printOpenGLError();
 
 
-      glPushMatrix();//pushtree
+      glPushMatrix();
         glTranslatef(0.0, 0.01, 0.0);
 		    //materials(Sand);
         //drawGrid();
 		    //glTranslatef(-1.0,0,-1.0);
 
 
-        drawTree(0, 0, 0);
+        drawTree(1, 0, -1);
 		    //drawCrates();
 
 //printOpenGLError();
 
 		//glutSolidSphere(1.0,10,10);
 		    if(gs->beatim>-1) gs->besrc->draw();
-      glPopMatrix();//poptree (tree used for testing)
+      glPopMatrix();
 	  if(gs->smit) drawSmite();
 	  drawRapid();
-
-  glPopMatrix(); // pop ortho
-  
+    glPopMatrix();
+  glPopMatrix();
   
   glutSwapBuffers();
     //printOpenGLError();
@@ -1638,6 +1622,10 @@ void processMouseActiveMotion(int x, int y) {
 		theta = atan((float)x/(float)y)+M_PI;
 		
 
+
+
+
+
 	angle=theta*(180.0f / M_PI);
 	//myX += -sin(theta);
 	//myZ += cos(theta);
@@ -1671,19 +1659,22 @@ void keyboard(unsigned char key, int x, int y ){
       exit( EXIT_SUCCESS );
       break;
 	case 'a': case 'A' :
-		gs->prapid();
+		//gs->prapid();
+		gs->_attacks[gs->player->_ability[0]].fire(x,y);
 		break;
 	case 'w': case 'W' :
-		gs->spread(*gs->player);
+		gs->_attacks[gs->player->_ability[3]].fire(x,y);
 		break;
 	case 's': case 'S' :
-		gs->spawnFireball();
+		//gs->spawnFireball();
+		gs->_attacks[gs->player->_ability[1]].fire(x,y);
 		break;
 	case 'f': case 'F' :
 		gs->beatim = 5;
 		break;
 	case 'g': case 'G' :
-		if(!gs->smit) gs->smiteEm(x,y);
+		//if(!gs->smit) gs->smiteEm(x,y);
+		gs->_attacks[gs->player->_ability[4]].fire(x,y);
 		break;
 	case 'c': gs->player->_mp = 200;
 		break;
@@ -1705,27 +1696,7 @@ void keyboard(unsigned char key, int x, int y ){
 		//printf("sizeof exsrc: %d\n", sizeof(*exsrc));
 		break;
 	case 'd': case 'D' :
-
-		//TODO: refactor with new gamestate code
-
-		if (gs->player->_mp>=25) {
-			//goCrate *temp = new goCrate(0, 10, OBJECTSTATE_CRATE, coord2d_t(gs->player->_pos.x() + (-sin(gs->player->_vel.x()) * dist),(gs->player->_pos.y() + (cos(gs->player->_vel.x()) * dist))), textures[OBJECTSTATE_CRATE]);
-			goCrate* crt = new goCrate(textures[OBJECTSTATE_CRATE]);
-			
-			crt->_pos.x() = gs->player->_pos.x() + (-sin(gs->player->_vel.x()) * dist);
-			crt->_pos.y() = gs->player->_pos.y() + (cos(gs->player->_vel.x()) * dist);
-			double px = crt->_pos.x();
-			double pz = -(crt->_pos.y());
-			crt->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
-
-			crt->_id = CRATEID + (cid++);
-			crt->_hp = 10;
-
-			gs->addObject(crt);
-
-			gs->player->_mp -= 25;
-
-		}
+		gs->_attacks[gs->player->_ability[2]].fire(x,y);
 		break;
 
   }
@@ -1734,7 +1705,12 @@ void keyboard(unsigned char key, int x, int y ){
 void tick(int state) {
 	gs->tick(worldtime);
 	int coll = 0;
-
+	//if(gs->SmaPlCollision(gs->player)) vel.y() = 0;
+	//gs->player->change_velocity(vel);
+	//gs->player->_vel = vel;
+	gs->player->tick(worldtime);
+	gs->updatBinLists(gs->player,UPDAT);
+	//tickAi(worldtime);
 	for(unsigned int i=0;i<others.size();i++){
 		if(others[i]->_hp==0){
 			gs->updatBinLists(others[i],REMOV);
@@ -1744,8 +1720,8 @@ void tick(int state) {
 			gs->player->_score++;
 			continue;
 		}
-
-		others[i]->tick(worldtime);
+		//if(!cull(others[i]->_pos)||(worldtime%7))
+			others[i]->tick(worldtime);
 	}
 	if (gs->smit){
 		gs->smsrc->move();
@@ -1784,7 +1760,23 @@ void tick(int state) {
 
 
 		gs->LarPaCollision(gs->besrc,0,100,0,100);
+
 	}
+	/*for(vector<objectstate*>::iterator it = crates.begin();
+		it != crates.end();
+		it = (*it)->_hp == 0 ? crates.erase(it) : it + 1){*/
+	/*
+	for(unsigned int i=0; i<crates.size();){
+
+		if(crates[i]->_hp == 0) {
+			gs->updatBinLists(crates[i],REMOV);
+			delete crates[i];
+			crates.erase(crates.begin()+i);
+		}
+		else i++;
+
+	}
+	*/
 
    Animate(&playerMod->md5anim[0],&idlAnim,WORLD_TIME_RESOLUTION);
    Animate(&playerMod->md5anim[1],&walAnim,WORLD_TIME_RESOLUTION);
@@ -1802,10 +1794,7 @@ void tick(int state) {
 }
 
 void initModel(){
-   unsigned int rupTexture; 
-  rupTexture = BindTextureBMP((char *)"textures/rupee2.bmp", false);
-  textures.push_back(rupTexture);
-   //playerMod = new mdmodel("rupee.md5mesh",NULL,rupTexture);
+   unsigned int rupTexture = BindTextureBMP((char *)"textures/rupee2.bmp", false);
    playerMod = new mdmodel("model/hero.md5mesh","model/hero_idle.md5anim",rupTexture);
    enemyMod = new mdmodel("model/characterModel.md5mesh","model/characterModelIdle.md5anim",rupTexture);
    initAnimInfo(&gs->player->idlAni,0);
@@ -1818,8 +1807,6 @@ void initModel(){
       initAnimInfo(&gs->player->attAni,2);
       gs->player->attAni.max_time = 1.0/playerMod->md5anim[2].frameRate;
    }
-   //enemyMod = new mdmodel("model/rupee.md5mesh",NULL,rupTexture);
-   //initAnimInfo(&eneAnim,0);
    double imt = 1.0/enemyMod->md5anim[0].frameRate;
    double wmt = 0;
    if(enemyMod->loadAnim("model/characterModelRunning2.md5anim")!=-1){
@@ -1844,6 +1831,8 @@ void mana(int pass) {
 	}
 	glutTimerFunc(1000, mana,0);
 }
+
+
 
 
 
@@ -1909,6 +1898,16 @@ int main(int argc, char **argv) {
 	LAz = 0;//shift;
 
 
+	gs->player = new playerstate(worldtime);
+	gs->player->_hp = 100;
+	gs->player->_mp = 200;
+	gs->player->_pos.x() = 0;
+	gs->player->_pos.y() = 35;
+	gs->fbtim = -1;
+	gs->explo = false;
+	gs->smit = false;
+
+	srand(time(NULL));
 
 	//register glut callback functions
 	glutDisplayFunc( display );
@@ -1933,76 +1932,152 @@ int main(int argc, char **argv) {
 #endif 
 
 
+	cerr << "INFO: init lighting.. " << endl;
+
+  init_lighting();
+
+  cerr << "INFO: init ai.. " << endl;
+
+  init_ai();
+
+  cerr << "INFO: init model.. " << endl;
+
+  initModel();
 
 
-
-//cerr << "INFO: init gamestate.. " << endl;
+cerr << "INFO: init gamestate.. " << endl;
 
   
 
 
-  
+  gs->start(0);
   
 
   //glEnable(GL_LIGHTING);
 
 	// loading textures
-	// clearing the vector
-	// Prentice says a vector is overkill for holding textures, but I'll do it for now
-	textures.clear();
-	unsigned int crateTexture;
 
-	//crateTexture = BindTextureBMP((char *)"crate.bmp"); //same file, different location -Seth
-	crateTexture = BindTextureBMP((char *)"textures/crate.bmp", false); //0
-	textures.push_back(crateTexture);
-	unsigned int partTexture = init_particletex(); //1
-	textures.push_back(partTexture);
+	crateTex = BindTextureBMP((char *)"textures/crate.bmp", false); //0
+	partTex = init_particletex(); //1
 
-  unsigned int tileTexture; 
-  tileTexture = BindTextureBMP((char *)"textures/images.bmp", true); //2
-  textures.push_back(tileTexture);
+  tileTex = BindTextureBMP((char *)"textures/images.bmp", true); //2
 
-  unsigned int waterTexture;
-  waterTexture = BindTextureBMP((char *)"textures/water.bmp", true); //3
-  textures.push_back(waterTexture);
+  waterTex = BindTextureBMP((char *)"textures/water.bmp", true); //3
 
-  unsigned int fireTexture;
-  fireTexture = BindTextureBMP((char *)"textures/fireball.bmp", true); //4
-  textures.push_back(fireTexture);
+  woodTex = BindTextureBMP((char *)"textures/wood3.bmp", true); //4
 
-  unsigned int rapidTexture;
-  rapidTexture = BindTextureBMP((char *)"textures/rapid1.bmp", true); //5
-  textures.push_back(rapidTexture);
+  palmTex = BindTextureBMP((char *)"textures/palm.bmp", true); //5
 
-  unsigned int crate1Texture;
-  crate1Texture = BindTextureBMP((char *)"textures/crate1.bmp", true); //6
-  textures.push_back(crate1Texture);
+  hutTex = BindTextureBMP((char *)"textures/hut.bmp", true); //6
 
-  unsigned int fistTexture;
-  fistTexture = BindTextureBMP((char *)"textures/fist.bmp", true); //7
-  textures.push_back(fistTexture);
+  rockTex = BindTextureBMP((char *)"textures/rock.bmp", true); //7
 
-  unsigned int noxTexture;
-  noxTexture = BindTextureBMP((char *)"textures/wood3.bmp", true); //8
-  textures.push_back(noxTexture);
+  rock2Tex = BindTextureBMP((char *)"textures/rock2.bmp", true); //8
 
-  unsigned int patternTexture;
-  patternTexture = BindTextureBMP((char *)"textures/palm.bmp", true); //9
-  textures.push_back(patternTexture);
+  initAttacks(void);
 
-  unsigned int blastTexture;
-  blastTexture = BindTextureBMP((char *)"textures/smite.bmp", true); //10
-  textures.push_back(blastTexture);
- 
-  hutTex = BindTextureBMP((char *)"textures/hut.bmp", true); //11
-  textures.push_back(hutTex);
+  /*unsigned int bgaTexture;
+  bgaTexture = BindTextureBMP((char *)"textures/bg_attack.bmp", false); //10
+  textures.push_back(bgaTexture);*/
 
 
-  rockTex = BindTextureBMP((char *)"textures/rock.bmp", true); //12
-  textures.push_back(rockTex);
+  /*unsigned int shellTexture;
+  shellTexture = BindTextureBMP((char *)"textures/shell.bmp", true); //13
+  textures.push_back(shellTexture);*/
 
-  rock2Tex = BindTextureBMP((char *)"textures/rock2.bmp", true); //13
-  textures.push_back(rock2Tex);
+  /*unsigned int shellTexture2;
+  shellTexture2 = BindTextureBMP((char *)"textures/shell2.bmp", true); //14
+  textures.push_back(shellTexture2);*/
+
+
+  for(int i = 0; i < 20; i++){  
+
+	  /* uses gamestate object crate:
+	  goCrate *temp = new goCrate(crateTex);
+	  temp->_hp = 10;
+	  temp->_pos = coord2d_t(rand()%20-10,rand()%20-10);
+      gs->_objects.push_back(temp);
+	  */
+	  //goCrate *temp = new goCrate(CRATEID+i, 10, OBJECTSTATE_CRATE, coord2d_t(rand()%20-10,rand()%20-10), crateTex);
+
+	    if (i > 10) {
+		goCrate *crt = new goCrate(crateTex);
+		crt->_pos.x() = rand()%30-15;
+		crt->_pos.y() = 35 + rand()%30-15;
+		crt->body = bbody(crt->_pos.x()-.5,-crt->_pos.y()-.5,crt->_pos.x()+.5,-crt->_pos.y()+.5,BB_AABB);
+		crt->_hp = 10;
+		crt->_id = CRATEID + (cid++);
+		gs->addObject(crt);
+	    }
+
+		if (i > 10) {
+		Hut *hut = new Hut(hutTex, hutmdl);
+		hut->_pos.x() = rand()%30-15;
+		hut->_pos.y() = 35 +rand()%30-15;
+		hut->body = bbody(hut->_pos.x()-1,-hut->_pos.y()-1,hut->_pos.x()+1,-hut->_pos.y()+1,BB_AABB);
+		hut->_hp = 100;
+		hut->_id = HUTID + (hid++);
+		gs->addObject(hut);
+		}
+
+
+		palmTree *tree = new palmTree(0, treemdl);
+		tree->_pos.x() = rand()%30-15;
+		tree->_pos.y() = 35 +rand()%30-15;
+		tree->body = bbody(tree->_pos.x()-.2,-tree->_pos.y()-.2,tree->_pos.x()+.2,-tree->_pos.y()+.2,BB_AABB);
+		tree->_hp = 10;
+		tree->_id = TREEID + (tid++);
+		gs->addObject(tree);
+
+		if (i > 10) {
+		rock *rck = new rock(rockTex, rand()%90, rockmdl);
+		rck->_pos.x() = rand()%30-15;
+		rck->_pos.y() = 35 +rand()%30-15;
+		rck->body = bbody(rck->_pos.x()-.2,-rck->_pos.y()-.2,rck->_pos.x()+.2,-rck->_pos.y()+.2,BB_AABB);
+		rck->_hp = 10;
+		rck->_id = ROCKID + (rid++);
+		gs->addObject(rck);
+		}
+
+		if (i > 10) {
+		rock2 *rck2 = new rock2(rock2Tex, rand()%90, rock2mdl);
+		rck2->_pos.x() = rand()%30-15;
+		rck2->_pos.y() = 35 +rand()%30-15;
+		rck2->body = bbody(rck2->_pos.x()-.2,-rck2->_pos.y()-.2,rck2->_pos.x()+.2,-rck2->_pos.y()+.2,BB_AABB);
+		rck2->_hp = 10;
+		rck2->_id = ROCKID + (rid2++);
+		gs->addObject(rck2);
+		}
+
+
+
+		
+		
+		
+		
+
+
+  }
+  //for(int i=0;i<10;i++) {
+
+	 // /* uses gamestate object crate:
+	 // // TODO: This code does NOT belong here.
+	 // double px = gs->_objects[i]->_pos.x();
+	 // double pz = -(gs->_objects[i]->_pos.y());
+
+	 // //gs->_objects[i]->_id = CRATEID + (cid++);
+	 // gs->_objects[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+	 // */
+
+
+	 // double px = crates[i]->_pos.x();
+	 // double pz = -(crates[i]->_pos.y());
+
+
+	 // crates[i]->_id = CRATEID + (cid++);
+
+	 // crates[i]->body = bbody(px-.5,pz-.5,px+.5,pz+.5,BB_AABB);
+  //}
 
 
   init("model/palmTree.obj", treemdl);
@@ -2010,16 +2085,9 @@ int main(int argc, char **argv) {
   init("model/rock_a.obj", rockmdl);
   init("model/planeMesh.obj", &oceanmdl);
   init("model/rock_b.obj", rock2mdl);
-  init("model/veg.obj", vegmdl);
-  //init("model/log.obj", logmdl);
-  mtlLoad("model/palm-arecaceae.mtl", treemtl, 4);
-  mtlLoad("model/veg.mtl", vegmtl, 4);
-  //mtlLoad("model/log.mtl", logmtl, 3);
-
-
-	EnterGameMode();
 
   init_dispList();
+
 
   //init("model/conch.obj", plantemdl);
   //init("model/hut.obj", mdl);
