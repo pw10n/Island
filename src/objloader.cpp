@@ -607,6 +607,7 @@ RenderOBJModel (struct obj_model_t *mdl)
   /*if (hasname) {
 	  glEnable(GL_LIGHTING);
   }*/
+
   //printf("%d\n", mdl->num_faces);
   for (i = 0; i < mdl->num_faces; ++i)
   {
@@ -726,7 +727,7 @@ RenderOBJModelt (struct obj_model_t *mdl, struct mtl_file *mtlfile)
 	}
 	glEnd();
     }
-	glDisable(GL_COLOR_MATERIAL);
+	//glDisable(GL_COLOR_MATERIAL);
 
 	//if (hasname) {
 	  glDisable(GL_LIGHTING);
