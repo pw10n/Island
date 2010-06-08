@@ -5,8 +5,9 @@
 #include "gameobjects.h"
 #include "collision.h"
 #include "texture.h"
-#include <SDL_mixer.h>
-#include <SDL.h>
+#include <SDL/SDL_mixer.h>
+#include <SDL/SDL.h>
+
 
 using namespace std;
 
@@ -86,7 +87,7 @@ bool spread(int x, int y){ //dummy x,y
 	if(gs->rfpar.size()<100){
 		coord2d_t dummy;
 		dummy = PLA->calcHotSpot(dummy,.6);
-		for(double d=-.3;d<.3;d+=.1){
+		for(double d=-.3;d<.4;d+=.1){
 			double vx = -sin(PLA->vel().x()+d)*.6;
 			double vz = -cos(PLA->vel().x()+d)*.6;
 			gs->rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,0));
@@ -143,6 +144,10 @@ void initAttacks(void){
 	icon = BindTextureBMP((char *)"textures/smite.bmp", true); //8
 	gs->_attacks.push_back(attack(icon,50,25));
 	gs->_attacks[4].func = smiteEm;
+
+	icon = BindTextureBMP((char *)"textures/spread.bmp", true); //5
+	gs->_attacks.push_back(attack(icon,21,5));
+	gs->_attacks[5].func = spread;
 
 	//Also inits sound effects
 	smite = Mix_LoadWAV("music/smite.wav");
