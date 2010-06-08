@@ -136,6 +136,16 @@ void gamestate::start(int time){
 	_tick = time;
 }
 
+void gamestate::draw_objects(){
+	for(vector<objectstate*>::iterator it = _objects.begin();
+		it != _objects.end(); it++){
+			//cerr << "DEBUG: calling object draw method" << endl;
+			if(!cull2((*it)->_pos))
+				(*it)->draw();
+				
+	}
+}
+
 void gamestate::draw(){
 	//cerr << "DEBUG: gs draw method" << endl;
 	if(GSSTATE_ACTIVE != _state)
@@ -149,13 +159,7 @@ void gamestate::draw(){
 	if(!(player->_hp == 0)) player->draw();
 
 	//cerr << "DEBUG: I am here. " << endl;
-	for(vector<objectstate*>::iterator it = _objects.begin();
-		it != _objects.end(); it++){
-			//cerr << "DEBUG: calling object draw method" << endl;
-			if(!cull2((*it)->_pos))
-				(*it)->draw();
-				
-	}
+	draw_objects();
 	for(vector<fireball_s *>::iterator it = fbsrc.begin();
 		it != fbsrc.end(); it++){
 			//cerr << "DEBUG: calling particle draw method" << endl;

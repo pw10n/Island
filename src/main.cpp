@@ -149,6 +149,7 @@ materialStruct Sand = {
 	{0.0}
 };
 
+
 void init_ai();
 void init_lighting();
 void initModel();
@@ -173,7 +174,7 @@ struct mtl_file *treemtl = (struct mtl_file*) malloc(sizeof(mtl_file));
 struct mtl_file *vegmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
 struct mtl_file *logmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
 
-
+float *depth_up = 0, *depth_down = 0, *depth_left = 0, *depth_right = 0;
 
 gamestate* gs;
 
@@ -214,9 +215,6 @@ float fps;
 
 unsigned int partTex, crateTex, tileTex, waterTex, woodTex, palmTex, hutTex, rockTex, rock2Tex;
 
-vector<objectstate*> crates;
-
-
 
 mdmodel* playerMod;
 mdmodel* enemyMod;
@@ -234,6 +232,14 @@ PFNGLFOGCOORDFEXTPROC glFogCoordfEXT = NULL;					// Our glFogCoordfEXT Function
 GLfloat	fogColor[4] = {0.6f, 0.3f, 0.0f, 1.0f};					// Fog Colour 
 
 #endif
+
+void get_gl_size(int &width, int &height){
+	int iv[4];
+	glGetIntegerv(GL_VIEWPORT, iv);
+	width = iv[2];
+	height = iv[3];
+}
+
 
 float p2w_x(int x) {
   float x1;
@@ -265,9 +271,6 @@ bool cull(coord2d_t pos){
 
 void drawCharacter();
 
-
-
-
 void init_ai(){
 	for(int i=0; i<50; ++i){
 		playerstate* temp;
@@ -277,8 +280,6 @@ void init_ai(){
 		else temp = new rangedAI();
 		spwanEnemyHelperRandPos(temp,10,200,worldtime);
 		others.push_back(temp);
-
-
 	}
 }
 
@@ -415,10 +416,6 @@ void init_dispList(){
 	glEnable(GL_LIGHTING);
 	glEndList();
 
-
-
-
-
 	glNewList(ROCK2LIST,GL_COMPILE);
 	glDisable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
@@ -445,6 +442,28 @@ void init_dispList(){
 
 
 }
+///////////////// DEPTH BUFFER ////////////////////////////
+
+
+
+
+void save_depth_buffer(float *data){
+	int width, height;
+	get_gl_size(width, height);
+	glReadPixels(0, 0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT, data);
+}
+
+void visualize_saved_depth_buffer(float *data){
+	if (data!=0){
+		int width, height;
+		get_gl_size(width, height);
+		glDrawPixels(width, height, GL_LUMINANCE, GL_FLOAT, data);
+	}
+}
+
+//////////////////////////////////////////////////////////
+
+
 
 //initialization calls for opengl for static light
 //note that we still need to enable lighting in order for it to work
@@ -466,10 +485,28 @@ void pos_light() {
   glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 }
 
-void reshape(int w, int h) {
-  gs->GW = w;
-  gs->GH = h;
+void reshape_depthbuf(){
+	int width, height;
+	get_gl_size(width, height);
+	if (depth_up!=0)
+		delete[] depth_up;
+	depth_up = new float[width*height];
+	if (depth_down!=0)
+		delete[] depth_down;
+	depth_down = new float[width*height];
+	if (depth_left!=0)
+		delete[] depth_left;
+	depth_left = new float[width*height];
+	if (depth_right!=0)
+		delete[] depth_right;
+	depth_right = new float[width*height];
+}
 
+void reshape(int w, int h) {
+	gs->GW = w;
+	gs->GH = h;
+
+reshape_depthbuf();
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -1353,12 +1390,92 @@ void display() {
   }
 	/////////////////////////////////////// fps calc end //
 
+  if(gs && gs->_state == GSSTATE_ACTIVE){
+	  	
+
+		glPushMatrix();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	/*
+	gluLookAt(-gs->player->_pos.x(), 0, -gs->player->_pos.y(),
+		-(gs->player->_pos.x() - sin(gs->player->_vel.x())), 0,
+		-(gs->player->_pos.y() + cos(gs->player->_vel.x())),
+		0, 1, 0);
+	*/
+	//cout << gs->player->_pos.x() << " "<< gs->player->_pos.y() << endl
+	//	<< gs->player->_vel.x() << " " << gs->player->_vel.y() << endl;
+
+	
+	//glEnable(GL_DEPTH_TEST);
+	float theta;
+	theta =0; // UP
+	gluLookAt(gs->player->_pos.x(), 0, -gs->player->_pos.y(),
+		gs->player->_pos.x() - sin(theta), 0,
+		-(gs->player->_pos.y() + cos(theta)),
+		0, 1, 0);
+	gs->draw_objects();
+	save_depth_buffer(depth_up);
+
+	glPopMatrix();
+	  	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glPushMatrix();
+glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	theta = -M_PI/2; // RIGHT
+	gluLookAt(gs->player->_pos.x(), 0, -gs->player->_pos.y(),
+		gs->player->_pos.x() - sin(theta), 0,
+		-(gs->player->_pos.y() + cos(theta)),
+		0, 1, 0);
+	gs->draw_objects();
+	save_depth_buffer(depth_right);
+ glPopMatrix();
+	  	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+ 		glPushMatrix();
+glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	theta = M_PI/2; // LEFT
+	gluLookAt(gs->player->_pos.x(), 0, -gs->player->_pos.y(),
+		gs->player->_pos.x() - sin(theta), 0,
+		-(gs->player->_pos.y() + cos(theta)),
+		0, 1, 0);
+	gs->draw_objects();
+	save_depth_buffer(depth_left);
+ glPopMatrix();
+	  	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+ 		glPushMatrix();
+glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	theta = M_PI; // DOWN
+	gluLookAt(gs->player->_pos.x(), 0, -gs->player->_pos.y(),
+		gs->player->_pos.x() - sin(theta), 0,
+		-(gs->player->_pos.y() + cos(theta)),
+		0, 1, 0);
+	gs->draw_objects();
+	save_depth_buffer(depth_down);
+ glPopMatrix();
+	  	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+ 
+		
+#if 0
+		
+		visualize_saved_depth_buffer(depth_up);
+
+ 
+  glutSwapBuffers();
+
+	glutPostRedisplay();
+
+return;
+#endif
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
   glMatrixMode(GL_MODELVIEW);
-  if(gs && gs->_state == GSSTATE_ACTIVE){
 
   glPushMatrix();  // ortho     //push1
 
@@ -1455,12 +1572,48 @@ void display() {
 	  drawRapid();
 
   glPopMatrix(); // pop ortho
-  
+  glLoadIdentity();
+  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+#define SCRW 1.6
+#define SCRH 1.6
+  glPushMatrix();
+		int height, width;
+		get_gl_size(width, height);
+		glPushMatrix();
+		glTranslatef(-SCRW,SCRH,-2.0);
+		glutSolidCube(0.05);
+		glTranslatef(2*SCRW,0.0,0.0);
+		glutSolidCube(0.05);
+		glPopMatrix();
+		glDisable(GL_LIGHTING);
+		//glTranslatef(-1.2,0.0,-2.0);
+		for(int i=0; i<width; ++i){
+			//cout << depth_up[((height+5)/3*2)*width+i] << " ";
+			if(depth_up[((height+5)/3*2)*width+i] < 0.98){
+				glPushMatrix();
+				glTranslatef(-SCRW+2*SCRW/width*i, depth_up[((height+5)/3*2)*width+i]* SCRH, -2.0);
+				glColor3f(1.0,0.0,0.0);
+				glutSolidCube(0.01);
+				glPopMatrix();
+			}
+			
+		}
+		//cout << endl << endl << endl;
+
+  glPopMatrix();
+
+
+  //visualize_saved_depth_buffer();
   
   glutSwapBuffers();
     //printOpenGLError();
 }
 else{
+	  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+  glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -1892,7 +2045,7 @@ int main( int argc, char** argv ) {
 
 	gs = new gamestate();
 	// use this for debugging unexpected exits: 
-	//atexit (fnExit1);
+	atexit (fnExit1);
 
 
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
