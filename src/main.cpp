@@ -437,6 +437,7 @@ void init_dispList(){
 	glNewList(VEGLIST,GL_COMPILE);
 	//glDisable(GL_LIGHTING);
 	glPushMatrix();
+		glTranslatef(0,-.07,0);
 		glScalef(.5, .5, .5);
 		RenderOBJModelt (vegmdl, vegmtl);
 	glPopMatrix();

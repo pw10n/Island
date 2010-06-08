@@ -82,10 +82,10 @@ void playerstate::draw(){
 	else
 		playerMod->draw((_vel.y()>0)?walAni:idlAni);
 	glPopMatrix();
-	glPushMatrix();
+	/*glPushMatrix();
 	glTranslatef(front.vala,0,front.valb);
 	glutWireSphere(front.valc,10,10);
-	glPopMatrix();
+	glPopMatrix();*/
 	glDisable(GL_LIGHTING);
 }	
 
