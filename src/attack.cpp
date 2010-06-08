@@ -169,10 +169,10 @@ void initAttacks(void){
 }
 
 	//just here until we setup attack selection
-void loadAttacks(void){
+/*void loadAttacks(void){
 	for(int i=0;i<5;i++)
 		PLA->_ability[i] = i;
-}
+}*/
 
 bool heal(int x, int y){ //dummy x,y
 	if(PLA->_hp<100&&PLA->_hp>0){
