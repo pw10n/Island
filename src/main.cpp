@@ -225,7 +225,7 @@ float fps;
 
 
 
-unsigned int partTex, crateTex, tileTex, waterTex, woodTex, palmTex, hutTex, rockTex, rock2Tex;
+unsigned int partTex, crateTex, tileTex, waterTex, woodTex, palmTex, hutTex, rockTex, rock2Tex, woodTex2, gameover;
 
 
 mdmodel* playerMod;
@@ -934,6 +934,7 @@ void displayHud(){
 	if(gs->player->_hp == 0) {
 		sprintf(buff, "YOU DIED");
 		renderBitmapString((gs->GW/2.0)-15, gs->GH/2.0,GLUT_BITMAP_TIMES_ROMAN_24,buff);
+		Mix_HaltMusic(); 
 	}
 
 	//materials(Black);
@@ -1373,17 +1374,17 @@ void displayicon(double x, double y, double z, int texture, double size) {
 		glEnable(GL_TEXTURE_2D);
 		glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		glTranslatef(x, y, z);
+		glTranslatef(x, -1, z);
 		glRotatef(-90, 0, 0, 1);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0, 1.0);
-		glVertex3f(-.25*size,.25,-3.1);
+		glVertex3f(-.25*size,.25*size,-3.1);
 		glTexCoord2f(0.0, 0.0);
-		glVertex3f(-.25*size,-.25,-3.1);
+		glVertex3f(-.25*size,-.25*size,-3.1);
 		glTexCoord2f(1.0, 0.0);
-		glVertex3f(.25*size,-.25,-3.1);
+		glVertex3f(.25*size,-.25*size,-3.1);
 		glTexCoord2f(1.0, 1.0);
-		glVertex3f(.25*size,.25,-3.1);
+		glVertex3f(.25*size,.25*size,-3.1);
 		glEnd();
 	glPopMatrix();
 }
@@ -1654,11 +1655,11 @@ else if(mainmenu==0){
 
 	glutPostRedisplay();
 }
-else {
+else if (mainmenu==1) {
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, menuchoice?waterTex:woodTex);
+	glBindTexture(GL_TEXTURE_2D, woodTex2);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 1.0);
 	glVertex3f(-2.0,1.5,-3.0);
@@ -1671,7 +1672,7 @@ else {
 	glEnd();
 
 	glPopMatrix();
-	displayicon(position[indexp], 0, 0, 0, 4);
+	displayicon(position[indexp], 0, 0, 0, 1.2);
 	if (indexp < 1){
 		displayicon(-1.4, 0, 0, gs->_attacks[indexa]._iconNum, 1);
 	}
@@ -2331,6 +2332,8 @@ int main( int argc, char** argv ) {
 
   menutex0 = BindTextureBMP((char *)"textures/menu_new.bmp", false);
   menutex1 = BindTextureBMP((char *)"textures/menu_quit.bmp", false);
+  woodTex2 = BindTextureBMP((char *)"textures/wood34.bmp", true); //4
+  //gameover = BindTextureBMP((char *)"textures/gameover.bmp", true); //4
 
 
   

@@ -46,7 +46,7 @@ bool spawnFireball(int x, int y){ //dummy x,y
 	double fbz = -cos(PLA->vel().x());
 	coord2d_t dummy;
 	dummy = PLA->calcHotSpot(dummy,.6);
-	gs->fbsrc.push_back(new fireball_s(dummy.x(),dummy.y(),fbx/5.0,fbz/5.0,PLA->_id));
+	gs->fbsrc.push_back(new fireball_s(dummy.x(),dummy.y(),fbx*1.5/5.0,fbz*1.5/5.0,PLA->_id));
 	return true;
 }
 bool smiteEm(int x, int y){
