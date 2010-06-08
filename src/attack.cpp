@@ -5,6 +5,8 @@
 #include "gameobjects.h"
 #include "collision.h"
 #include "texture.h"
+#include <SDL_mixer.h>
+#include <SDL.h>
 
 using namespace std;
 
@@ -13,6 +15,13 @@ extern int cid;
 extern unsigned int crateTex;
 #define PLA gs->player
 #define CRATEID 200
+
+// Sounds
+Mix_Chunk * smite;
+Mix_Chunk * fireball;
+Mix_Chunk * rapidf;
+Mix_Chunk * crate;
+
 
 attack::attack(void)
 {
@@ -30,6 +39,8 @@ void attack::fire(int x, int y){
 }
 
 bool spawnFireball(int x, int y){ //dummy x,y
+	Mix_PlayChannel(-1, fireball, 0);
+
 	double fbx = -sin(PLA->vel().x());
 	double fbz = -cos(PLA->vel().x());
 	coord2d_t dummy;
@@ -39,6 +50,8 @@ bool spawnFireball(int x, int y){ //dummy x,y
 }
 bool smiteEm(int x, int y){
 	//first calc target position
+
+	Mix_PlayChannel(-1, smite, 0);
 	double dx = ((double)x-gs->GW/2.0)/1.7;
 	double dy = (double)y-gs->GH/2.0 + .5;
 	double dz = log((double)y*2.0/gs->GH)/-.159;
@@ -55,6 +68,9 @@ bool smiteEm(int x, int y){
 }
 
 bool rapid(int x, int y){ //dummy x,y
+
+	Mix_PlayChannel(-1, rapidf, 0);
+
 	if(gs->rfpar.size()<100){
 		coord2d_t dummy;
 		dummy = PLA->calcHotSpot(dummy,.6);
@@ -81,6 +97,8 @@ bool spread(int x, int y){ //dummy x,y
 }
 
 bool genCrate(int x, int y){
+
+	Mix_PlayChannel(-1, crate, 0);
 	double dx = ((double)x-gs->GW/2.0)/1.7;
 	double dy = (double)y-gs->GH/2.0 + .5;
 	double dz = log((double)y*2.0/gs->GH)/-.159;
@@ -125,6 +143,29 @@ void initAttacks(void){
 	icon = BindTextureBMP((char *)"textures/smite.bmp", true); //8
 	gs->_attacks.push_back(attack(icon,50,25));
 	gs->_attacks[4].func = smiteEm;
+
+	//Also inits sound effects
+	smite = Mix_LoadWAV("music/smite.wav");
+	if(!smite){
+	printf("Mix_LoadMUS(\"smite.wav\"): %s\n", Mix_GetError());
+	}
+
+	rapidf = Mix_LoadWAV("music/rapid.wav");
+	if(!rapidf){
+	printf("Mix_LoadMUS(\"rapid.wav\"): %s\n", Mix_GetError());
+	}
+
+	crate = Mix_LoadWAV("music/crate.wav");
+	if(!crate){
+	printf("Mix_LoadMUS(\"crate.wav\"): %s\n", Mix_GetError());
+	}
+
+	fireball = Mix_LoadWAV("music/fireball.wav");
+	if(!fireball){
+	printf("Mix_LoadMUS(\"fireball.wav\"): %s\n", Mix_GetError());
+	}
+
+
 }
 
 	//just here until we setup attack selection

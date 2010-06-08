@@ -1,5 +1,7 @@
 
 #include "gamestate.h"
+#include <SDL_mixer.h>
+#include <SDL.h>
 #define MIN(x,y) ((x>y)?y:x)
 #define MAX(x,y) ((x>y)?x:y)
 
@@ -227,10 +229,22 @@ void gamestate::tick(uint32_t time){
 		(*it)->move();
 		if(!(*it)->active){
 			detonate((*it),false);
+			Mix_Chunk * explosion = Mix_LoadWAV("music/explosion.wav");
+			if(!explosion){
+			printf("Mix_LoadMUS(\"explosion.wav\"): %s\n", Mix_GetError());
+			}
+			Mix_PlayChannel(-1, explosion, 0);
+
 			delete (*it);
 			it=fbsrc.erase(it);
 		}
 		else if(coll = SmaPaCollision((*it))){
+			Mix_Chunk * explosion = Mix_LoadWAV("music/explosion.wav");
+			if(!explosion){
+			printf("Mix_LoadMUS(\"explosion.wav\"): %s\n", Mix_GetError());
+			}
+			Mix_PlayChannel(-1, explosion, 0);
+
 			detonate((*it),(coll==HIT_CRATE)); //if gs->fbtim less than 50, fb must have collided with something
 			delete (*it);
 			it=fbsrc.erase(it);

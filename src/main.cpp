@@ -162,21 +162,23 @@ void initModel();
 //playerstate* gs->player;
 vector<playerstate*> others;
 
+//Models
 struct obj_model_t *hutmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *rockmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-
 struct obj_model_t oceanmdl;
 struct obj_model_t *shellmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-
 struct obj_model_t *rock2mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-
 struct obj_model_t *treemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *vegmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-struct obj_model_t *logmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 
+//Materials
 struct mtl_file *treemtl = (struct mtl_file*) malloc(sizeof(mtl_file));
 struct mtl_file *vegmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
-struct mtl_file *logmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
+
+
+
+
+
 
 
 
@@ -1782,12 +1784,7 @@ void menuKbd(unsigned char k, int x, int y){
 	}
 }
 
-
-// leave menu
-void EnterGameMode(){
-
-	 gs->start(0);
-
+void initMusic() {
   if(SDL_InitSubSystem(SDL_INIT_AUDIO) == -1){
     // SDL Audio subsystem could not be started
 	  exit(7);
@@ -1798,6 +1795,17 @@ void EnterGameMode(){
 	  exit(8);
   }
   Mix_AllocateChannels(32);
+
+
+
+	
+}
+
+// leave menu
+void EnterGameMode(){
+
+	 gs->start(0);
+
 
   Mix_Music * music = Mix_LoadMUS("music/beach.mp3");
   if(!music){
@@ -1921,7 +1929,7 @@ int main( int argc, char** argv ) {
 	// use this for debugging unexpected exits: 
 	//atexit (fnExit1);
 
-
+	initMusic();
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
 
