@@ -22,6 +22,11 @@
 #include "GLSL_helper.h"
 #include "enemy.h"
 #include "attack.h"
+#include <SDL_mixer.h>
+#include <SDL.h>
+
+
+
 
 
 //#include "md5mesh.cpp"
@@ -437,7 +442,6 @@ void init_dispList(){
 	glNewList(VEGLIST,GL_COMPILE);
 	//glDisable(GL_LIGHTING);
 	glPushMatrix();
-		glTranslatef(0,-.07,0);
 		glScalef(.5, .5, .5);
 		RenderOBJModelt (vegmdl, vegmtl);
 	glPopMatrix();
@@ -1618,7 +1622,7 @@ void keyboard(unsigned char key, int x, int y ){
 		gs->_attacks[gs->player->_ability[1]].fire(x,y);
 		break;
 	case 'f': case 'F' :
-		gs->_attacks[gs->player->_ability[3]].fire(x,y);
+		gs->beatim = 5;
 		break;
 	case 'g': case 'G' :
 		//if(!gs->smit) gs->smiteEm(x,y);
@@ -1642,7 +1646,6 @@ void keyboard(unsigned char key, int x, int y ){
 	case 'm':
 		//printf("sizeof fbsrc: %d\n", sizeof(*fbsrc));
 		//printf("sizeof exsrc: %d\n", sizeof(*exsrc));
-		gs->_pars.push_back(new regen(gs->player));
 		break;
 	case 'd': case 'D' :
 		gs->_attacks[gs->player->_ability[2]].fire(x,y);
@@ -1782,7 +1785,27 @@ void menuKbd(unsigned char k, int x, int y){
 
 // leave menu
 void EnterGameMode(){
+
 	 gs->start(0);
+
+  if(SDL_InitSubSystem(SDL_INIT_AUDIO) == -1){
+    // SDL Audio subsystem could not be started
+	  exit(7);
+  }
+
+  if(Mix_OpenAudio(44100, AUDIO_S16, 1, 1024) == -1){
+    // SDL_Mixer could not be started
+	  exit(8);
+  }
+  Mix_AllocateChannels(32);
+
+  Mix_Music * music = Mix_LoadMUS("music/beach.mp3");
+  if(!music){
+	printf("Mix_LoadMUS(\"beach.mp3\"): %s\n", Mix_GetError());
+
+	exit(9);
+  }
+  Mix_PlayMusic(music, -1);
 
 	gs->player = new playerstate(worldtime);
 	gs->player->_hp = 100;
@@ -1949,6 +1972,7 @@ int main( int argc, char** argv ) {
 
 
 
+
 	//register glut callback functions
 	glutDisplayFunc( display );
 	glutReshapeFunc( reshape );
@@ -1972,9 +1996,8 @@ int main( int argc, char** argv ) {
 
 //cerr << "INFO: init gamestate.. " << endl;
 
+
   
-
-
   
   
 
