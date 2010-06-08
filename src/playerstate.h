@@ -41,6 +41,7 @@ class playerstate: public colliobj{
 public:
 	playerstate(int time);
 	playerstate(const playerstate& other);
+	playerstate(int time, int ability[5]);
 
 	uint32_t _tick; //4
 	//uint16_t _id; //2
@@ -62,6 +63,7 @@ public:
 	// Change Position (and Velocity)
 	void cPos(coord2d_t pos); 
 	void cPos(coord2d_t pos, coord2d_t vel);
+	//void ability(int ability, int index);
 
 	coord2d_t vel(){ return _vel; };
 

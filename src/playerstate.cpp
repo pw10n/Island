@@ -28,6 +28,18 @@ _state(PSSTATE_INIT), _score(0){
 	front = bbody(this->calcHotSpot(dummy,.6),.1,BB_CIRC);
 }
 
+playerstate::playerstate(int time, int ability[5]):
+_tick(time), _mp(0),_weapon(0),
+_state(PSSTATE_INIT), _score(0){
+	for (int i=0; i<PLAYERSTATE_MAXABILITY; ++i){
+		_ability[i]=ability[i];
+		printf("ability %d: %d\n", i, ability[i]);
+	}
+	body = bbody(_pos.x(),-_pos.y(),1,0,BB_CIRC);
+	coord2d_t dummy;
+	front = bbody(this->calcHotSpot(dummy,.6),.1,BB_CIRC);
+}
+
 playerstate::playerstate(const playerstate &player){
 	_tick = player._tick;
 	_id = player._id;
@@ -64,6 +76,7 @@ void playerstate::tick(uint32_t time){
 	}
 	cBBody();
 }
+
 
 coord2d_t playerstate::calcHotSpot(coord2d_t hs, double dist){
 	hs.x() = _pos.x()-(sin(_vel.x())*dist);
@@ -103,6 +116,11 @@ void playerstate::cPos(coord2d_t pos){
 	_pos = pos;
 	//cBBody();
 }
+
+/*void playerstate::ability(int ability, int index){
+	_ability[index]=ability;
+}*/
+
 
 void playerstate::cPos(coord2d_t pos, coord2d_t vel){
 	_vel = vel;

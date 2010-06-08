@@ -61,6 +61,11 @@ using namespace std;
 
 unsigned int menutex0, menutex1;
 int menuchoice=0;
+int mainmenu=0;
+double position[5] = {-1.4, -.7, 0, .7, 1.4};
+int indexp=0;
+int indexa=0;
+int attack[5];
 
 #define WORLD_TIME_RESOLUTION 30
 #define HIT_CRATE 1
@@ -240,29 +245,13 @@ GLfloat	fogColor[4] = {0.6f, 0.3f, 0.0f, 1.0f};					// Fog Colour
 
 #endif
 
+
 void get_gl_size(int &width, int &height){
 	int iv[4];
 	glGetIntegerv(GL_VIEWPORT, iv);
 	width = iv[2];
 	height = iv[3];
-}
 
-
-float p2w_x(int x) {
-  float x1;
-  x1  = (x*(2/(float)gs->GW)) + (((1/(float)gs->GW) - 1));
-  x1 = x1 * ((float)gs->GW/(float)gs->GH);
-
-return x1;
-
-}
-
-float p2w_y(int y) {
-  
-  float y1;
-  y1  = (y*(2/(float)gs->GH)) + (((1/(float)gs->GH) - 1));
-
-return y1;
 }
 
 void damage(uint8_t *target, int dam){
@@ -1042,6 +1031,8 @@ void displayHud(){
 	glTranslatef(25, gs->GH-240, 0);
 	drawBox(gs->_attacks[gs->player->_ability[0]]._iconNum);
 	glPopMatrix();
+	//printf("ability %d\n", gs->player->_ability[0]);
+
 
     glPushMatrix();  //fireball (s)
 	glTranslatef(25, gs->GH-300, 0);
@@ -1377,7 +1368,25 @@ glDisable(GL_LIGHTING);
 }
 
 
-
+void displayicon(double x, double y, double z, int texture, double size) {
+	glPushMatrix();
+		glEnable(GL_TEXTURE_2D);
+		glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTranslatef(x, y, z);
+		glRotatef(-90, 0, 0, 1);
+		glBegin(GL_QUADS);
+		glTexCoord2f(0.0, 1.0);
+		glVertex3f(-.25*size,.25,-3.1);
+		glTexCoord2f(0.0, 0.0);
+		glVertex3f(-.25*size,-.25,-3.1);
+		glTexCoord2f(1.0, 0.0);
+		glVertex3f(.25*size,-.25,-3.1);
+		glTexCoord2f(1.0, 1.0);
+		glVertex3f(.25*size,.25,-3.1);
+		glEnd();
+	glPopMatrix();
+}
 
 void display() {
 
@@ -1617,11 +1626,14 @@ return;
   glutSwapBuffers();
     //printOpenGLError();
 }
-else{
+
+else if(mainmenu==0){
+
 	  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
   glMatrixMode(GL_MODELVIEW);
+
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -1638,6 +1650,82 @@ else{
 	glEnd();
 
 	glPopMatrix();
+	glutSwapBuffers();
+
+	glutPostRedisplay();
+}
+else {
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, menuchoice?waterTex:woodTex);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 1.0);
+	glVertex3f(-2.0,1.5,-3.0);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(-2.0,-1.5,-3.0);
+	glTexCoord2f(1.0, 0.0);
+	glVertex3f(2.0,-1.5,-3.0);
+	glTexCoord2f(1.0, 1.0);
+	glVertex3f(2.0,1.5,-3.0);
+	glEnd();
+
+	glPopMatrix();
+	displayicon(position[indexp], 0, 0, 0, 4);
+	if (indexp < 1){
+		displayicon(-1.4, 0, 0, gs->_attacks[indexa]._iconNum, 1);
+	}
+	else {
+		displayicon(-1.4, 0, 0, gs->_attacks[attack[0]]._iconNum, 1);
+		//gs->_attacks[gs->player->_ability[0]]._iconNum
+	}
+
+	if (indexp == 1){
+		displayicon(-.7, 0, 0, gs->_attacks[indexa]._iconNum, 1);
+	}
+	else if(indexp==1){
+		
+	}
+	else if(indexp>1){
+		displayicon(-.7, 0, 0, gs->_attacks[attack[1]]._iconNum, 1);
+	}
+
+	if (indexp == 2){
+		displayicon(0, 0, 0, gs->_attacks[indexa]._iconNum, 1);
+	}
+	/*else if(indexp==2){
+		
+	}*/
+	else if(indexp>2){
+		displayicon(0, 0, 0, gs->_attacks[attack[2]]._iconNum, 1);
+	}
+
+	if (indexp == 3){
+		displayicon(.7, 0, 0, gs->_attacks[indexa]._iconNum, 1);
+	}
+	else if(indexp==3){
+		
+	}
+	else if(indexp>3){
+		displayicon(.7, 0, 0, gs->_attacks[attack[3]]._iconNum, 1);
+	}
+
+	if (indexp == 4){
+		displayicon(1.4, 0, 0, gs->_attacks[indexa]._iconNum, 1);
+	}
+	else if(indexp==4){
+		
+	}
+	else if(indexp>4){
+		displayicon(1.4, 0, 0, gs->_attacks[attack[4]]._iconNum, 1);
+	}
+
+	/*displayicon(-0.7, 0, 0, gs->_attacks[1]._iconNum, 1);
+	displayicon(0.0, 0, 0, gs->_attacks[2]._iconNum, 1);
+	displayicon(0.7, 0, 0, gs->_attacks[3]._iconNum, 1);
+	displayicon(1.4, 0, 0, gs->_attacks[4]._iconNum, 1);*/
+
+
 	glutSwapBuffers();
 
 	glutPostRedisplay();
@@ -1922,20 +2010,69 @@ void mana(int pass) {
 
 void menuKbdS(int k, int x, int y){
 
-	if(GLUT_KEY_DOWN == k)
-		menuchoice = 1;
-	else if(GLUT_KEY_UP == k)
-		menuchoice = 0;
+	if(GLUT_KEY_DOWN == k){
+		if (mainmenu==0) {
+			menuchoice = 1;
+		}
+		else if (mainmenu==1){
+				indexa--;
+				if (indexa == -1) {
+					indexa = 4;
+				}
+			cerr << "indexa = "<< indexa<<endl;
+		}
+	}
+	else if(GLUT_KEY_UP == k){
+		if (mainmenu==0){
+			menuchoice = 0;
+		}
+		else if (mainmenu==1){
+				indexa++;
+				if (indexa==5) {
+					indexa=0;
+				}
+				cerr << "indexa = "<< indexa<<endl;
+		}
+	}
+	/*else if(GLUT_KEY_RIGHT == k) {
+		if (indexp!=4){
+			indexp++;
+		}
+
+	}*/
+	else if(GLUT_KEY_LEFT == k){
+		if (indexp!=0){
+			indexp--;
+		}
+	}
+
 }
 
 void EnterGameMode();
 
 void menuKbd(unsigned char k, int x, int y){
 	if(13 == k){
-		if(0 == menuchoice)
-			EnterGameMode();
-		else if (1 == menuchoice)
+		if(0 == menuchoice && mainmenu==0) {
+			mainmenu=1;
+		}
+		else if (1 == menuchoice) {
 			exit(0);
+		}
+		else if (mainmenu==1) {
+			
+			attack[indexp] = indexa;
+			cerr << "choose attack " << indexa<<endl;
+			//gs->player->_hp = 0;//ability(indexa, indexp); //= indexa;
+			indexp++;
+			if (indexp==5){
+				EnterGameMode();
+			}
+		}
+
+
+
+
+
 	}
 }
 
@@ -1962,15 +2099,18 @@ void EnterGameMode(){
 	 gs->start(0);
 
 
+
   Mix_Music * music = Mix_LoadMUS("music/beach.mp3");
   if(!music){
 	printf("Mix_LoadMUS(\"beach.mp3\"): %s\n", Mix_GetError());
 
-	exit(9);
+	//exit(9);
+
+
   }
   Mix_PlayMusic(music, -1);
 
-	gs->player = new playerstate(worldtime);
+	gs->player = new playerstate(worldtime, attack);
 	gs->player->_hp = 100;
 	gs->player->_mp = 200;
 	gs->player->_pos.x() = 0.00;
@@ -1978,8 +2118,12 @@ void EnterGameMode(){
 	gs->fbtim = -1;
 	gs->explo = false;
 	gs->smit = false;
-	loadAttacks();
+
+	//loadAttacks();
 	gs->updatBinLists(gs->player,UPDAT);
+
+
+
 
 
 	for(int i = 0; i < 100; i++){  
@@ -2133,7 +2277,7 @@ int main( int argc, char** argv ) {
 	LAy = 0;
 	LAz = 0;//shift;
 
-
+	initAttacks();
 
 
 	//register glut callback functions
@@ -2189,7 +2333,7 @@ int main( int argc, char** argv ) {
   menutex1 = BindTextureBMP((char *)"textures/menu_quit.bmp", false);
 
 
-  initAttacks();
+  
 
 
   init("model/palmTree.obj", treemdl);
