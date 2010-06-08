@@ -87,6 +87,7 @@ coord2d_t playerstate::calcHotSpot(coord2d_t hs, double dist){
 void playerstate::draw(){
 	glEnable(GL_LIGHTING);
 	glPushMatrix();
+
 	glTranslatef(_pos.x(), 0, -_pos.y());
     glRotatef(_vel.x()*180.0/3.1415, 0, 1, 0);
     glRotatef(180,0,1,0);

@@ -9,6 +9,7 @@
 
 using namespace std;
 
+
 union varies{
    uint32_t i32;
    uint16_t i16;

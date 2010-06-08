@@ -30,8 +30,8 @@ mdmodel::mdmodel(const char *filename, const char *animfile, int tn)
    int i;
 	for (i = 0; i < md5file.meshes->num_verts; ++i)
     {
-		textureArray[i][0] = md5file.meshes->vertices[i].st[0]*.5 +.5;
-		textureArray[i][1] = md5file.meshes->vertices[i].st[1]*.5 +.5;
+		textureArray[i][0] = md5file.meshes->vertices[i].st[0];
+		textureArray[i][1] = -md5file.meshes->vertices[i].st[1];
     }
 
   /* Load MD5 animation file */

@@ -108,6 +108,8 @@ public:
 	void addEnemy(playerstate* e);
 	void addObject(objectstate* o);
 
+	void draw_objects();
+
 	double b2p(int i);
 	void LarPaCollision(source *src,int minx,int maxx,int minz,int maxz);
 	bool LarObCollision(colliobj *obj,int minx,int maxx,int minz,int maxz);
