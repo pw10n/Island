@@ -22,6 +22,11 @@
 #include "GLSL_helper.h"
 #include "enemy.h"
 #include "attack.h"
+#include <SDL_mixer.h>
+#include <SDL.h>
+
+
+
 
 
 //#include "md5mesh.cpp"
@@ -158,21 +163,23 @@ void initModel();
 //playerstate* gs->player;
 vector<playerstate*> others;
 
+//Models
 struct obj_model_t *hutmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *rockmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-
 struct obj_model_t oceanmdl;
 struct obj_model_t *shellmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-
 struct obj_model_t *rock2mdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-
 struct obj_model_t *treemdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 struct obj_model_t *vegmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
-struct obj_model_t *logmdl = (struct obj_model_t*) malloc(sizeof(obj_model_t));
 
+//Materials
 struct mtl_file *treemtl = (struct mtl_file*) malloc(sizeof(mtl_file));
 struct mtl_file *vegmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
-struct mtl_file *logmtl = (struct mtl_file*) malloc(sizeof(mtl_file));
+
+
+
+
+
 
 float *depth_up = 0, *depth_down = 0, *depth_left = 0, *depth_right = 0;
 
@@ -190,7 +197,7 @@ void materials(materialStruct materials) {
 int light;
 //globals for lighting - use a white light and apply materials
 //light position
-GLfloat light_pos[4] = {1.0, 5.0, 1.5, 1.0}; //1.0,5.0,1.5,1.0
+GLfloat light_pos[4] = {1.0, 20.0, 1.5, 1.0}; //1.0,5.0,1.5,1.0
 //light color (ambiant, diffuse and specular)
 GLfloat light_amb[4] = {0.6, 0.6, 0.6, 1.0};
 GLfloat light_diff[4] = {0.6, 0.6, 0.6, 1.0};
@@ -1930,10 +1937,36 @@ void menuKbd(unsigned char k, int x, int y){
 	}
 }
 
+void initMusic() {
+  if(SDL_InitSubSystem(SDL_INIT_AUDIO) == -1){
+    // SDL Audio subsystem could not be started
+	  exit(7);
+  }
+
+  if(Mix_OpenAudio(44100, AUDIO_S16, 1, 1024) == -1){
+    // SDL_Mixer could not be started
+	  exit(8);
+  }
+  Mix_AllocateChannels(32);
+
+
+
+	
+}
 
 // leave menu
 void EnterGameMode(){
+
 	 gs->start(0);
+
+
+  Mix_Music * music = Mix_LoadMUS("music/beach.mp3");
+  if(!music){
+	printf("Mix_LoadMUS(\"beach.mp3\"): %s\n", Mix_GetError());
+
+	exit(9);
+  }
+  Mix_PlayMusic(music, -1);
 
 	gs->player = new playerstate(worldtime);
 	gs->player->_hp = 100;
@@ -2010,6 +2043,8 @@ void EnterGameMode(){
 
 	cerr << "INFO: init lighting.. " << endl;
 	init_lighting();
+	pos_light();
+
 
 	cerr << "INFO: init ai.. " << endl;
 	init_ai();
@@ -2047,7 +2082,7 @@ int main( int argc, char** argv ) {
 	// use this for debugging unexpected exits: 
 	atexit (fnExit1);
 
-
+	initMusic();
 	//_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); //used to find memory leaks
 
 
@@ -2098,6 +2133,7 @@ int main( int argc, char** argv ) {
 
 
 
+
 	//register glut callback functions
 	glutDisplayFunc( display );
 	glutReshapeFunc( reshape );
@@ -2121,9 +2157,8 @@ int main( int argc, char** argv ) {
 
 //cerr << "INFO: init gamestate.. " << endl;
 
+
   
-
-
   
   
 

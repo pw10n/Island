@@ -157,3 +157,13 @@ public:
 	void move(void);
 	void draw(void);
 };
+
+class regen : public particle
+{
+public:
+	playerstate *pla;
+
+	regen(playerstate *play);
+	void move(void);
+	void draw(void);
+};
