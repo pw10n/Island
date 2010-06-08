@@ -580,3 +580,41 @@ void sand::draw(void)
 	glDisable(GL_LIGHTING);
 	glPopMatrix();
 }
+
+regen::regen(playerstate *play){
+	pla = play;
+	_pos.x() = pla->_pos.x();
+	_pos.y() = 1.0;
+	_pos.z() = -pla->_pos.y();
+	_vel.x() = ((double)(rand()%4)-1.5)*5.0;
+	_vel.y() = (double)(rand()%360);
+	life = 5.0f;
+	fade = .5f;
+	r = 1.0f; g = b = a = 0.0f;
+	active = true;
+}
+
+void regen::move(void){
+	life -= fade;
+	if(life<0.0){
+		active = false; return;
+	}
+	_vel.y() += _vel.x();
+	_pos.y() -= .1;
+	_pos.x() = pla->_pos.x();
+	_pos.z() = -pla->_pos.y();
+	a = (5.0f-life)/5.0f;
+}
+
+void regen::draw(void){
+	glColor4f(r,g,b,a);
+	glPushMatrix();
+	glTranslatef(_pos.x(),_pos.y(),_pos.z());
+	glRotatef(_vel.y(),0,1,0);
+	float tra = life/5.0f;
+	glTranslatef(0,0,tra);
+	float sca = 2.0f-tra;
+	glScalef(sca,sca,sca);
+	glCallList(PARTLIST);
+	glPopMatrix();
+}

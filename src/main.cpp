@@ -1617,7 +1617,7 @@ void keyboard(unsigned char key, int x, int y ){
 		gs->_attacks[gs->player->_ability[1]].fire(x,y);
 		break;
 	case 'f': case 'F' :
-		gs->beatim = 5;
+		gs->_attacks[gs->player->_ability[3]].fire(x,y);
 		break;
 	case 'g': case 'G' :
 		//if(!gs->smit) gs->smiteEm(x,y);
@@ -1641,6 +1641,7 @@ void keyboard(unsigned char key, int x, int y ){
 	case 'm':
 		//printf("sizeof fbsrc: %d\n", sizeof(*fbsrc));
 		//printf("sizeof exsrc: %d\n", sizeof(*exsrc));
+		gs->_pars.push_back(new regen(gs->player));
 		break;
 	case 'd': case 'D' :
 		gs->_attacks[gs->player->_ability[2]].fire(x,y);
