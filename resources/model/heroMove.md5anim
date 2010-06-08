@@ -52,7 +52,7 @@ hierarchy {
 	"bicep_L_IK"	22 63 252	// arm_L
 	"bicep_L"	42 63 258	// bicep L IK
 	"deltoid_L_IK"	21 63 264	// shoulder_L
-	"deltoid L"	44 63 270	// deltoid L IK
+	"deltoid_L"	44 63 270	// deltoid L IK
 	"shoulder_R"	2 63 276	// back_upper
 	"deltoid_R_IK"	46 63 282	// shoulder_R
 	"deltoid_R"	47 63 288	// deltoid R IK
@@ -83,7 +83,7 @@ hierarchy {
 	"foot_L"	72 63 438	// foreleg_L
 	"toes_L"	73 63 444	// foot_L
 	"calf_L_IK"	72 63 450	// foreleg_L
-	"calf L"	75 63 456	// calf L IK
+	"calf_L"	75 63 456	// calf L IK
 	"hamstring_L_IK"	71 63 462	// leg_L
 	"hamstring_L"	77 63 468	// hamstring L IK
 	"leg_R"	0 63 474	// hip

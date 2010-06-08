@@ -25,18 +25,19 @@ attack::~attack(void)
 void attack::fire(int x, int y){
 	if(_tock>0||PLA->_mp<_cost) return;
 	_tock = _cooldown;
-	func(x,y);
-	gs->player->_mp -= _cost;
+	if(func(x,y))
+		gs->player->_mp -= _cost;
 }
 
-void spawnFireball(int x, int y){ //dummy x,y
+bool spawnFireball(int x, int y){ //dummy x,y
 	double fbx = -sin(PLA->vel().x());
 	double fbz = -cos(PLA->vel().x());
 	coord2d_t dummy;
 	dummy = PLA->calcHotSpot(dummy,.6);
 	gs->fbsrc.push_back(new fireball_s(dummy.x(),dummy.y(),fbx/5.0,fbz/5.0,PLA->_id));
+	return true;
 }
-void smiteEm(int x, int y){
+bool smiteEm(int x, int y){
 	//first calc target position
 	double dx = ((double)x-gs->GW/2.0)/1.7;
 	double dy = (double)y-gs->GH/2.0 + .5;
@@ -50,19 +51,22 @@ void smiteEm(int x, int y){
 	for(int i=0;i<400;i++){
 		gs->_pars.push_back(new smite_p(gs->smsrc));
 	}
+	return true;
 }
 
-void rapid(int x, int y){ //dummy x,y
+bool rapid(int x, int y){ //dummy x,y
 	if(gs->rfpar.size()<100){
 		coord2d_t dummy;
 		dummy = PLA->calcHotSpot(dummy,.6);
 		double vx = -sin(PLA->vel().x())*.6;
 		double vz = -cos(PLA->vel().x())*.6;
 		gs->rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,0));
+		return true;
 	}
+	return false;
 }
 
-void spread(int x, int y){ //dummy x,y
+bool spread(int x, int y){ //dummy x,y
 	if(gs->rfpar.size()<100){
 		coord2d_t dummy;
 		dummy = PLA->calcHotSpot(dummy,.6);
@@ -71,10 +75,12 @@ void spread(int x, int y){ //dummy x,y
 			double vz = -cos(PLA->vel().x()+d)*.6;
 			gs->rfpar.push_back(new rapidfire(dummy.x(),dummy.y(),vx,vz,0));
 		}
+		return true;
 	}
+	return false;
 }
 
-void genCrate(int x, int y){
+bool genCrate(int x, int y){
 	double dx = ((double)x-gs->GW/2.0)/1.7;
 	double dy = (double)y-gs->GH/2.0 + .5;
 	double dz = log((double)y*2.0/gs->GH)/-.159;
@@ -95,6 +101,7 @@ void genCrate(int x, int y){
 	crt->_hp = 10;
 
 	gs->addObject(crt);
+	return true;
 }
 
 void initAttacks(void){
@@ -111,9 +118,9 @@ void initAttacks(void){
 	gs->_attacks.push_back(attack(icon,25,0));
 	gs->_attacks[2].func = genCrate;
 
-	icon = BindTextureBMP((char *)"textures/fist.bmp", true); //7
-	gs->_attacks.push_back(attack(icon,21,3));
-	gs->_attacks[3].func = spread; 
+	icon = BindTextureBMP((char *)"textures/regen.bmp", true); //7
+	gs->_attacks.push_back(attack(icon,3,0));
+	gs->_attacks[3].func = heal; 
 
 	icon = BindTextureBMP((char *)"textures/smite.bmp", true); //8
 	gs->_attacks.push_back(attack(icon,50,25));
@@ -124,4 +131,13 @@ void initAttacks(void){
 void loadAttacks(void){
 	for(int i=0;i<5;i++)
 		PLA->_ability[i] = i;
+}
+
+bool heal(int x, int y){ //dummy x,y
+	if(PLA->_hp<100&&PLA->_hp>0){
+		PLA->_hp += 1;
+		gs->_pars.push_back(new regen(PLA));
+		return true;
+	}
+	return false;
 }

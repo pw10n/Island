@@ -7,7 +7,7 @@ public:
 	unsigned int _cost;
 	unsigned int _cooldown;
 	unsigned int _tock;
-	void (*func)(int x, int y);
+	bool (*func)(int x, int y);
 
 
 	attack(void);
@@ -18,10 +18,11 @@ public:
 	void _tick(void) {if(_tock>0) _tock--;}
 };
 
-void spawnFireball(int x, int y);//dummy x,y
-void smiteEm(int x, int y);
-void rapid(int x, int y);//dummy x,y
-void spread(int x, int y);//dummy x,y
-void genCrate(int x, int y);
+bool spawnFireball(int x, int y);//dummy x,y
+bool smiteEm(int x, int y);
+bool rapid(int x, int y);//dummy x,y
+bool spread(int x, int y);//dummy x,y
+bool genCrate(int x, int y);
+bool heal(int x, int y);//dummy x,y
 void initAttacks(void);
 void loadAttacks(void);
