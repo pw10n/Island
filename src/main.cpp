@@ -189,7 +189,7 @@ void materials(materialStruct materials) {
 int light;
 //globals for lighting - use a white light and apply materials
 //light position
-GLfloat light_pos[4] = {1.0, 5.0, 1.5, 1.0}; //1.0,5.0,1.5,1.0
+GLfloat light_pos[4] = {1.0, 20.0, 1.5, 1.0}; //1.0,5.0,1.5,1.0
 //light color (ambiant, diffuse and specular)
 GLfloat light_amb[4] = {0.6, 0.6, 0.6, 1.0};
 GLfloat light_diff[4] = {0.6, 0.6, 0.6, 1.0};
@@ -1857,6 +1857,8 @@ void EnterGameMode(){
 
 	cerr << "INFO: init lighting.. " << endl;
 	init_lighting();
+	pos_light();
+
 
 	cerr << "INFO: init ai.. " << endl;
 	init_ai();
